@@ -41,6 +41,9 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $_SESSION['cart'][$product_id] = $qty;
     
+    // Optimasi: Lepaskan lock session agar tidak memblokir request lain
+    session_write_close();
+    
     if ($is_ajax) {
         header('Content-Type: application/json');
         $cart_count = 0;
@@ -63,6 +66,9 @@ elseif ($action === 'remove') {
     if (isset($_SESSION['cart'][$product_id])) {
         unset($_SESSION['cart'][$product_id]);
     }
+    
+    // Optimasi: Lepaskan lock session agar tidak memblokir request lain
+    session_write_close();
     
     if ($is_ajax) {
         header('Content-Type: application/json');
@@ -119,6 +125,9 @@ elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['cart'][$product_id] = $qty;
     $subtotal = $product['price'] * $qty;
     
+    // Optimasi: Lepaskan lock session agar tidak memblokir request lain
+    session_write_close();
+    
     if ($is_ajax) {
         header('Content-Type: application/json');
         
@@ -154,6 +163,10 @@ elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 elseif ($action === 'clear') {
     $_SESSION['cart'] = [];
+    
+    // Optimasi: Lepaskan lock session agar tidak memblokir request lain
+    session_write_close();
+    
     if ($is_ajax) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'success', 'message' => 'Keranjang dikosongkan.']);
