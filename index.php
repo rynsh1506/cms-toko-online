@@ -26,6 +26,15 @@ switch ($page) {
         require __DIR__ . '/controllers/AuthController.php';
         break;
 
+    case 'config_process':
+        require __DIR__ . '/controllers/ConfigController.php';
+        break;
+
+    case 'page_builder':
+        checkAdmin();
+        require __DIR__ . '/views/admin/page_builder.php';
+        break;
+
     case 'admin':
         // Gunakan middleware yang baru kita buat
         checkAdmin();
