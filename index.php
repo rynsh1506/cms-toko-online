@@ -38,6 +38,14 @@ switch ($page) {
         require __DIR__ . '/controllers/ConfigController.php';
         break;
 
+    case 'checkout':
+        require __DIR__ . '/views/public/checkout.php';
+        break;
+
+    case 'checkout_process':
+        require __DIR__ . '/controllers/CheckoutController.php';
+        break;
+
     case 'page_builder':
         checkAdmin();
         require __DIR__ . '/views/admin/page_builder.php';
