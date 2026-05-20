@@ -30,3 +30,20 @@ function base_url($path = '') {
     }
     return rtrim($base, '/') . '/' . ltrim($path, '/');
 }
+
+/**
+ * Cek apakah user sudah login
+ */
+function isAuth() {
+    return isset($_SESSION['user_id']);
+}
+
+/**
+ * Cek apakah user adalah admin
+ * Jika bukan, redirect ke halaman login
+ */
+function checkAdmin() {
+    if (!isAuth() || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        redirect('index.php?page=login');
+    }
+}
