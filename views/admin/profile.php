@@ -23,7 +23,7 @@ $admin = $stmt->fetch();
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center transition-colors duration-300">
                 <!-- Avatar Preview -->
                 <div class="relative group">
-                    <div id="avatar-container" class="h-32 w-32 rounded-full overflow-hidden bg-slate-105 dark:bg-slate-750 border-4 border-indigo-50 dark:border-slate-900 shadow-md">
+                    <div id="avatar-container" class="h-32 w-32 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 border-4 border-indigo-50 dark:border-slate-900 shadow-md">
                         <?php if ($admin['avatar_url']): ?>
                             <img id="avatar-preview-img" class="h-full w-full object-cover" src="<?= htmlspecialchars($admin['avatar_url']) ?>" alt="Avatar Preview">
                         <?php else: ?>
@@ -88,7 +88,7 @@ $admin = $stmt->fetch();
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Foto Profil (Avatar)</label>
-                            <input type="file" id="avatar-input" name="avatar" accept="image/*" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl px-4 py-2 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 dark:file:bg-indigo-950/40 dark:file:text-indigo-400 hover:file:opacity-90 transition cursor-pointer">
+                            <input type="file" id="avatar-input" name="avatar" accept="image/*" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 dark:file:bg-indigo-950/40 dark:file:text-indigo-400 hover:file:opacity-90 transition cursor-pointer">
                         </div>
                     </div>
 
@@ -98,7 +98,7 @@ $admin = $stmt->fetch();
                     </div>
 
                     <div class="flex justify-end">
-                        <button type="submit" id="btn-save-profile" class="bg-indigo-650 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-indigo-600/20 active:scale-[0.98]">Simpan Perubahan</button>
+                        <button type="submit" id="btn-save-profile" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-indigo-600/20 active:scale-[0.98]">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -130,7 +130,7 @@ $admin = $stmt->fetch();
                     </div>
 
                     <div class="flex justify-end">
-                        <button type="submit" id="btn-save-password" class="bg-indigo-650 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-indigo-600/20 active:scale-[0.98]">Ubah Password</button>
+                        <button type="submit" id="btn-save-password" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-xs tracking-wider uppercase transition shadow-lg shadow-indigo-600/20 active:scale-[0.98]">Ubah Password</button>
                     </div>
                 </form>
             </div>
@@ -140,8 +140,8 @@ $admin = $stmt->fetch();
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/sweetalert2.all.min.js"></script>
 <script>
     // Live Image Preview for Profile Upload
     document.getElementById('avatar-input').addEventListener('change', function(event) {

@@ -81,14 +81,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $total_pure += ($p_info['price'] * $qty);
         }
 
+        // 4. Promo code validation inside transaction
+        $promo_code_id = !empty($_POST['promo_code_id']) ? intval($_POST['promo_code_id']) : null;
+        $discount_amount = 0;
+        if ($promo_code_id !== null) {
+            $stmtPromo = $pdo->prepare("SELECT * FROM promo_codes WHERE id = ? FOR UPDATE");
+            $stmtPromo->execute([$promo_code_id]);
+            $promo = $stmtPromo->fetch();
+            if (!$promo) {
+                throw new Exception("Kode promo tidak valid.");
+            }
+            if (!$promo['is_active']) {
+                throw new Exception("Kode promo tidak aktif.");
+            }
+            if (strtotime($promo['expires_at']) < time()) {
+                throw new Exception("Kode promo sudah kedaluwarsa.");
+            }
+            if ($promo['used_count'] >= $promo['max_uses']) {
+                throw new Exception("Kuota kode promo sudah habis.");
+            }
+            if ($total_pure < $promo['min_order']) {
+                throw new Exception("Total belanja kurang dari batas minimal kode promo.");
+            }
+
+            // Hitung diskon
+            if ($promo['discount_type'] === 'percentage') {
+                $discount_amount = ($promo['discount_value'] / 100) * $total_pure;
+            } else {
+                $discount_amount = $promo['discount_value'];
+            }
+
+            if ($discount_amount > $total_pure) {
+                $discount_amount = $total_pure;
+            }
+
+            // Update usage count
+            $stmtUpdatePromo = $pdo->prepare("UPDATE promo_codes SET used_count = used_count + 1 WHERE id = ?");
+            $stmtUpdatePromo->execute([$promo_code_id]);
+        }
+
         // Generate Kode Unik & Total Akhir
         $unique_code = rand(100, 999);
-        $final_total = $total_pure + $unique_code;
+        $final_total = ($total_pure - $discount_amount) + $unique_code;
 
-        // 4. Insert ke tabel orders
+        // 5. Insert ke tabel orders
         $stmtOrder = $pdo->prepare("
-            INSERT INTO orders (user_id, customer_name, customer_phone, customer_address, total_price, unique_code, bank_account_id, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+            INSERT INTO orders (user_id, customer_name, customer_phone, customer_address, total_price, unique_code, bank_account_id, promo_code_id, discount_amount, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
         ");
         $stmtOrder->execute([
             $user_id, 
@@ -97,7 +136,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $customer_address, 
             $final_total, 
             $unique_code,
-            $bank_account_id
+            $bank_account_id,
+            $promo_code_id,
+            $discount_amount
         ]);
         
         $order_id = $pdo->lastInsertId();

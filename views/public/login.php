@@ -11,9 +11,11 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Pro-Store CMS</title>
+    <title>Login - NusaBay</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/tailwind.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -35,7 +37,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
         }
     </script>
     <!-- Google Fonts Outfit & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/fonts.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -55,8 +57,20 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
         <!-- Logo -->
         <div class="text-center mb-8">
             <a href="index.php?page=home" class="inline-flex items-center space-x-2 justify-center mb-3">
-                <span class="h-9 w-9 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-primary/20 font-display">P</span>
-                <span class="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white font-display">Pro-Store</span>
+                <!-- Geometric NusaBay Logo -->
+                                    <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-global)" />
+                        <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                        <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                        <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
+                        <defs>
+                            <linearGradient id="logo-grad-nav-global" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#6366f1"/>
+                                <stop offset="1" stop-color="#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                <span class="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white font-display">Nusa<span class="text-primary">Bay</span></span>
             </a>
             <h2 class="text-xl font-bold text-slate-800 dark:text-white font-display">Selamat datang kembali!</h2>
             <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Silakan masukkan detail akun Anda untuk masuk.</p>
@@ -102,7 +116,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
     </div>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
             // Handle Login AJAX

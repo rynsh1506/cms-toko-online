@@ -12,6 +12,7 @@ if ($action === 'add') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = sanitize_input($_POST['name']);
         $description = sanitize_input($_POST['description']);
+        $category_id = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
         $price = floatval($_POST['price']);
         $stock = intval($_POST['stock']);
         $image_url = '';
@@ -45,8 +46,8 @@ if ($action === 'add') {
         }
 
         if (!isset($err)) {
-            $stmt = $pdo->prepare("INSERT INTO products (name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?)");
-            if ($stmt->execute([$name, $description, $price, $stock, $image_url])) {
+            $stmt = $pdo->prepare("INSERT INTO products (category_id, name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?)");
+            if ($stmt->execute([$category_id, $name, $description, $price, $stock, $image_url])) {
                 if ($is_ajax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => true, 'message' => 'Produk berhasil ditambahkan!']);
@@ -74,6 +75,7 @@ if ($action === 'add') {
         $id = intval($_POST['id']);
         $name = sanitize_input($_POST['name']);
         $description = sanitize_input($_POST['description']);
+        $category_id = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
         $price = floatval($_POST['price']);
         $stock = intval($_POST['stock']);
 
@@ -129,8 +131,8 @@ if ($action === 'add') {
         }
 
         if (!$err) {
-            $stmt = $pdo->prepare("UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ?");
-            if ($stmt->execute([$name, $description, $price, $stock, $image_url, $id])) {
+            $stmt = $pdo->prepare("UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ?");
+            if ($stmt->execute([$category_id, $name, $description, $price, $stock, $image_url, $id])) {
                 if ($is_ajax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => true, 'message' => 'Produk berhasil diperbarui!']);

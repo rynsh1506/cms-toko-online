@@ -51,9 +51,11 @@ foreach ($_SESSION['cart'] as $qty) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keranjang Belanja - Pro-Store CMS</title>
+    <title>Keranjang Belanja - NusaBay</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/tailwind.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -75,7 +77,7 @@ foreach ($_SESSION['cart'] as $qty) {
         }
     </script>
     <!-- Google Fonts Outfit & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/fonts.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -92,8 +94,20 @@ foreach ($_SESSION['cart'] as $qty) {
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex justify-between items-center h-20">
                 <a href="index.php?page=home" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:opacity-85 transition font-display flex items-center space-x-2">
-                    <span class="h-9 w-9 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-primary/20 font-display">P</span>
-                    <span>Pro-Store <span class="text-primary">Toko</span></span>
+                    <!-- Geometric NusaBay Logo -->
+                                        <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-global)" />
+                        <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                        <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                        <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
+                        <defs>
+                            <linearGradient id="logo-grad-nav-global" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#6366f1"/>
+                                <stop offset="1" stop-color="#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>Nusa<span class="text-primary">Bay</span></span>
                 </a>
                 <div class="flex items-center space-x-6">
                     <a href="index.php?page=home" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center space-x-1.5">
@@ -148,8 +162,9 @@ foreach ($_SESSION['cart'] as $qty) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
             <p class="text-slate-400 dark:text-slate-500 font-semibold mb-6">Keranjang belanja Anda masih kosong.</p>
-            <a href="index.php?page=home" class="inline-block bg-primary text-white font-bold py-3.5 px-6 rounded-2xl hover:opacity-90 transition text-sm shadow-lg shadow-primary/25">
-                Cari Produk Terbaik
+            <a href="index.php?page=home" class="inline-flex items-center space-x-2 bg-primary text-white font-bold py-3.5 px-6 rounded-2xl hover:opacity-90 transition text-sm shadow-lg shadow-primary/25">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <span>Cari Produk Terbaik</span>
             </a>
         </div>
 
@@ -171,21 +186,30 @@ foreach ($_SESSION['cart'] as $qty) {
                             <?php foreach ($cart_items as $item): ?>
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition cart-item-row" data-product-id="<?= $item['id'] ?>">
                                     <td class="p-4 pl-6 flex items-center space-x-4">
-                                        <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-14 w-14 object-cover rounded-xl border border-slate-100 dark:border-slate-850 shadow-sm">
+                                        <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-14 w-14 object-cover rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
                                         <span class="font-bold text-slate-800 dark:text-white"><?= htmlspecialchars($item['name']) ?></span>
                                     </td>
                                     <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 font-mono">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>
                                     <td class="p-4">
-                                        <div class="flex items-center justify-center space-x-1.5">
-                                            <input type="number" value="<?= $item['qty'] ?>" min="1" max="<?= $item['stock'] ?>" 
-                                                class="input-qty w-16 px-2 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-white rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-xs font-bold font-mono"
-                                                data-product-id="<?= $item['id'] ?>">
+                                        <div class="flex items-center justify-center">
+                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center rounded-l-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-product-id="<?= $item['id'] ?>">
+                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
+                                            </button>
+                                            <input type="text" value="<?= $item['qty'] ?>" 
+                                                class="input-qty h-8 w-12 bg-slate-50 dark:bg-slate-950 border-y border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-center focus:outline-none transition text-xs font-bold font-mono"
+                                                data-product-id="<?= $item['id'] ?>" data-max="<?= $item['stock'] ?>" readonly>
+                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center rounded-r-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-product-id="<?= $item['id'] ?>">
+                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                                            </button>
                                         </div>
                                         <p class="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Tersedia: <?= $item['stock'] ?> pcs</p>
                                     </td>
                                     <td class="subtotal-cell p-4 text-right font-extrabold text-slate-800 dark:text-white font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></td>
                                     <td class="p-4 text-center">
-                                        <button type="button" class="btn-remove-item text-rose-500 hover:text-rose-700 font-bold text-xs hover:underline transition" data-product-id="<?= $item['id'] ?>">Hapus</button>
+                                        <button type="button" class="btn-remove-item flex items-center space-x-1 text-rose-500 hover:text-rose-700 font-bold text-xs transition mx-auto" data-product-id="<?= $item['id'] ?>">
+                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            <span>Hapus</span>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -195,15 +219,19 @@ foreach ($_SESSION['cart'] as $qty) {
 
                 <!-- Summary & Checkout Button -->
                 <div class="p-8 bg-slate-50/50 dark:bg-slate-800/20 flex flex-col sm:flex-row justify-between items-center border-t border-slate-100 dark:border-slate-800 gap-6">
-                    <button type="button" id="btn-clear-cart" class="text-xs text-rose-500 hover:text-rose-700 font-bold hover:underline">Kosongkan Keranjang</button>
+                    <button type="button" id="btn-clear-cart" class="inline-flex items-center space-x-1.5 text-xs text-rose-500 hover:text-rose-700 font-bold transition">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <span>Kosongkan Keranjang</span>
+                    </button>
                     
                     <div class="text-right space-y-4 w-full sm:w-auto">
                         <div class="flex items-baseline justify-end space-x-2">
                             <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">Total Sementara:</span>
                             <span id="grand-total" class="text-2xl font-black text-primary font-display">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
                         </div>
-                        <a href="index.php?page=checkout" class="block w-full sm:inline-block bg-primary text-white font-bold py-3.5 px-8 rounded-2xl shadow-xl shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition text-sm text-center">
-                            Lanjut ke Checkout
+                        <a href="index.php?page=checkout" class="inline-flex items-center justify-center space-x-2 w-full sm:w-auto bg-primary text-white font-bold py-3.5 px-8 rounded-2xl shadow-xl shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition text-sm text-center">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            <span>Lanjut ke Checkout</span>
                         </a>
                     </div>
                 </div>
@@ -214,13 +242,13 @@ foreach ($_SESSION['cart'] as $qty) {
     <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
         <div class="max-w-6xl mx-auto px-6 text-center text-xs">
-            <p>&copy; <?= date('Y') ?> Pro-Store CMS. Powered by Mini-Framework.</p>
+            <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {
             // Theme toggle logic
@@ -253,26 +281,25 @@ foreach ($_SESSION['cart'] as $qty) {
                 return 'Rp ' + Number(num).toLocaleString('id-ID');
             }
 
-            // AJAX Update Quantity on input change
-            $('.input-qty').on('change input', function() {
-                const input = $(this);
-                const productId = input.data('product-id');
-                const qty = input.val();
-                
-                $.ajax({
+            // Debounce timers & in-flight XHR per product
+            var _qtyTimers = {};
+            var _qtyXhr = {};
+
+            // Send qty update via AJAX (called after debounce)
+            function sendQtyUpdate(productId, qty, inputEl) {
+                // Abort previous in-flight request for this product
+                if (_qtyXhr[productId]) _qtyXhr[productId].abort();
+
+                _qtyXhr[productId] = $.ajax({
                     url: 'index.php?page=cart_process&action=update',
                     type: 'POST',
                     data: { product_id: productId, qty: qty, ajax: 1 },
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            // Update subtotal
-                            input.closest('tr').find('.subtotal-cell').text(formatRupiah(response.subtotal));
-                            // Update total
+                            inputEl.closest('tr').find('.subtotal-cell').text(formatRupiah(response.subtotal));
                             $('#grand-total').text(formatRupiah(response.total_price));
-                            // Update input value (in case it got adjusted to max stock)
-                            input.val(response.qty);
-                            // Update badge
+                            inputEl.val(response.qty);
                             $('#cart-badge').text(response.cart_count);
                             
                             if (response.error_message) {
@@ -284,13 +311,47 @@ foreach ($_SESSION['cart'] as $qty) {
                                 });
                             }
                         } else if (response.status === 'removed') {
-                            input.closest('tr').fadeOut(300, function() {
+                            inputEl.closest('tr').fadeOut(300, function() {
                                 $(this).remove();
                                 checkEmptyCart();
                             });
                         }
+                    },
+                    complete: function() {
+                        delete _qtyXhr[productId];
                     }
                 });
+            }
+
+            // Debounced wrapper: updates input instantly, sends AJAX after 350ms idle
+            function debouncedQtyUpdate(productId, qty, inputEl) {
+                clearTimeout(_qtyTimers[productId]);
+                _qtyTimers[productId] = setTimeout(function() {
+                    sendQtyUpdate(productId, qty, inputEl);
+                }, 350);
+            }
+
+            // − button
+            $(document).on('click', '.btn-qty-minus', function() {
+                const row = $(this).closest('tr');
+                const input = row.find('.input-qty');
+                let val = parseInt(input.val()) || 1;
+                if (val > 1) {
+                    input.val(val - 1);
+                    debouncedQtyUpdate(input.data('product-id'), val - 1, input);
+                }
+            });
+
+            // + button
+            $(document).on('click', '.btn-qty-plus', function() {
+                const row = $(this).closest('tr');
+                const input = row.find('.input-qty');
+                let val = parseInt(input.val()) || 1;
+                let max = parseInt(input.data('max')) || 999;
+                if (val < max) {
+                    input.val(val + 1);
+                    debouncedQtyUpdate(input.data('product-id'), val + 1, input);
+                }
             });
 
             // AJAX Remove Item

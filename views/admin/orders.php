@@ -45,22 +45,22 @@ foreach ($all_items as $item) {
                     <th class="p-4 text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50 dark:divide-slate-750 text-sm">
+            <tbody class="divide-y divide-slate-50 dark:divide-slate-700 text-sm">
                 <?php if (empty($orders)): ?>
                     <tr>
                         <td colspan="7" class="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800">Belum ada pesanan masuk.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($orders as $order): ?>
-                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition order-row bg-white dark:bg-slate-800" data-id="<?= $order['id'] ?>">
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition order-row bg-white dark:bg-slate-800" data-id="<?= $order['id'] ?>">
                             <td class="p-4 pl-6 font-bold text-slate-800 dark:text-slate-200">#<?= $order['id'] ?></td>
                             <td class="p-4 text-slate-500 dark:text-slate-400 font-mono text-xs"><?= date('d M Y, H:i', strtotime($order['created_at'])) ?></td>
                             <td class="p-4">
-                                <div class="font-semibold text-slate-850 dark:text-slate-200"><?= htmlspecialchars($order['customer_name']) ?></div>
+                                <div class="font-semibold text-slate-800 dark:text-slate-200"><?= htmlspecialchars($order['customer_name']) ?></div>
                                 <div class="text-xs text-slate-400 dark:text-slate-500"><?= htmlspecialchars($order['customer_phone']) ?></div>
                             </td>
                             <td class="p-4">
-                                <div class="font-bold text-slate-850 dark:text-slate-200 font-mono">Rp <?= number_format($order['total_price'], 0, ',', '.') ?></div>
+                                <div class="font-bold text-slate-800 dark:text-slate-200 font-mono">Rp <?= number_format($order['total_price'], 0, ',', '.') ?></div>
                                 <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-bold">Kode Unik: +<?= $order['unique_code'] ?></div>
                             </td>
                             <td class="p-4">
@@ -82,7 +82,7 @@ foreach ($all_items as $item) {
                                 <?php elseif ($order['status'] === 'done'): ?>
                                     <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400">Done</span>
                                 <?php elseif ($order['status'] === 'cancelled'): ?>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455">Cancelled</span>
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400">Cancelled</span>
                                 <?php endif; ?>
                             </td>
                             <td class="p-4">
@@ -110,7 +110,7 @@ foreach ($all_items as $item) {
             <!-- Modal Header -->
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white font-display" id="modalOrderTitle">Detail Order #</h3>
-                <button onclick="closeOrderModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none">
+                <button onclick="closeOrderModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -130,11 +130,11 @@ foreach ($all_items as $item) {
                             </tr>
                             <tr>
                                 <td class="py-1 text-slate-450 dark:text-slate-555">Telepon:</td>
-                                <td class="py-1 font-semibold text-slate-850 dark:text-slate-200" id="modalBuyerPhone">-</td>
+                                <td class="py-1 font-semibold text-slate-800 dark:text-slate-200" id="modalBuyerPhone">-</td>
                             </tr>
                             <tr>
                                 <td class="py-1.5 text-slate-450 dark:text-slate-555">Alamat:</td>
-                                <td class="py-1.5 leading-relaxed text-slate-650 dark:text-slate-400" id="modalBuyerAddress">-</td>
+                                <td class="py-1.5 leading-relaxed text-slate-600 dark:text-slate-400" id="modalBuyerAddress">-</td>
                             </tr>
                         </table>
                     </div>
@@ -147,7 +147,7 @@ foreach ($all_items as $item) {
                             </tr>
                             <tr>
                                 <td class="py-1 text-slate-450 dark:text-slate-555">No. Rekening:</td>
-                                <td class="py-1 font-semibold text-slate-850 dark:text-slate-200 font-mono" id="modalPaymentNumber">-</td>
+                                <td class="py-1 font-semibold text-slate-800 dark:text-slate-200 font-mono" id="modalPaymentNumber">-</td>
                             </tr>
                             <tr>
                                 <td class="py-1 text-slate-450 dark:text-slate-555">Atas Nama:</td>
@@ -187,14 +187,14 @@ foreach ($all_items as $item) {
                     </div>
                     <form id="statusForm" action="index.php?page=admin_order_process&action=update_status" method="POST" class="flex items-center space-x-2">
                         <input type="hidden" name="order_id" id="statusOrderId">
-                        <select name="status" id="statusSelect" class="text-xs px-3.5 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-850 transition">
+                        <select name="status" id="statusSelect" class="text-xs px-3.5 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 transition">
                             <option value="pending">Pending</option>
                             <option value="paid">Paid (Telah Dibayar)</option>
                             <option value="shipped">Shipped (Dikirim)</option>
                             <option value="done">Done (Selesai)</option>
                             <option value="cancelled">Cancelled (Dibatalkan)</option>
                         </select>
-                        <button type="submit" class="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-indigo-650/10 active:scale-[0.98]">
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-indigo-600/10 active:scale-[0.98]">
                             Update
                         </button>
                     </form>
@@ -203,14 +203,14 @@ foreach ($all_items as $item) {
 
             <!-- Modal Footer -->
             <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-800/50">
-                <button type="button" onclick="closeOrderModal()" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-250 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm transition">Tutup</button>
+                <button type="button" onclick="closeOrderModal()" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm transition">Tutup</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/sweetalert2.all.min.js"></script>
 <script>
     const orderModal = document.getElementById('orderModal');
     const modalOrderTitle = document.getElementById('modalOrderTitle');
@@ -283,7 +283,7 @@ foreach ($all_items as $item) {
             </tr>
             <tr class="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
                 <td colspan="3" class="p-3 text-right font-extrabold text-slate-800 dark:text-white text-sm">Total Pembayaran:</td>
-                <td class="p-3 text-right pr-4 font-extrabold text-indigo-650 dark:text-indigo-400 text-sm font-mono">Rp ${grandTotal.toLocaleString('id-ID')}</td>
+                <td class="p-3 text-right pr-4 font-extrabold text-indigo-600 dark:text-indigo-400 text-sm font-mono">Rp ${grandTotal.toLocaleString('id-ID')}</td>
             </tr>
         `;
 
@@ -302,7 +302,7 @@ foreach ($all_items as $item) {
         } else if (status === 'done') {
             badgeHtml = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400">Done (Selesai)</span>';
         } else if (status === 'cancelled') {
-            badgeHtml = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455">Cancelled (Dibatalkan)</span>';
+            badgeHtml = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400">Cancelled (Dibatalkan)</span>';
         }
         statusBadgeContainer.innerHTML = badgeHtml;
     }
@@ -341,7 +341,7 @@ foreach ($all_items as $item) {
                         } else if (response.status === 'done') {
                             tableBadge = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400">Done</span>';
                         } else if (response.status === 'cancelled') {
-                            tableBadge = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455">Cancelled</span>';
+                            tableBadge = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400">Cancelled</span>';
                         }
                         orderRow.find('.status-cell').html(tableBadge);
 

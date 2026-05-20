@@ -56,9 +56,11 @@ if (count($ids) > 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Pro-Store CMS</title>
+    <title>Checkout - NusaBay</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/tailwind.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -80,7 +82,7 @@ if (count($ids) > 0) {
         }
     </script>
     <!-- Google Fonts Outfit & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/fonts.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -97,8 +99,20 @@ if (count($ids) > 0) {
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex justify-between items-center h-20">
                 <a href="index.php?page=home" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:opacity-85 transition font-display flex items-center space-x-2">
-                    <span class="h-9 w-9 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-primary/20 font-display">P</span>
-                    <span>Pro-Store <span class="text-primary">Toko</span></span>
+                    <!-- Geometric NusaBay Logo -->
+                                        <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-global)" />
+                        <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                        <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                        <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
+                        <defs>
+                            <linearGradient id="logo-grad-nav-global" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#6366f1"/>
+                                <stop offset="1" stop-color="#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>Nusa<span class="text-primary">Bay</span></span>
                 </a>
                 <div class="flex items-center space-x-6">
                     <a href="index.php?page=cart" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center space-x-1.5">
@@ -134,6 +148,7 @@ if (count($ids) > 0) {
                 <div id="checkout-alert"></div>
 
                 <form id="checkout-form" action="index.php?page=checkout_process" method="POST" class="space-y-6">
+                    <input type="hidden" name="promo_code_id" id="hidden_promo_id" value="">
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nama Penerima</label>
                         <input type="text" name="customer_name" required value="<?= htmlspecialchars($_SESSION['name'] ?? '') ?>" 
@@ -163,9 +178,9 @@ if (count($ids) > 0) {
                         <?php else: ?>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <?php foreach ($active_banks as $index => $bank): ?>
-                                    <label class="relative flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:border-slate-350 dark:hover:border-slate-700 focus:outline-none transition group select-none">
+                                    <label class="relative flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none transition group select-none">
                                         <div class="flex items-center justify-between mb-2">
-                                            <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-250 font-extrabold text-[10px] rounded uppercase font-mono">
+                                            <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-[10px] rounded uppercase font-mono">
                                                 <?= htmlspecialchars($bank['bank_name']) ?>
                                             </span>
                                             <input type="radio" name="bank_account_id" value="<?= $bank['id'] ?>" required <?= $index === 0 ? 'checked' : '' ?>
@@ -195,17 +210,41 @@ if (count($ids) > 0) {
                 <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
                     <?php foreach ($cart_items as $item): ?>
                         <div class="flex justify-between text-xs">
-                            <span class="text-slate-500 dark:text-slate-400 truncate mr-3"><?= htmlspecialchars($item['name']) ?> <span class="text-slate-400 dark:text-slate-500">x<?= $item['qty'] ?></span></span>
-                            <span class="text-slate-800 dark:text-slate-250 font-bold whitespace-nowrap font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
+                            <span class="text-slate-600 dark:text-slate-300 truncate mr-3"><?= htmlspecialchars($item['name']) ?> <span class="text-slate-400 dark:text-slate-500">x<?= $item['qty'] ?></span></span>
+                            <span class="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
 
                 <div class="border-t border-slate-100 dark:border-slate-800 pt-4 flex justify-between items-center mb-2">
-                    <span class="text-slate-700 dark:text-slate-400 text-xs font-bold">Total Sementara</span>
-                    <span class="text-slate-900 dark:text-white font-bold font-mono">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
+                    <span class="text-slate-600 dark:text-slate-300 text-xs font-bold">Total Sementara</span>
+                    <span class="text-slate-900 dark:text-white font-bold font-mono" id="summary-subtotal">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
                 </div>
-                <div class="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500 mb-6 font-semibold">
+                
+                <!-- Discount Promo Widget -->
+                <div class="hidden justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-4" id="promo-discount-row">
+                    <span>Diskon Promo (<span id="promo-code-applied"></span>)</span>
+                    <span class="font-mono">-Rp <span id="promo-discount-value">0</span></span>
+                </div>
+
+                <div class="border-t border-slate-100 dark:border-slate-800 pt-4 flex justify-between items-center mb-2">
+                    <span class="text-slate-800 dark:text-white text-sm font-bold">Total Tagihan</span>
+                    <span class="text-primary text-xl font-extrabold font-mono" id="summary-total">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
+                </div>
+
+                <!-- Promo Input Form Widget -->
+                <div class="border-t border-slate-100 dark:border-slate-800 pt-4 mb-4">
+                    <label class="block text-slate-700 dark:text-slate-300 text-xs font-bold mb-2">Punya Kode Promo?</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="promo-input" placeholder="Masukkan kode promo" class="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3 py-1.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs uppercase font-mono">
+                        <button type="button" id="btn-apply-promo" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600 text-xs font-bold rounded-xl transition">
+                            Terapkan
+                        </button>
+                    </div>
+                    <p id="promo-status-msg" class="text-[10px] mt-1.5 hidden font-semibold"></p>
+                </div>
+
+                <div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mb-6 font-semibold">
                     <span>Kode Unik Transfer</span>
                     <span class="font-bold text-amber-600 dark:text-amber-500">(Dibuat otomatis)</span>
                 </div>
@@ -224,12 +263,12 @@ if (count($ids) > 0) {
     <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
         <div class="max-w-6xl mx-auto px-6 text-center text-xs">
-            <p>&copy; <?= date('Y') ?> Pro-Store CMS. Powered by Mini-Framework.</p>
+            <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
             // Theme toggle logic
@@ -255,6 +294,56 @@ if (count($ids) > 0) {
                     themeToggleMoon.classList.add('hidden');
                     themeToggleSun.classList.remove('hidden');
                 }
+            });
+
+            // Promo Code Apply Logic
+            let subtotalVal = <?= $total_price ?>;
+            let appliedPromoId = null;
+
+            $('#btn-apply-promo').on('click', function() {
+                const code = $('#promo-input').val().trim();
+                const statusMsg = $('#promo-status-msg');
+                
+                if (code === '') {
+                    statusMsg.text('Masukkan kode promo terlebih dahulu.').removeClass().addClass('text-[10px] mt-1.5 font-semibold text-rose-500').show();
+                    return;
+                }
+
+                statusMsg.text('Memeriksa...').removeClass().addClass('text-[10px] mt-1.5 font-semibold text-slate-400').show();
+
+                $.ajax({
+                    url: 'index.php?page=validate_promo',
+                    type: 'POST',
+                    data: { code: code, total_price: subtotalVal },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            appliedPromoId = response.promo_id;
+                            $('#hidden_promo_id').value = response.promo_id; // Set target id
+                            document.getElementById('hidden_promo_id').value = response.promo_id;
+                            
+                            statusMsg.text(response.message).removeClass().addClass('text-[10px] mt-1.5 font-semibold text-emerald-500').show();
+                            
+                            // Update values
+                            $('#promo-code-applied').text(response.code);
+                            $('#promo-discount-value').text(new Intl.NumberFormat('id-ID').format(response.discount_amount));
+                            $('#promo-discount-row').removeClass('hidden').addClass('flex');
+                            
+                            const finalTotal = subtotalVal - response.discount_amount;
+                            $('#summary-total').text('Rp ' + new Intl.NumberFormat('id-ID').format(finalTotal));
+                        } else {
+                            statusMsg.text(response.message).removeClass().addClass('text-[10px] mt-1.5 font-semibold text-rose-500').show();
+                            
+                            // Reset values
+                            $('#promo-discount-row').removeClass('flex').addClass('hidden');
+                            $('#summary-total').text('Rp ' + new Intl.NumberFormat('id-ID').format(subtotalVal));
+                            document.getElementById('hidden_promo_id').value = "";
+                        }
+                    },
+                    error: function() {
+                        statusMsg.text('Terjadi kesalahan koneksi sistem.').removeClass().addClass('text-[10px] mt-1.5 font-semibold text-rose-500').show();
+                    }
+                });
             });
 
             // AJAX Form Submit

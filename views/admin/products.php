@@ -1,8 +1,14 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
+// Fetch all categories
+$categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
 
-// Fetch all products
-$stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
+// Fetch all products with category
+$stmt = $pdo->query("
+    SELECT p.*, c.name as category_name 
+    FROM products p 
+    LEFT JOIN categories c ON p.category_id = c.id 
+    ORDER BY p.id DESC
+");
 $products = $stmt->fetchAll();
 ?>
 
@@ -12,7 +18,7 @@ $products = $stmt->fetchAll();
         <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-display">Kelola Produk</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tambah, edit, atau hapus katalog produk yang tampil di toko online Anda.</p>
     </div>
-    <button onclick="openAddModal()" class="flex items-center space-x-2 bg-indigo-650 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-indigo-650/10 transition active:scale-[0.98]">
+    <button onclick="openAddModal()" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/10 transition active:scale-[0.98]">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -28,6 +34,7 @@ $products = $stmt->fetchAll();
                 <tr class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700 text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
                     <th class="p-4 pl-6 w-20">Gambar</th>
                     <th class="p-4">Nama Produk</th>
+                    <th class="p-4">Kategori</th>
                     <th class="p-4">Harga</th>
                     <th class="p-4">Stok</th>
                     <th class="p-4 text-center">Aksi</th>
@@ -40,7 +47,7 @@ $products = $stmt->fetchAll();
                     </tr>
                 <?php else: ?>
                     <?php foreach ($products as $product): ?>
-                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition product-row bg-white dark:bg-slate-800" data-id="<?= $product['id'] ?>">
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition product-row bg-white dark:bg-slate-800" data-id="<?= $product['id'] ?>">
                             <td class="p-4 pl-6">
                                 <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/100x100') ?>" 
                                      alt="<?= htmlspecialchars($product['name']) ?>" 
@@ -50,6 +57,11 @@ $products = $stmt->fetchAll();
                                 <div class="font-semibold text-slate-800 dark:text-slate-200"><?= htmlspecialchars($product['name']) ?></div>
                                 <div class="text-xs text-slate-400 dark:text-slate-500 line-clamp-1 mt-0.5"><?= htmlspecialchars($product['description'] ?? '') ?></div>
                             </td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300">
+                                    <?= htmlspecialchars($product['category_name'] ?? 'Uncategorized') ?>
+                                </span>
+                            </td>
                             <td class="p-4 font-bold text-slate-800 dark:text-slate-200 font-mono">Rp <?= number_format($product['price'], 0, ',', '.') ?></td>
                             <td class="p-4">
                                 <?php if ($product['stock'] > 5): ?>
@@ -57,14 +69,14 @@ $products = $stmt->fetchAll();
                                 <?php elseif ($product['stock'] > 0): ?>
                                     <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 font-mono"><?= $product['stock'] ?> pcs</span>
                                 <?php else: ?>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-455">Habis</span>
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400">Habis</span>
                                 <?php endif; ?>
                             </td>
                             <td class="p-4">
                                 <div class="flex items-center justify-center space-x-2">
                                     <button 
                                         onclick="openEditModal(<?= htmlspecialchars(json_encode($product)) ?>)"
-                                        class="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-750 transition" 
+                                        class="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition" 
                                         title="Edit">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -72,7 +84,7 @@ $products = $stmt->fetchAll();
                                     </button>
                                     <button 
                                         data-id="<?= $product['id'] ?>"
-                                        class="btn-delete-product p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-750 transition" 
+                                        class="btn-delete-product p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition" 
                                         title="Hapus">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -98,7 +110,7 @@ $products = $stmt->fetchAll();
             <!-- Modal Header -->
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white font-display" id="modalTitle">Tambah Produk Baru</h3>
-                <button onclick="closeModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none">
+                <button onclick="closeModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -121,6 +133,17 @@ $products = $stmt->fetchAll();
                         <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Deskripsi</label>
                         <textarea name="description" id="prodDesc" rows="3" required
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"></textarea>
+                    </div>
+
+                    <!-- Kategori -->
+                    <div>
+                        <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Kategori</label>
+                        <select name="category_id" id="prodCategoryId" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
+                            <option value="">-- Pilih Kategori --</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -154,16 +177,16 @@ $products = $stmt->fetchAll();
 
                 <!-- Modal Actions -->
                 <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-3 bg-slate-50 dark:bg-slate-800/50">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-250 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm transition">Batal</button>
-                    <button type="submit" id="btn-save-product" class="px-5 py-2.5 bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md shadow-indigo-650/10 transition active:scale-[0.98]">Simpan</button>
+                    <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm transition">Batal</button>
+                    <button type="submit" id="btn-save-product" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md shadow-indigo-600/10 transition active:scale-[0.98]">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/sweetalert2.all.min.js"></script>
 <script>
     const modal = document.getElementById('productModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -172,6 +195,7 @@ $products = $stmt->fetchAll();
     const prodId = document.getElementById('prodId');
     const prodName = document.getElementById('prodName');
     const prodDesc = document.getElementById('prodDesc');
+    const prodCategoryId = document.getElementById('prodCategoryId');
     const prodPrice = document.getElementById('prodPrice');
     const prodStock = document.getElementById('prodStock');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
@@ -185,6 +209,7 @@ $products = $stmt->fetchAll();
         prodId.value = "";
         prodName.value = "";
         prodDesc.value = "";
+        prodCategoryId.value = "";
         prodPrice.value = "";
         prodStock.value = "";
         prodImageFile.required = true;
@@ -201,6 +226,7 @@ $products = $stmt->fetchAll();
         prodId.value = product.id;
         prodName.value = product.name;
         prodDesc.value = product.description;
+        prodCategoryId.value = product.category_id || "";
         prodPrice.value = Math.floor(product.price);
         prodStock.value = product.stock;
         prodImageFile.required = false;

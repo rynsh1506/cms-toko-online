@@ -56,11 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Kirim email konfirmasi
             require_once __DIR__ . '/../config/mailer.php';
             $verify_link = base_url("index.php?page=verify_email&token=" . $verification_token);
-            $subject = "Verifikasi Pendaftaran Akun Pro-Store";
-            $body = "Halo $name,\n\nTerima kasih telah mendaftar di Pro-Store CMS.\n"
+            $subject = "Verifikasi Pendaftaran Akun NusaBay";
+            $body = "Halo $name,\n\nTerima kasih telah mendaftar di NusaBay.\n"
                   . "Silakan klik link berikut untuk memverifikasi akun Anda:\n"
                   . "$verify_link\n\n"
-                  . "Selamat berbelanja!\nPro-Store Team";
+                  . "Selamat berbelanja!\nNusaBay Team";
             sendMail($email, $subject, $body);
 
             $_SESSION['success'] = "Pendaftaran berhasil! Akun Anda telah aktif dan login otomatis. Silakan verifikasi email Anda (tautan verifikasi tersimulasi di logs/emails.log).";
