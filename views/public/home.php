@@ -144,7 +144,7 @@ ob_start();
                  data-id="<?= $product['id'] ?>"
                  data-category="<?= $product['category_id'] ?? '' ?>">
                 <!-- Image Container -->
-                <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
+                <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="relative block overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
                     <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
                          alt="<?= htmlspecialchars($product['name']) ?>" 
                          loading="lazy"
@@ -154,14 +154,14 @@ ob_start();
                             <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
                         </div>
                     <?php endif; ?>
-                </div>
+                </a>
                 
                 <!-- Content -->
                 <div class="p-6 flex-1 flex flex-col justify-between">
                     <div class="space-y-2.5">
-                        <h3 class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display" data-original="<?= htmlspecialchars($product['name']) ?>">
+                        <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display block" data-original="<?= htmlspecialchars($product['name']) ?>">
                             <?= htmlspecialchars($product['name']) ?>
-                        </h3>
+                        </a>
                         <p class="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed font-light">
                             <?= htmlspecialchars($product['description'] ?? '') ?>
                         </p>

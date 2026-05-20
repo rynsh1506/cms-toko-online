@@ -26,6 +26,10 @@ switch ($page) {
         require __DIR__ . '/controllers/AuthController.php';
         break;
 
+    case 'product_detail':
+        require __DIR__ . '/views/public/product_detail.php';
+        break;
+
     case 'cart':
         require __DIR__ . '/views/public/cart.php';
         break;
@@ -150,6 +154,11 @@ switch ($page) {
     case 'admin_category_process':
         checkAdmin();
         require __DIR__ . '/controllers/CategoryController.php';
+        break;
+
+    case 'admin_variant_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/VariantController.php';
         break;
 
     case 'dashboard_api':
