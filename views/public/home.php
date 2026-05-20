@@ -74,6 +74,193 @@ if (isset($_SESSION['cart'])) {
         $cart_count += $qty;
     }
 }
+
+// Determine the active category name
+$display_cat_name = 'Semua Kategori';
+if ($active_category !== 'all') {
+    foreach ($categories as $c) {
+        if ($c['id'] == $active_category) {
+            $display_cat_name = $c['name'];
+            break;
+        }
+    }
+}
+
+// 1. Capture Active Filter Bubbles HTML
+ob_start();
+?>
+<?php if ($active_category !== 'all' || $search_query !== ''): ?>
+    <div class="flex flex-wrap gap-2.5 mb-8 items-center">
+        <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 mr-1">Filter Aktif:</span>
+        
+        <!-- Category Bubble -->
+        <?php if ($active_category !== 'all'): ?>
+            <div class="flex items-center space-x-1.5 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light px-4 py-2 rounded-full text-xs font-extrabold border border-primary/20 shadow-sm select-none">
+                <span>Kategori: <?= htmlspecialchars($display_cat_name) ?></span>
+                <a href="#" data-action="clear-cat" class="hover:bg-primary/20 p-0.5 rounded-full transition duration-150 inline-flex items-center justify-center cursor-pointer text-primary">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            </div>
+        <?php endif; ?>
+
+        <!-- Search Query Bubble -->
+        <?php if ($search_query !== ''): ?>
+            <div class="flex items-center space-x-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-350 px-4 py-2 rounded-full text-xs font-extrabold border border-indigo-150 dark:border-indigo-900/60 shadow-sm select-none">
+                <span>Pencarian: "<?= htmlspecialchars($search_query) ?>"</span>
+                <a href="#" data-action="clear-q" class="hover:bg-indigo-100 dark:hover:bg-indigo-900/50 p-0.5 rounded-full transition duration-150 inline-flex items-center justify-center cursor-pointer text-indigo-600 dark:text-indigo-350">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            </div>
+        <?php endif; ?>
+
+        <!-- Reset All Button -->
+        <a href="#" data-action="clear-all" class="text-xs font-bold text-rose-600 dark:text-rose-450 hover:underline ml-2 transition">
+            Bersihkan Semua
+        </a>
+    </div>
+<?php endif; ?>
+<?php
+$bubbles_html = ob_get_clean();
+
+// 2. Capture Products Grid HTML
+ob_start();
+?>
+<?php if (empty($products)): ?>
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-md mx-auto">
+        <svg class="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <p class="text-slate-400 font-semibold"><?= ($search_query !== '' || $active_category !== 'all') ? 'Produk tidak ditemukan' : 'Belum ada produk' ?></p>
+        <p class="text-xs text-slate-400 mt-1"><?= ($search_query !== '' || $active_category !== 'all') ? 'Coba masukkan kata kunci pencarian atau ganti filter kategori.' : 'Nantikan pembaruan katalog produk kami segera.' ?></p>
+    </div>
+<?php else: ?>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <?php foreach ($products as $product): ?>
+            <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group" 
+                 data-id="<?= $product['id'] ?>"
+                 data-category="<?= $product['category_id'] ?? '' ?>">
+                <!-- Image Container -->
+                <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
+                    <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
+                         alt="<?= htmlspecialchars($product['name']) ?>" 
+                         loading="lazy"
+                         class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
+                    <?php if ($product['stock'] <= 0): ?>
+                        <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
+                            <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6 flex-1 flex flex-col justify-between">
+                    <div class="space-y-2.5">
+                        <h3 class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display" data-original="<?= htmlspecialchars($product['name']) ?>">
+                            <?= htmlspecialchars($product['name']) ?>
+                        </h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed font-light">
+                            <?= htmlspecialchars($product['description'] ?? '') ?>
+                        </p>
+                    </div>
+                    
+                    <div class="mt-6 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Harga</span>
+                            <span class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                Rp <?= number_format($product['price'], 0, ',', '.') ?>
+                            </span>
+                        </div>
+                        
+                        <?php if ($product['stock'] > 0): ?>
+                            <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
+                                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-slate-100/10 cursor-pointer">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <button disabled class="bg-slate-50 dark:bg-slate-800/40 text-slate-350 dark:text-slate-650 p-3 rounded-2xl cursor-not-allowed">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+<?php
+$grid_html = ob_get_clean();
+
+// 3. Capture Pagination HTML
+ob_start();
+?>
+<?php if ($total_pages > 1): ?>
+    <div class="flex items-center justify-center space-x-2 mt-16">
+        <!-- First & Prev -->
+        <?php if ($page_num > 1): ?>
+            <a href="#" data-page="1" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+            </a>
+            <a href="#" data-page="<?= $page_num - 1 ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+        <?php endif; ?>
+
+        <!-- Pages -->
+        <?php
+        $start_page = max(1, $page_num - 2);
+        $end_page = min($total_pages, $page_num + 2);
+        for ($i = $start_page; $i <= $end_page; $i++):
+        ?>
+            <a href="#" data-page="<?= $i ?>" class="px-4 py-2 rounded-xl border transition duration-150 font-bold text-sm <?= $i === $page_num ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'border-slate-200 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800' ?>">
+                <?= $i ?>
+            </a>
+        <?php endfor; ?>
+
+        <!-- Next & Last -->
+        <?php if ($page_num < $total_pages): ?>
+            <a href="#" data-page="<?= $page_num + 1 ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="#" data-page="<?= $total_pages ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+            </a>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+<?php
+$pagination_html = ob_get_clean();
+
+// AJAX check
+if (isset($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'bubbles' => $bubbles_html,
+        'grid' => $grid_html,
+        'pagination' => $pagination_html,
+        'cat_name' => $display_cat_name,
+        'active_cat' => $active_category
+    ]);
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -345,154 +532,19 @@ if (isset($_SESSION['cart'])) {
         </div>
 
         <!-- Active Filter Tags / Bubbles -->
-        <?php if ($active_category !== 'all' || $search_query !== ''): ?>
-            <div class="flex flex-wrap gap-2.5 mb-8 items-center">
-                <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 mr-1">Filter Aktif:</span>
-                
-                <!-- Category Bubble -->
-                <?php if ($active_category !== 'all'): ?>
-                    <div class="flex items-center space-x-1.5 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light px-4 py-2 rounded-full text-xs font-extrabold border border-primary/20 shadow-sm select-none">
-                        <span>Kategori: <?= htmlspecialchars($display_cat_name) ?></span>
-                        <a href="index.php?page=home&cat=all<?= !empty($search_query) ? '&q=' . urlencode($search_query) : '' ?>" class="hover:bg-primary/20 p-0.5 rounded-full transition duration-150 inline-flex items-center justify-center cursor-pointer text-primary">
-                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Search Query Bubble -->
-                <?php if ($search_query !== ''): ?>
-                    <div class="flex items-center space-x-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-350 px-4 py-2 rounded-full text-xs font-extrabold border border-indigo-150 dark:border-indigo-900/60 shadow-sm select-none">
-                        <span>Pencarian: "<?= htmlspecialchars($search_query) ?>"</span>
-                        <a href="index.php?page=home<?= $active_category !== 'all' ? '&cat=' . urlencode($active_category) : '' ?>" class="hover:bg-indigo-100 dark:hover:bg-indigo-900/50 p-0.5 rounded-full transition duration-150 inline-flex items-center justify-center cursor-pointer text-indigo-600 dark:text-indigo-350">
-                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Reset All Button -->
-                <a href="index.php?page=home" class="text-xs font-bold text-rose-600 dark:text-rose-450 hover:underline ml-2 transition">
-                    Bersihkan Semua
-                </a>
-            </div>
-        <?php endif; ?>
+        <div id="filter-bubbles-container" class="mb-6">
+            <?= $bubbles_html ?>
+        </div>
         
-        <?php if (empty($products)): ?>
-            <div class="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-md mx-auto">
-                <svg class="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <p class="text-slate-400 font-semibold"><?= ($search_query !== '' || $active_category !== 'all') ? 'Produk tidak ditemukan' : 'Belum ada produk' ?></p>
-                <p class="text-xs text-slate-400 mt-1"><?= ($search_query !== '' || $active_category !== 'all') ? 'Coba masukkan kata kunci pencarian atau ganti filter kategori.' : 'Nantikan pembaruan katalog produk kami segera.' ?></p>
-            </div>
-        <?php else: ?>
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                <?php foreach ($products as $product): ?>
-                    <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group" 
-                         data-id="<?= $product['id'] ?>"
-                         data-category="<?= $product['category_id'] ?? '' ?>">
-                        <!-- Image Container -->
-                        <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
-                            <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
-                                 alt="<?= htmlspecialchars($product['name']) ?>" 
-                                 loading="lazy"
-                                 class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
-                            <?php if ($product['stock'] <= 0): ?>
-                                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
-                                    <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="p-6 flex-1 flex flex-col justify-between">
-                            <div class="space-y-2.5">
-                                <h3 class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display" data-original="<?= htmlspecialchars($product['name']) ?>">
-                                    <?= htmlspecialchars($product['name']) ?>
-                                </h3>
-                                <p class="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed font-light">
-                                    <?= htmlspecialchars($product['description'] ?? '') ?>
-                                </p>
-                            </div>
-                            
-                            <div class="mt-6 flex items-center justify-between">
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Harga</span>
-                                    <span class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
-                                        Rp <?= number_format($product['price'], 0, ',', '.') ?>
-                                    </span>
-                                </div>
-                                
-                                <?php if ($product['stock'] > 0): ?>
-                                    <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
-                                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-slate-100/10 cursor-pointer">
-                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <button disabled class="bg-slate-50 dark:bg-slate-800/40 text-slate-350 dark:text-slate-650 p-3 rounded-2xl cursor-not-allowed">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                        </svg>
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <!-- Pagination Controls -->
-            <?php if ($total_pages > 1): ?>
-                <div class="flex items-center justify-center space-x-2 mt-16">
-                    <!-- First & Prev -->
-                    <?php if ($page_num > 1): ?>
-                        <a href="index.php?page=home&p=1<?= !empty($search_query) ? '&q=' . urlencode($search_query) : '' ?><?= $active_category !== 'all' ? '&cat=' . urlencode($active_category) : '' ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                            </svg>
-                        </a>
-                        <a href="index.php?page=home&p=<?= $page_num - 1 ?><?= !empty($search_query) ? '&q=' . urlencode($search_query) : '' ?><?= $active_category !== 'all' ? '&cat=' . urlencode($active_category) : '' ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </a>
-                    <?php endif; ?>
-
-                    <!-- Pages -->
-                    <?php
-                    $start_page = max(1, $page_num - 2);
-                    $end_page = min($total_pages, $page_num + 2);
-                    for ($i = $start_page; $i <= $end_page; $i++):
-                    ?>
-                        <a href="index.php?page=home&p=<?= $i ?><?= !empty($search_query) ? '&q=' . urlencode($search_query) : '' ?><?= $active_category !== 'all' ? '&cat=' . urlencode($active_category) : '' ?>" class="px-4 py-2 rounded-xl border transition duration-150 font-bold text-sm <?= $i === $page_num ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'border-slate-200 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800' ?>">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
-
-                    <!-- Next & Last -->
-                    <?php if ($page_num < $total_pages): ?>
-                        <a href="index.php?page=home&p=<?= $page_num + 1 ?><?= !empty($search_query) ? '&q=' . urlencode($search_query) : '' ?><?= $active_category !== 'all' ? '&cat=' . urlencode($active_category) : '' ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                        <a href="index.php?page=home&p=<?= $total_pages ?><?= !empty($search_query) ? '&q=' . urlencode($search_query) : '' ?><?= $active_category !== 'all' ? '&cat=' . urlencode($active_category) : '' ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
+        <!-- Products Grid / Empty State -->
+        <div id="catalog-products-container" class="w-full min-h-[300px]">
+            <?= $grid_html ?>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div id="catalog-pagination-container">
+            <?= $pagination_html ?>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -582,6 +634,50 @@ if (isset($_SESSION['cart'])) {
                 startSlideShow();
             }
 
+            // AJAX Catalog Reload Function
+            function loadCatalog(page = 1, category = null, query = null) {
+                if (category === null) category = $('#selected-category-input').val();
+                if (query === null) query = $('#product-search').val();
+
+                const url = `index.php?page=home&ajax=1&p=${page}&cat=${encodeURIComponent(category)}&q=${encodeURIComponent(query)}`;
+
+                // Show loading state by opacity
+                $('#catalog-products-container').addClass('opacity-50 pointer-events-none transition duration-150');
+
+                $.getJSON(url, function(data) {
+                    // Update DOM
+                    $('#filter-bubbles-container').html(data.bubbles);
+                    $('#catalog-products-container').html(data.grid).removeClass('opacity-50 pointer-events-none');
+                    $('#catalog-pagination-container').html(data.pagination);
+
+                    // Update category dropdown display text & value
+                    $('#category-dropdown-btn span').text(data.cat_name);
+                    $('#selected-category-input').val(data.active_cat);
+
+                    // Update dropdown list items active state
+                    $('.category-dropdown-item').removeClass('bg-primary/5 text-primary dark:bg-primary/20 dark:text-white').find('svg').remove();
+                    const activeItem = $(`.category-dropdown-item[data-value="${data.active_cat}"]`);
+                    activeItem.addClass('bg-primary/5 text-primary dark:bg-primary/20 dark:text-white');
+                    activeItem.append(`
+                        <svg class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    `);
+
+                    // Update search input if it was changed from bubble clear
+                    if (query !== $('#product-search').val()) {
+                        $('#product-search').val(query);
+                    }
+
+                    // Update address bar history
+                    const nextURL = `index.php?page=home&p=${page}&cat=${encodeURIComponent(category)}&q=${encodeURIComponent(query)}`;
+                    window.history.pushState({ path: nextURL }, '', nextURL);
+                }).fail(function() {
+                    $('#catalog-products-container').removeClass('opacity-50 pointer-events-none');
+                    showToast('Gagal memuat produk.', 'error');
+                });
+            }
+
             // Custom Category Dropdown Toggle & Selection Logic
             const dropdownBtn = $('#category-dropdown-btn');
             const dropdownMenu = $('#category-dropdown-menu');
@@ -607,10 +703,56 @@ if (isset($_SESSION['cart'])) {
                     categoryInput.val(val);
                     dropdownMenu.addClass('hidden');
                     dropdownArrow.removeClass('rotate-180');
-                    // Submit the form
-                    dropdownBtn.closest('form').submit();
+                    loadCatalog(1, val, null);
                 });
             }
+
+            // Intercept search form submit & live input search with debounce
+            const searchForm = $('#product-search').closest('form');
+            if (searchForm.length) {
+                searchForm.on('submit', function(e) {
+                    e.preventDefault();
+                    loadCatalog(1);
+                });
+            }
+
+            let searchTimeout = null;
+            $('#product-search').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    loadCatalog(1);
+                }, 300);
+            });
+
+            // Delegate Filter Bubbles Click Events
+            $(document).on('click', '[data-action="clear-cat"]', function(e) {
+                e.preventDefault();
+                loadCatalog(1, 'all', null);
+            });
+
+            $(document).on('click', '[data-action="clear-q"]', function(e) {
+                e.preventDefault();
+                loadCatalog(1, null, '');
+            });
+
+            $(document).on('click', '[data-action="clear-all"]', function(e) {
+                e.preventDefault();
+                loadCatalog(1, 'all', '');
+            });
+
+            // Delegate Pagination Click Events
+            $(document).on('click', '#catalog-pagination-container a[data-page]', function(e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                loadCatalog(page);
+                // Scroll smoothly to catalog top
+                const target = $("#products");
+                if (target.length) {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 80
+                    }, 400);
+                }
+            });
 
             // Toast helper
             function showToast(message, type = 'success') {
@@ -650,8 +792,8 @@ if (isset($_SESSION['cart'])) {
                 }, 3000);
             }
 
-            // AJAX add to cart
-            $('.add-to-cart-form').on('submit', function(e) {
+            // AJAX add to cart (delegated for dynamically loaded cards)
+            $(document).on('submit', '.add-to-cart-form', function(e) {
                 e.preventDefault();
                 const form = $(this);
                 const btn = form.find('button[type="submit"]');
