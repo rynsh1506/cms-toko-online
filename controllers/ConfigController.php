@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['success'] = "Pengaturan berhasil diperbarui!";
     }
     
-    redirect('index.php?page=page_builder');
+    redirect('index.php?page=admin_banners');
 } else {
-    redirect('index.php?page=page_builder');
+    redirect('index.php?page=admin_banners');
 }

@@ -35,7 +35,7 @@ $banks = $stmt->fetchAll();
                     class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
             </div>
 
-            <button type="submit" id="btn-save-bank" class="w-full bg-indigo-650 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md shadow-indigo-650/10 transition active:scale-[0.98]">
+            <button type="submit" id="btn-save-bank" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md shadow-indigo-600/10 transition active:scale-[0.98]">
                 Simpan Rekening
             </button>
         </form>
@@ -57,14 +57,14 @@ $banks = $stmt->fetchAll();
                         <th class="p-4 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="bank-table-body" class="divide-y divide-slate-50 dark:divide-slate-750 text-sm">
+                <tbody id="bank-table-body" class="divide-y divide-slate-50 dark:divide-slate-700 text-sm">
                     <?php if (empty($banks)): ?>
                         <tr id="empty-bank-row">
-                            <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-550 bg-white dark:bg-slate-800">Belum ada rekening terdaftar. Tambahkan rekening bank di sebelah kiri.</td>
+                            <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800">Belum ada rekening terdaftar. Tambahkan rekening bank di sebelah kiri.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($banks as $bank): ?>
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition bank-row bg-white dark:bg-slate-800" data-id="<?= $bank['id'] ?>">
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition bank-row bg-white dark:bg-slate-800" data-id="<?= $bank['id'] ?>">
                                 <td class="p-4 pl-6 font-bold text-slate-800 dark:text-slate-200">
                                     <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs uppercase font-mono"><?= htmlspecialchars($bank['bank_name']) ?></span>
                                 </td>
@@ -81,7 +81,7 @@ $banks = $stmt->fetchAll();
                                 </td>
                                 <td class="p-4 text-center">
                                     <button type="button" data-id="<?= $bank['id'] ?>"
-                                       class="btn-delete-bank inline-block p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-750 transition" 
+                                       class="btn-delete-bank inline-block p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition" 
                                        title="Hapus">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -97,8 +97,8 @@ $banks = $stmt->fetchAll();
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/sweetalert2.all.min.js"></script>
 <script>
     $(document).ready(function() {
         // AJAX Add Bank Account
@@ -219,7 +219,7 @@ $banks = $stmt->fetchAll();
                                     if ($('.bank-row').length === 0) {
                                         $('#bank-table-body').html(`
                                             <tr id="empty-bank-row">
-                                                <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-550 bg-white dark:bg-slate-800">Belum ada rekening terdaftar. Tambahkan rekening bank di sebelah kiri.</td>
+                                                <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800">Belum ada rekening terdaftar. Tambahkan rekening bank di sebelah kiri.</td>
                                             </tr>
                                         `);
                                     }

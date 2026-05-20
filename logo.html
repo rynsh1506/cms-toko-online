@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NusaBay - Logo Showcase</title>
+    <!-- Google Fonts Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;650;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 48px;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-cols: 1fr;
+            gap: 40px;
+        }
+
+        @media (min-width: 768px) {
+            .showcase-grid {
+                grid-template-cols: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent);
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        /* --- THE LOGO MARK & WORDMARK --- */
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+        }
+
+        /* Geometric N Logo Mark */
+        .logo-mark {
+            width: 48px;
+            height: 48px;
+            position: relative;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* White overlapping geometric 'N' shape inside */
+        .logo-mark::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 32px;
+            background: #ffffff;
+            left: 10px;
+            top: 8px;
+            border-radius: 2px;
+        }
+
+        .logo-mark::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 32px;
+            background: #ffffff;
+            right: 10px;
+            top: 8px;
+            border-radius: 2px;
+        }
+
+        .logo-mark-diagonal {
+            position: absolute;
+            width: 8px;
+            height: 36px;
+            background: #ffffff;
+            left: 20px;
+            top: 6px;
+            transform: rotate(-32deg);
+            transform-origin: center;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+        }
+
+        .brand-name span {
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Favicon 32x32 view */
+        .favicon-preview {
+            width: 64px;
+            height: 64px;
+            background: #1e293b;
+            border: 2px dashed #475569;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .favicon-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .favicon-logo::before {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 20px;
+            background: #ffffff;
+            left: 7px;
+            top: 6px;
+            border-radius: 1.5px;
+        }
+
+        .favicon-logo::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 20px;
+            background: #ffffff;
+            right: 7px;
+            top: 6px;
+            border-radius: 1.5px;
+        }
+
+        .favicon-logo-diagonal {
+            position: absolute;
+            width: 5px;
+            height: 22px;
+            background: #ffffff;
+            left: 13.5px;
+            top: 5px;
+            transform: rotate(-32deg);
+            transform-origin: center;
+            border-radius: 1.5px;
+        }
+
+        .light-theme-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+        
+        .light-theme-card .card-title {
+            color: #64748b;
+        }
+
+        .light-theme-card .brand-name {
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Logo & Branding NusaBay</h1>
+        <p class="subtitle">Desain Logo 100% Pure HTML/CSS & Favicon Spesifikasi</p>
+
+        <div class="showcase-grid">
+            <!-- Dark Theme Logo -->
+            <div class="card">
+                <div class="card-title">Tema Gelap (Dark Mode)</div>
+                <div class="brand-logo">
+                    <div class="logo-mark">
+                        <div class="logo-mark-diagonal"></div>
+                    </div>
+                    <div class="brand-name">Nusa<span>Bay</span></div>
+                </div>
+            </div>
+
+            <!-- Light Theme Logo -->
+            <div class="card light-theme-card">
+                <div class="card-title">Tema Terang (Light Mode)</div>
+                <div class="brand-logo">
+                    <div class="logo-mark">
+                        <div class="logo-mark-diagonal"></div>
+                    </div>
+                    <div class="brand-name">Nusa<span>Bay</span></div>
+                </div>
+            </div>
+
+            <!-- Favicon Showcase -->
+            <div class="card">
+                <div class="card-title">Favicon Grid (32px / 64px)</div>
+                <div class="favicon-preview">
+                    <div class="favicon-logo">
+                        <div class="favicon-logo-diagonal"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branding Tokens -->
+            <div class="card" style="text-align: left; align-items: flex-start;">
+                <div class="card-title" style="margin-bottom: 15px;">Palet Warna & Identitas</div>
+                <div style="font-size: 13px; line-height: 1.6; color: #94a3b8;">
+                    <strong style="color: #ffffff;">Nama:</strong> NusaBay<br>
+                    <strong style="color: #ffffff;">Warna Utama:</strong> Indigo (#6366f1) & Purple (#a855f7)<br>
+                    <strong style="color: #ffffff;">Makna:</strong> Nusantara Gateway Marketplace yang premium, stabil, dan dinamis.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

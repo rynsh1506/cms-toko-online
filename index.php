@@ -46,6 +46,10 @@ switch ($page) {
         require __DIR__ . '/controllers/CheckoutController.php';
         break;
 
+    case 'validate_promo':
+        require __DIR__ . '/controllers/PromoValidateController.php';
+        break;
+
     case 'orders':
         require __DIR__ . '/views/public/orders.php';
         break;
@@ -69,11 +73,6 @@ switch ($page) {
         require __DIR__ . '/views/admin/layout.php';
         break;
 
-    case 'page_builder':
-        checkAdmin();
-        $admin_page = 'page_builder.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
 
     case 'admin_products':
         checkAdmin();
@@ -90,6 +89,18 @@ switch ($page) {
     case 'admin_orders':
         checkAdmin();
         $admin_page = 'orders.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'admin_promos':
+        checkAdmin();
+        $admin_page = 'promo_codes.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'admin_banners':
+        checkAdmin();
+        $admin_page = 'banners.php';
         require __DIR__ . '/views/admin/layout.php';
         break;
 
@@ -118,6 +129,21 @@ switch ($page) {
     case 'admin_order_process':
         checkAdmin();
         require __DIR__ . '/controllers/OrderAdminController.php';
+        break;
+
+    case 'admin_promo_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/PromoController.php';
+        break;
+
+    case 'admin_banner_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/BannerController.php';
+        break;
+
+    case 'dashboard_api':
+        checkAdmin();
+        require __DIR__ . '/controllers/DashboardApiController.php';
         break;
 
     default:

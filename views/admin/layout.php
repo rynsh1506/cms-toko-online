@@ -24,9 +24,11 @@ $current_page = $_GET['page'] ?? 'admin';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Pro-Store CMS</title>
+    <title>Admin Panel - NusaBay</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/tailwind.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -48,7 +50,7 @@ $current_page = $_GET['page'] ?? 'admin';
         }
     </script>
     <!-- Google Fonts Outfit & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/fonts.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -67,8 +69,19 @@ $current_page = $_GET['page'] ?? 'admin';
                 <!-- Brand Header -->
                 <div class="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950">
                     <a href="index.php?page=admin" class="flex items-center space-x-2">
-                        <span class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-indigo-500/30 font-display">P</span>
-                        <span class="font-extrabold text-xl tracking-tight text-white font-display">Pro-Store <span class="text-indigo-400">CMS</span></span>
+                                                <svg class="h-8 w-8 rounded-lg shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-side)" />
+                            <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                            <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                            <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
+                            <defs>
+                                <linearGradient id="logo-grad-nav-side" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#6366f1"/>
+                                    <stop offset="1" stop-color="#a855f7"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="font-extrabold text-xl tracking-tight text-white font-display">Nusa<span class="text-indigo-400">Bay</span></span>
                     </a>
                 </div>
 
@@ -79,13 +92,6 @@ $current_page = $_GET['page'] ?? 'admin';
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2 2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
                         </svg>
                         <span>Dashboard</span>
-                    </a>
-
-                    <a href="index.php?page=page_builder" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'page_builder' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        </svg>
-                        <span>Page Builder</span>
                     </a>
 
                     <a href="index.php?page=admin_products" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_products' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
@@ -100,6 +106,20 @@ $current_page = $_GET['page'] ?? 'admin';
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                         <span>Rekening Bank</span>
+                    </a>
+
+                    <a href="index.php?page=admin_promos" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_promos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0H8m12 3v10a2 2 0 01-2 2H6a2 2 0 01-2-2V11" />
+                        </svg>
+                        <span>Kode Promo</span>
+                    </a>
+
+                    <a href="index.php?page=admin_banners" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_banners' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Banner Promo</span>
                     </a>
 
                     <a href="index.php?page=admin_orders" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_orders' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
