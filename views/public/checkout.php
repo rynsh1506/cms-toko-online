@@ -21,7 +21,11 @@ $configs = [];
 foreach ($configs_raw as $c) {
     $configs[$c['section_key']] = $c['content_value'];
 }
-$primary_color = $configs['primary_color'] ?? '#2563eb';
+$primary_color = $configs['primary_color'] ?? '#6366f1';
+
+// Fetch Active Bank Accounts
+$banks_stmt = $pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1");
+$active_banks = $banks_stmt->fetchAll();
 
 // Hitung ringkasan
 $cart_items = [];
@@ -53,95 +57,164 @@ if (count($ids) > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Pro-Store CMS</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '<?= $primary_color ?>',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Init theme
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <!-- Google Fonts Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Navbar -->
-    <nav class="bg-white shadow-md">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <a href="index.php?page=home" class="text-xl font-bold text-gray-800 hover:text-gray-600 transition">
-                    Pro-Store <span class="text-[<?= $primary_color ?>]">Toko</span>
+    <nav class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.php?page=home" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:opacity-85 transition font-display flex items-center space-x-2">
+                    <span class="h-9 w-9 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-primary/20 font-display">P</span>
+                    <span>Pro-Store <span class="text-primary">Toko</span></span>
                 </a>
-                <div class="flex items-center space-x-4">
-                    <a href="index.php?page=cart" class="text-sm font-semibold text-gray-600 hover:text-gray-900 transition flex items-center space-x-1">
+                <div class="flex items-center space-x-6">
+                    <a href="index.php?page=cart" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center space-x-1.5">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        <span>Kembali ke Keranjang</span>
+                        <span>Keranjang</span>
                     </a>
-                    <?php if (isAuth()): ?>
-                        <a href="index.php?page=orders" class="text-sm font-semibold text-gray-700 hover:text-gray-900 transition">Pesanan Saya</a>
-                        <?php if ($_SESSION['role'] === 'admin'): ?>
-                            <a href="index.php?page=admin" class="text-sm font-semibold text-gray-700 hover:text-gray-900 transition">Admin Panel</a>
-                        <?php endif; ?>
-                        <a href="index.php?page=auth_process&action=logout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition">Logout</a>
-                    <?php endif; ?>
+                    
+                    <!-- Dark mode toggle -->
+                    <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                        <svg id="theme-toggle-sun" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-3.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                        </svg>
+                        <svg id="theme-toggle-moon" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <main class="max-w-6xl mx-auto px-4 py-12 flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-8">
+    <main class="max-w-6xl mx-auto px-6 py-12 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- Kolom Form Pengiriman -->
-        <div class="md:col-span-2">
-            <div class="bg-white p-8 rounded-lg shadow-md border border-gray-100">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Detail Pengiriman</h2>
+        <!-- Kolom Form Pengiriman & Metode Pembayaran -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 font-display">Detail Pengiriman</h2>
                 
-                <form action="index.php?page=checkout_process" method="POST">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Nama Penerima</label>
-                        <input type="text" name="customer_name" required value="<?= htmlspecialchars($_SESSION['name'] ?? '') ?>" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                <!-- Errors placeholder -->
+                <div id="checkout-alert"></div>
+
+                <form id="checkout-form" action="index.php?page=checkout_process" method="POST" class="space-y-6">
+                    <div>
+                        <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nama Penerima</label>
+                        <input type="text" name="customer_name" required value="<?= htmlspecialchars($_SESSION['name'] ?? '') ?>" 
+                            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
                     </div>
                     
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Nomor WhatsApp / HP</label>
-                        <input type="text" name="customer_phone" required placeholder="081234567890" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                    <div>
+                        <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nomor WhatsApp / HP</label>
+                        <input type="text" name="customer_phone" required placeholder="081234567890" 
+                            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Harap gunakan nomor aktif untuk konfirmasi pesanan via WhatsApp.</p>
                     </div>
                     
-                    <div class="mb-8">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Alamat Lengkap</label>
-                        <textarea name="customer_address" required rows="4" placeholder="Jalan, RT/RW, Kecamatan, Kota, Kode Pos" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"></textarea>
+                    <div>
+                        <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Alamat Lengkap</label>
+                        <textarea name="customer_address" required rows="3" placeholder="Jalan, RT/RW, Kecamatan, Kota, Kode Pos" 
+                            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm"></textarea>
                     </div>
 
-                    <button type="submit" class="w-full bg-[<?= $primary_color ?>] text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 transition duration-300 text-lg shadow-lg">
+                    <!-- Pilih Bank -->
+                    <div>
+                        <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-3">Pilih Metode Pembayaran</label>
+                        <?php if (empty($active_banks)): ?>
+                            <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-xl text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                                Tidak ada metode pembayaran transfer bank yang aktif saat ini. Hubungi admin toko.
+                            </div>
+                        <?php else: ?>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <?php foreach ($active_banks as $index => $bank): ?>
+                                    <label class="relative flex flex-col p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:border-slate-350 dark:hover:border-slate-700 focus:outline-none transition group select-none">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-250 font-extrabold text-[10px] rounded uppercase font-mono">
+                                                <?= htmlspecialchars($bank['bank_name']) ?>
+                                            </span>
+                                            <input type="radio" name="bank_account_id" value="<?= $bank['id'] ?>" required <?= $index === 0 ? 'checked' : '' ?>
+                                                class="h-4 w-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-700 cursor-pointer">
+                                        </div>
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 font-mono tracking-wider"><?= htmlspecialchars($bank['account_number']) ?></span>
+                                        <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-semibold">a.n. <?= htmlspecialchars($bank['account_name']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <button type="submit" id="btn-submit-checkout" <?= empty($active_banks) ? 'disabled' : '' ?>
+                        class="w-full bg-primary text-white font-bold py-3.5 px-4 rounded-2xl hover:opacity-90 active:scale-[0.98] transition text-sm shadow-xl shadow-primary/10 <?= empty($active_banks) ? 'opacity-50 cursor-not-allowed' : '' ?>">
                         Selesaikan Pesanan
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Kolom Ringkasan Pesanan -->
+        <!-- Kolom Ringkasan Pesanan (Right Column) -->
         <div>
-            <div class="bg-gray-100 p-6 rounded-lg shadow-inner border border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Ringkasan Pesanan</h3>
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm sticky top-24">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 font-display">Ringkasan Pesanan</h3>
                 
-                <div class="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
                     <?php foreach ($cart_items as $item): ?>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600 truncate mr-2"><?= htmlspecialchars($item['name']) ?> <span class="text-gray-400">x<?= $item['qty'] ?></span></span>
-                            <span class="text-gray-800 font-medium whitespace-nowrap">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-500 dark:text-slate-400 truncate mr-3"><?= htmlspecialchars($item['name']) ?> <span class="text-slate-400 dark:text-slate-500">x<?= $item['qty'] ?></span></span>
+                            <span class="text-slate-800 dark:text-slate-250 font-bold whitespace-nowrap font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
 
-                <div class="border-t border-gray-300 pt-4 flex justify-between items-center mb-2">
-                    <span class="text-gray-700 font-bold">Total Sementara</span>
-                    <span class="text-gray-900 font-bold">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
+                <div class="border-t border-slate-100 dark:border-slate-800 pt-4 flex justify-between items-center mb-2">
+                    <span class="text-slate-700 dark:text-slate-400 text-xs font-bold">Total Sementara</span>
+                    <span class="text-slate-900 dark:text-white font-bold font-mono">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
                 </div>
-                <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
-                    <span>Kode Unik</span>
-                    <span>(Akan di-generate)</span>
+                <div class="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500 mb-6 font-semibold">
+                    <span>Kode Unik Transfer</span>
+                    <span class="font-bold text-amber-600 dark:text-amber-500">(Dibuat otomatis)</span>
                 </div>
                 
-                <div class="bg-blue-50 border border-blue-200 p-3 rounded text-sm text-blue-800 flex items-start space-x-2">
-                    <svg class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div class="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 p-4 rounded-2xl text-[10px] text-indigo-700 dark:text-indigo-400 flex items-start space-x-2.5">
+                    <svg class="h-4 w-4 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p>Kode unik transfer akan ditambahkan ke total belanja Anda setelah menekan tombol "Selesaikan Pesanan".</p>
+                    <p class="leading-relaxed">Kode unik transfer 3 digit akan ditambahkan ke total belanja Anda untuk verifikasi otomatis setelah pesanan diselesaikan.</p>
                 </div>
             </div>
         </div>
@@ -149,11 +222,80 @@ if (count($ids) > 0) {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-6 mt-auto">
-        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-gray-400">
+    <footer class="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
+        <div class="max-w-6xl mx-auto px-6 text-center text-xs">
             <p>&copy; <?= date('Y') ?> Pro-Store CMS. Powered by Mini-Framework.</p>
         </div>
     </footer>
 
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Theme toggle logic
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleSun = document.getElementById('theme-toggle-sun');
+            const themeToggleMoon = document.getElementById('theme-toggle-moon');
+
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleSun.classList.remove('hidden');
+            } else {
+                themeToggleMoon.classList.remove('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    themeToggleSun.classList.add('hidden');
+                    themeToggleMoon.classList.remove('hidden');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeToggleMoon.classList.add('hidden');
+                    themeToggleSun.classList.remove('hidden');
+                }
+            });
+
+            // AJAX Form Submit
+            $('#checkout-form').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const btn = $('#btn-submit-checkout');
+                
+                btn.prop('disabled', true).text('Memproses Pesanan...');
+                $('#checkout-alert').empty();
+                
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.href = response.redirect_url;
+                        } else {
+                            $('#checkout-alert').html(`
+                                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-4 rounded-r-xl mb-6 text-xs font-semibold">
+                                    ${response.message}
+                                </div>
+                            `);
+                            btn.prop('disabled', false).text('Selesaikan Pesanan');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    },
+                    error: function() {
+                        $('#checkout-alert').html(`
+                            <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-4 rounded-r-xl mb-6 text-xs font-semibold">
+                                Terjadi kesalahan sistem saat memproses checkout. Silakan coba kembali.
+                            </div>
+                        `);
+                        btn.prop('disabled', false).text('Selesaikan Pesanan');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
