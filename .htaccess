@@ -1,0 +1,10 @@
+# Disable Directory Indexing
+Options -Indexes
+
+# Security: Block direct HTTP access to system folders
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # 403 Forbidden for config, controllers, views, and .git folders
+    RewriteRule ^(config|controllers|views|\.git)/ - [F,L]
+</IfModule>
