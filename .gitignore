@@ -1,3 +1,5 @@
 issue.md
 promt.txt
 config/db.php
+uploads/*
+!.gitkeep

@@ -1,0 +1,62 @@
+<?php
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/helpers.php';
+
+// Proteksi: Hanya Admin
+checkAdmin();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // Looping melalui inputan teks & color
+    if (isset($_POST['config'])) {
+        foreach ($_POST['config'] as $key => $value) {
+            $safe_key = sanitize_input($key);
+            $safe_value = sanitize_input($value); // Boleh XSS sanitize di sini atau saat render
+            
+            $stmt = $pdo->prepare("UPDATE landing_configs SET content_value = ? WHERE section_key = ? AND (type = 'text' OR type = 'color')");
+            $stmt->execute([$safe_value, $safe_key]);
+        }
+    }
+
+    // Handle Upload Gambar (contoh untuk hero_image)
+    if (isset($_FILES['hero_image']) && $_FILES['hero_image']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['hero_image'];
+        $allowed_mimes = ['image/jpeg', 'image/png'];
+        
+        // Cek MIME type
+        $mime = mime_content_type($file['tmp_name']);
+        if (in_array($mime, $allowed_mimes)) {
+            // Dapatkan ekstensi
+            $ext = ($mime === 'image/png') ? 'png' : 'jpg';
+            
+            // Nama acak dengan timestamp
+            $new_filename = 'hero_' . time() . '_' . rand(100, 999) . '.' . $ext;
+            $upload_dir = __DIR__ . '/../uploads/';
+            
+            if (move_uploaded_file($file['tmp_name'], $upload_dir . $new_filename)) {
+                // Hapus gambar lama jika ada (Optional, untuk kebersihan)
+                $stmt = $pdo->prepare("SELECT content_value FROM landing_configs WHERE section_key = 'hero_image'");
+                $stmt->execute();
+                $old_img = $stmt->fetchColumn();
+                if ($old_img && file_exists($upload_dir . $old_img)) {
+                    unlink($upload_dir . $old_img);
+                }
+                
+                // Update database
+                $stmt = $pdo->prepare("UPDATE landing_configs SET content_value = ? WHERE section_key = 'hero_image'");
+                $stmt->execute([$new_filename]);
+            } else {
+                $_SESSION['error'] = "Gagal memindahkan file yang diupload.";
+            }
+        } else {
+            $_SESSION['error'] = "Format file tidak didukung. Harap gunakan JPG atau PNG.";
+        }
+    }
+
+    if (!isset($_SESSION['error'])) {
+        $_SESSION['success'] = "Pengaturan berhasil diperbarui!";
+    }
+    redirect('index.php?page=page_builder');
+} else {
+    redirect('index.php?page=page_builder');
+}
