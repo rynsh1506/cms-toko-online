@@ -60,8 +60,12 @@ if (isset($_SESSION['cart'])) {
                         <?php endif; ?>
                     </a>
 
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                        <a href="index.php?page=admin" class="text-sm font-semibold text-gray-700 hover:text-gray-900 transition">Admin Panel</a>
+                    <?php if (isAuth()): ?>
+                        <a href="index.php?page=orders" class="text-sm font-semibold text-gray-700 hover:text-gray-900 transition">Pesanan Saya</a>
+                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                            <a href="index.php?page=admin" class="text-sm font-semibold text-gray-700 hover:text-gray-900 transition">Admin Panel</a>
+                        <?php endif; ?>
+                        <a href="index.php?page=auth_process&action=logout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition">Logout (<?= htmlspecialchars($_SESSION['name']) ?>)</a>
                     <?php else: ?>
                         <a href="index.php?page=login" class="text-sm font-semibold text-gray-700 hover:text-gray-900 transition">Login</a>
                     <?php endif; ?>

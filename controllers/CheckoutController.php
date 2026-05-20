@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (Termasuk kode unik $unique_code untuk verifikasi instan).
         ";
 
-        redirect('index.php?page=home');
+        redirect('index.php?page=invoice&id=' . $order_id);
 
     } catch (\PDOException $e) {
         $pdo->rollBack();
