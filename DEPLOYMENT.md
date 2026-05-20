@@ -1,6 +1,6 @@
-# Panduan Deployment (Deployment Guide) - Pro-Store CMS
+# Panduan Deployment (Deployment Guide) - NusaBay
 
-Dokumen ini berisi panduan langkah-demi-langkah untuk melakukan deployment aplikasi **Pro-Store CMS** (Mini-Framework PHP Native) ke layanan hosting web seperti cPanel, Hostinger, InfinityFree, atau ProFreeHost.
+Dokumen ini berisi panduan langkah-demi-langkah untuk melakukan deployment aplikasi **NusaBay** (Mini-Framework PHP Native) ke layanan hosting web seperti cPanel, Hostinger, InfinityFree, atau ProFreeHost.
 
 ---
 
@@ -39,26 +39,18 @@ Dokumen ini berisi panduan langkah-demi-langkah untuk melakukan deployment aplik
 4. Upload file `.zip` tersebut, lalu **Extract** di dalam direktori tersebut.
 5. Pastikan folder `uploads` memiliki izin akses menulis (**CHMOD 755** atau **777** jika diperlukan oleh server hosting Anda) agar pembeli/admin bisa mengunggah gambar produk.
 
-### Langkah 4: Inisialisasi Database (Migration)
-Untuk membuat tabel-tabel database yang diperlukan, akses file setup secara berurutan melalui browser Anda:
-1. Jalankan Skema Inti:  
-   `https://domain-anda.com/setup_db.php`
-2. Jalankan Konfigurasi Landing Page:  
-   `https://domain-anda.com/setup_configs_db.php`
-3. Jalankan Pengaturan Produk:  
-   `https://domain-anda.com/setup_products_db.php`
-4. Jalankan Skema Transaksi:  
-   `https://domain-anda.com/setup_orders_db.php`
+### Langkah 4: Inisialisasi Database (Migration & Seeding)
+Untuk membuat tabel-tabel database yang diperlukan dan mengisi data awal (termasuk akun Admin), akses file setup melalui browser Anda:
+
+Jalankan Skema Inti & Seeding:  
+`https://domain-anda.com/setup_fresh.php`
 
 > [!WARNING]
 > **PENTING UNTUK KEAMANAN (CRITICAL SECURITY STEP)**
-> Setelah semua proses setup database di atas berhasil dijalankan, **SEGERA HAPUS** file-file berikut dari server hosting Anda melalui File Manager:
-> * `setup_db.php`
-> * `setup_configs_db.php`
-> * `setup_products_db.php`
-> * `setup_orders_db.php`
+> Setelah proses setup database di atas berhasil dijalankan, **SEGERA HAPUS** file berikut dari server hosting Anda melalui File Manager:
+> * `setup_fresh.php`
 > 
-> Membiarkan file-file ini tetap berada di server dapat dimanfaatkan oleh pihak tidak bertanggung jawab untuk mereset database atau mencuri data sensitif Anda.
+> Membiarkan file ini tetap berada di server dapat dimanfaatkan oleh pihak tidak bertanggung jawab untuk mereset database atau mencuri data sensitif Anda.
 
 ---
 

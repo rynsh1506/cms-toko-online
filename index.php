@@ -104,6 +104,12 @@ switch ($page) {
         require __DIR__ . '/views/admin/layout.php';
         break;
 
+    case 'admin_categories':
+        checkAdmin();
+        $admin_page = 'categories.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
     case 'admin_profile':
         checkAdmin();
         $admin_page = 'profile.php';
@@ -139,6 +145,11 @@ switch ($page) {
     case 'admin_banner_process':
         checkAdmin();
         require __DIR__ . '/controllers/BannerController.php';
+        break;
+
+    case 'admin_category_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/CategoryController.php';
         break;
 
     case 'dashboard_api':

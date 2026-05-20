@@ -299,6 +299,7 @@ if (isset($_SESSION['cart'])) {
                         <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
                             <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
                                  alt="<?= htmlspecialchars($product['name']) ?>" 
+                                 loading="lazy"
                                  class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
                             <?php if ($product['stock'] <= 0): ?>
                                 <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
@@ -607,6 +608,15 @@ if (isset($_SESSION['cart'])) {
             $('.add-to-cart-form').on('submit', function(e) {
                 e.preventDefault();
                 const form = $(this);
+                const btn = form.find('button[type="submit"]');
+                
+                if (btn.prop('disabled')) return;
+                
+                btn.prop('disabled', true).addClass('opacity-70 cursor-not-allowed');
+                const btnSpan = btn.find('span');
+                const originalText = btnSpan.text();
+                btnSpan.text('Memproses...');
+
                 const formData = form.serialize() + '&ajax=1';
                 
                 $.ajax({
@@ -633,6 +643,10 @@ if (isset($_SESSION['cart'])) {
                     },
                     error: function() {
                         showToast('Terjadi kesalahan saat menambahkan produk.', 'error');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false).removeClass('opacity-70 cursor-not-allowed');
+                        btnSpan.text(originalText);
                     }
                 });
             });
