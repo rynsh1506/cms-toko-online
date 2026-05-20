@@ -64,7 +64,7 @@ $current_page = $_GET['page'] ?? 'admin';
 
     <div class="min-h-screen flex flex-col md:flex-row">
         <!-- Sidebar -->
-        <aside class="w-full md:w-64 bg-slate-900 dark:bg-slate-950 text-slate-200 flex-shrink-0 flex flex-col justify-between border-r border-slate-800 shadow-xl">
+        <aside class="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-slate-900 dark:bg-slate-950 text-slate-200 flex-shrink-0 flex flex-col justify-between border-r border-slate-800 shadow-xl">
             <div>
                 <!-- Brand Header -->
                 <div class="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950">

@@ -439,3 +439,66 @@
   src: url(../fonts/QGYvz_MVcBeNP4NJtEtq.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/* Elegant & Modern Global Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+}
+.dark ::-webkit-scrollbar-thumb {
+    background: rgba(51, 65, 85, 0.5);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(71, 85, 105, 0.7);
+}
+
+/* Hide scrollbar utility class */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none !important;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: none !important;  /* Firefox */
+}
+
+/* SweetAlert2 Dark Mode Global Override */
+.dark .swal2-popup {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+.dark .swal2-title {
+    color: #ffffff !important;
+}
+.dark .swal2-html-container {
+    color: #cbd5e1 !important;
+}
+.dark .swal2-validation-message {
+    background-color: #0f172a !important;
+    color: #f87171 !important;
+}
+.dark .swal2-close {
+    color: #94a3b8 !important;
+}
+.dark .swal2-close:hover {
+    color: #f1f5f9 !important;
+}
+.dark .swal2-footer {
+    border-top: 1px solid #334155 !important;
+    color: #94a3b8 !important;
+}
+.dark .swal2-timer-progress-bar {
+    background: rgba(255, 255, 255, 0.5) !important;
+}
+

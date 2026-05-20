@@ -626,8 +626,6 @@ if (isset($_SESSION['cart'])) {
                     dataType: 'json',
                     success: function(data) {
                         if (data.status === 'success') {
-                            showToast(data.message, 'success');
-                            
                             // Update navbar count
                             const badge = $('#cart-badge');
                             if (badge.length) {
