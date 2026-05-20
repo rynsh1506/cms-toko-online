@@ -14,15 +14,21 @@ switch ($page) {
         require __DIR__ . '/views/public/home.php';
         break;
         
-    // Nanti tambahkan case lain seperti 'product', 'cart', 'checkout', dsb.
-    
+    case 'login':
+        require __DIR__ . '/views/public/login.php';
+        break;
+
+    case 'register':
+        require __DIR__ . '/views/public/register.php';
+        break;
+
+    case 'auth_process':
+        require __DIR__ . '/controllers/AuthController.php';
+        break;
+
     case 'admin':
-        // Cek auth sederhana untuk admin
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            // Kalau belum login, nanti arahkan ke halaman login (akan dibuat di Phase 2)
-            // Untuk sementara kita biarkan sederhana atau die()
-            die("Akses Ditolak. Anda bukan Admin.");
-        }
+        // Gunakan middleware yang baru kita buat
+        checkAdmin();
         require __DIR__ . '/views/admin/dashboard.php';
         break;
 
