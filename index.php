@@ -26,6 +26,14 @@ switch ($page) {
         require __DIR__ . '/controllers/AuthController.php';
         break;
 
+    case 'cart':
+        require __DIR__ . '/views/public/cart.php';
+        break;
+
+    case 'cart_process':
+        require __DIR__ . '/controllers/CartController.php';
+        break;
+
     case 'config_process':
         require __DIR__ . '/controllers/ConfigController.php';
         break;
