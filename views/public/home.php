@@ -21,9 +21,51 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAl
 // Fetch all active promotional banners
 $banners = $pdo->query("SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order ASC, id DESC")->fetchAll();
 
-// Fetch all products
-$stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
-$products = $stmt->fetchAll();
+// Pagination, Category, and Search Filters Setup
+$search_query = isset($_GET['q']) ? trim(sanitize_input($_GET['q'])) : '';
+$active_category = isset($_GET['cat']) ? trim(sanitize_input($_GET['cat'])) : 'all';
+$page_num = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+$items_per_page = 12;
+
+$where_clauses = [];
+$query_params = [];
+
+if ($active_category !== 'all') {
+    $where_clauses[] = "category_id = ?";
+    $query_params[] = $active_category;
+}
+
+if ($search_query !== '') {
+    $where_clauses[] = "(name LIKE ? OR description LIKE ?)";
+    $query_params[] = "%$search_query%";
+    $query_params[] = "%$search_query%";
+}
+
+$where_sql = '';
+if (!empty($where_clauses)) {
+    $where_sql = "WHERE " . implode(" AND ", $where_clauses);
+}
+
+// Count total products matching filters
+$count_query = "SELECT COUNT(*) FROM products $where_sql";
+$count_stmt = $pdo->prepare($count_query);
+$count_stmt->execute($query_params);
+$total_items = (int)$count_stmt->fetchColumn();
+
+$total_pages = ceil($total_items / $items_per_page);
+if ($total_pages < 1) {
+    $total_pages = 1;
+}
+if ($page_num > $total_pages) {
+    $page_num = $total_pages;
+}
+$offset = ($page_num - 1) * $items_per_page;
+
+// Fetch products for current page
+$products_query = "SELECT * FROM products $where_sql ORDER BY id DESC LIMIT $items_per_page OFFSET $offset";
+$products_stmt = $pdo->prepare($products_query);
+$products_stmt->execute($query_params);
+$products = $products_stmt->fetchAll();
 
 // Count Cart Items
 $cart_count = 0;
@@ -31,6 +73,193 @@ if (isset($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $qty) {
         $cart_count += $qty;
     }
+}
+
+// Determine the active category name
+$display_cat_name = 'Semua Kategori';
+if ($active_category !== 'all') {
+    foreach ($categories as $c) {
+        if ($c['id'] == $active_category) {
+            $display_cat_name = $c['name'];
+            break;
+        }
+    }
+}
+
+// 1. Capture Active Filter Bubbles HTML
+ob_start();
+?>
+<?php if ($active_category !== 'all' || $search_query !== ''): ?>
+    <div class="flex flex-wrap gap-2.5 mb-8 items-center">
+        <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 mr-1">Filter Aktif:</span>
+        
+        <!-- Category Bubble -->
+        <?php if ($active_category !== 'all'): ?>
+            <div class="flex items-center space-x-1.5 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light px-4 py-2 rounded-full text-xs font-extrabold border border-primary/20 shadow-sm select-none">
+                <span>Kategori: <?= htmlspecialchars($display_cat_name) ?></span>
+                <a href="#" data-action="clear-cat" class="hover:bg-primary/20 p-0.5 rounded-full transition duration-150 inline-flex items-center justify-center cursor-pointer text-primary">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            </div>
+        <?php endif; ?>
+
+        <!-- Search Query Bubble -->
+        <?php if ($search_query !== ''): ?>
+            <div class="flex items-center space-x-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-350 px-4 py-2 rounded-full text-xs font-extrabold border border-indigo-150 dark:border-indigo-900/60 shadow-sm select-none">
+                <span>Pencarian: "<?= htmlspecialchars($search_query) ?>"</span>
+                <a href="#" data-action="clear-q" class="hover:bg-indigo-100 dark:hover:bg-indigo-900/50 p-0.5 rounded-full transition duration-150 inline-flex items-center justify-center cursor-pointer text-indigo-600 dark:text-indigo-350">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            </div>
+        <?php endif; ?>
+
+        <!-- Reset All Button -->
+        <a href="#" data-action="clear-all" class="text-xs font-bold text-rose-600 dark:text-rose-450 hover:underline ml-2 transition">
+            Bersihkan Semua
+        </a>
+    </div>
+<?php endif; ?>
+<?php
+$bubbles_html = ob_get_clean();
+
+// 2. Capture Products Grid HTML
+ob_start();
+?>
+<?php if (empty($products)): ?>
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-md mx-auto">
+        <svg class="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <p class="text-slate-400 font-semibold"><?= ($search_query !== '' || $active_category !== 'all') ? 'Produk tidak ditemukan' : 'Belum ada produk' ?></p>
+        <p class="text-xs text-slate-400 mt-1"><?= ($search_query !== '' || $active_category !== 'all') ? 'Coba masukkan kata kunci pencarian atau ganti filter kategori.' : 'Nantikan pembaruan katalog produk kami segera.' ?></p>
+    </div>
+<?php else: ?>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <?php foreach ($products as $product): ?>
+            <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group" 
+                 data-id="<?= $product['id'] ?>"
+                 data-category="<?= $product['category_id'] ?? '' ?>">
+                <!-- Image Container -->
+                <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
+                    <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
+                         alt="<?= htmlspecialchars($product['name']) ?>" 
+                         loading="lazy"
+                         class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
+                    <?php if ($product['stock'] <= 0): ?>
+                        <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
+                            <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6 flex-1 flex flex-col justify-between">
+                    <div class="space-y-2.5">
+                        <h3 class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display" data-original="<?= htmlspecialchars($product['name']) ?>">
+                            <?= htmlspecialchars($product['name']) ?>
+                        </h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed font-light">
+                            <?= htmlspecialchars($product['description'] ?? '') ?>
+                        </p>
+                    </div>
+                    
+                    <div class="mt-6 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Harga</span>
+                            <span class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                Rp <?= number_format($product['price'], 0, ',', '.') ?>
+                            </span>
+                        </div>
+                        
+                        <?php if ($product['stock'] > 0): ?>
+                            <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
+                                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-slate-100/10 cursor-pointer">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <button disabled class="bg-slate-50 dark:bg-slate-800/40 text-slate-350 dark:text-slate-650 p-3 rounded-2xl cursor-not-allowed">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+<?php
+$grid_html = ob_get_clean();
+
+// 3. Capture Pagination HTML
+ob_start();
+?>
+<?php if ($total_pages > 1): ?>
+    <div class="flex items-center justify-center space-x-2 mt-16">
+        <!-- First & Prev -->
+        <?php if ($page_num > 1): ?>
+            <a href="#" data-page="1" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+            </a>
+            <a href="#" data-page="<?= $page_num - 1 ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+        <?php endif; ?>
+
+        <!-- Pages -->
+        <?php
+        $start_page = max(1, $page_num - 2);
+        $end_page = min($total_pages, $page_num + 2);
+        for ($i = $start_page; $i <= $end_page; $i++):
+        ?>
+            <a href="#" data-page="<?= $i ?>" class="px-4 py-2 rounded-xl border transition duration-150 font-bold text-sm <?= $i === $page_num ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'border-slate-200 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800' ?>">
+                <?= $i ?>
+            </a>
+        <?php endfor; ?>
+
+        <!-- Next & Last -->
+        <?php if ($page_num < $total_pages): ?>
+            <a href="#" data-page="<?= $page_num + 1 ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="#" data-page="<?= $total_pages ?>" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 text-slate-600 dark:text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+            </a>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+<?php
+$pagination_html = ob_get_clean();
+
+// AJAX check
+if (isset($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'bubbles' => $bubbles_html,
+        'grid' => $grid_html,
+        'pagination' => $pagination_html,
+        'cat_name' => $display_cat_name,
+        'active_cat' => $active_category
+    ]);
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -245,112 +474,77 @@ if (isset($_SESSION['cart'])) {
                 <p class="text-sm text-slate-400 mt-2 font-sans">Daftar produk serba ada terlengkap dengan penawaran terbaik hari ini.</p>
             </div>
             
-            <!-- Live Search Bar + Autocomplete Box Wrapper -->
-            <div class="relative w-full md:w-80">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </span>
-                <input type="text" id="product-search" autocomplete="off" placeholder="Cari produk impianmu..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition shadow-sm">
+            <!-- Search & Filter Form -->
+            <form method="GET" action="index.php" class="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+                <input type="hidden" name="page" value="home">
                 
-                <!-- Autocomplete Suggestion Dropdown Box -->
-                <div id="search-suggestions" class="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden hidden z-40">
-                    <div id="suggestions-list" class="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-                        <!-- Injected by JavaScript -->
+                <!-- Custom Category Dropdown Container -->
+                <div class="relative w-full sm:w-56" id="category-dropdown-wrapper">
+                    <!-- Hidden input to submit with the form -->
+                    <input type="hidden" name="cat" id="selected-category-input" value="<?= htmlspecialchars($active_category) ?>">
+                    
+                    <!-- Dropdown Button -->
+                    <button type="button" id="category-dropdown-btn" class="flex items-center justify-between w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl px-5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition shadow-sm cursor-pointer select-none">
+                        <span class="truncate">
+                            <?php
+                            $display_cat_name = 'Semua Kategori';
+                            if ($active_category !== 'all') {
+                                foreach ($categories as $c) {
+                                    if ($c['id'] == $active_category) {
+                                        $display_cat_name = $c['name'];
+                                        break;
+                                    }
+                                }
+                            }
+                            echo htmlspecialchars($display_cat_name);
+                            ?>
+                        </span>
+                        <svg class="h-4 w-4 ml-2 text-slate-400 dark:text-slate-500 transition duration-200 transform" id="category-dropdown-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Dropdown Menu List -->
+                    <div id="category-dropdown-menu" class="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden hidden z-50 transition duration-150">
+                        <div class="p-1.5 max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+                            <div data-value="all" class="category-dropdown-item px-4 py-2.5 text-sm font-semibold rounded-xl text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-primary dark:hover:text-white cursor-pointer transition">
+                                Semua Kategori
+                            </div>
+                            <?php foreach ($categories as $cat_item): ?>
+                                <div data-value="<?= $cat_item['id'] ?>" class="category-dropdown-item px-4 py-2.5 text-sm font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-primary dark:hover:text-white cursor-pointer transition">
+                                    <?= htmlspecialchars($cat_item['name']) ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-64 md:w-80">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                    <input type="text" name="q" id="product-search" autocomplete="off" value="<?= htmlspecialchars($search_query) ?>" placeholder="Cari produk impianmu..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition shadow-sm">
+                </div>
+            </form>
         </div>
 
-        <!-- Horizontal Category Pills Filter -->
-        <div class="flex items-center space-x-2.5 overflow-x-auto pb-4 mb-8 scrollbar-hide select-none" id="category-pills">
-            <button 
-                data-id="all" 
-                class="category-pill whitespace-nowrap px-5 py-2.5 text-xs font-bold rounded-xl transition duration-150 active:scale-95 bg-primary text-white shadow-md shadow-primary/20 cursor-pointer">
-                Semua Produk
-            </button>
-            <?php foreach ($categories as $cat): ?>
-                <button 
-                    data-id="<?= $cat['id'] ?>" 
-                    class="category-pill whitespace-nowrap px-5 py-2.5 text-xs font-bold rounded-xl transition duration-150 active:scale-95 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-white cursor-pointer">
-                    <?= htmlspecialchars($cat['name']) ?>
-                </button>
-            <?php endforeach; ?>
+        <!-- Active Filter Tags / Bubbles -->
+        <div id="filter-bubbles-container" class="mb-6">
+            <?= $bubbles_html ?>
         </div>
         
-        <?php if (empty($products)): ?>
-            <div class="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-md mx-auto">
-                <svg class="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <p class="text-slate-400 font-semibold">Belum ada produk</p>
-                <p class="text-xs text-slate-400 mt-1">Nantikan pembaruan katalog produk kami segera.</p>
-            </div>
-        <?php else: ?>
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                <?php foreach ($products as $product): ?>
-                    <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group" 
-                         data-id="<?= $product['id'] ?>"
-                         data-category="<?= $product['category_id'] ?? '' ?>" 
-                         data-name="<?= strtolower(htmlspecialchars($product['name'])) ?>" 
-                         data-desc="<?= strtolower(htmlspecialchars($product['description'] ?? '')) ?>">
-                        <!-- Image Container -->
-                        <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
-                            <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
-                                 alt="<?= htmlspecialchars($product['name']) ?>" 
-                                 loading="lazy"
-                                 class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
-                            <?php if ($product['stock'] <= 0): ?>
-                                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
-                                    <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Card Info -->
-                        <div class="p-6 flex-1 flex flex-col justify-between">
-                            <div class="space-y-2 mb-6">
-                                <h3 class="font-bold text-slate-800 dark:text-white text-base leading-tight group-hover:text-primary transition product-title" data-original="<?= htmlspecialchars($product['name']) ?>"><?= htmlspecialchars($product['name']) ?></h3>
-                                <p class="text-slate-400 dark:text-slate-450 text-xs line-clamp-2 leading-relaxed"><?= htmlspecialchars($product['description'] ?? '') ?></p>
-                            </div>
-                            
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-baseline">
-                                    <span class="text-primary font-extrabold text-lg font-display">Rp <?= number_format($product['price'], 0, ',', '.') ?></span>
-                                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-2 py-0.5 rounded-lg">Stok: <?= $product['stock'] ?></span>
-                                </div>
-
-                                <?php if ($product['stock'] > 0): ?>
-                                    <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
-                                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                        <button type="submit" class="w-full bg-primary text-white font-bold py-3 px-4 rounded-2xl hover:opacity-90 active:scale-95 transition duration-150 flex items-center justify-center space-x-2 text-sm shadow-md shadow-primary/10">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                                            </svg>
-                                            <span>Keranjang</span>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <button disabled class="w-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-655 font-bold py-3 px-4 rounded-2xl cursor-not-allowed text-sm">
-                                        Habis
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <!-- No results message -->
-            <div id="no-search-results" class="hidden bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-md mx-auto">
-                <svg class="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <p class="text-slate-400 font-semibold">Produk tidak ditemukan</p>
-                <p class="text-xs text-slate-400 mt-1">Coba masukkan kata kunci pencarian atau ganti filter kategori.</p>
-            </div>
-        <?php endif; ?>
+        <!-- Products Grid / Empty State -->
+        <div id="catalog-products-container" class="w-full min-h-[300px]">
+            <?= $grid_html ?>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div id="catalog-pagination-container">
+            <?= $pagination_html ?>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -440,129 +634,123 @@ if (isset($_SESSION['cart'])) {
                 startSlideShow();
             }
 
-            // Category Filter & Search Logic
-            let activeCategory = 'all';
-            let searchQuery = '';
+            // AJAX Catalog Reload Function
+            function loadCatalog(page = 1, category = null, query = null) {
+                if (category === null) category = $('#selected-category-input').val();
+                if (query === null) query = $('#product-search').val();
 
-            // Handle Category Pills Click
-            $('.category-pill').on('click', function() {
-                $('.category-pill').removeClass('bg-primary text-white shadow-md shadow-primary/20').addClass('bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800');
-                $(this).removeClass('bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800').addClass('bg-primary text-white shadow-md shadow-primary/20');
-                
-                activeCategory = $(this).data('id').toString();
-                filterCatalog();
-            });
+                const url = `index.php?page=home&ajax=1&p=${page}&cat=${encodeURIComponent(category)}&q=${encodeURIComponent(query)}`;
 
-            // Handle Live Search Input
-            $('#product-search').on('input', function() {
-                searchQuery = $(this).val().toLowerCase().trim();
-                filterCatalog();
-                renderSearchSuggestions();
-            });
+                // Show loading state by opacity
+                $('#catalog-products-container').addClass('opacity-50 pointer-events-none transition duration-150');
 
-            // Filter Catalog Products
-            function filterCatalog() {
-                let matchCount = 0;
-                
-                $('.product-card').each(function() {
-                    const cardCat = $(this).data('category').toString();
-                    const name = $(this).data('name');
-                    const desc = $(this).data('desc');
-                    const titleEl = $(this).find('.product-title');
-                    const originalTitle = titleEl.data('original');
+                $.getJSON(url, function(data) {
+                    // Update DOM
+                    $('#filter-bubbles-container').html(data.bubbles);
+                    $('#catalog-products-container').html(data.grid).removeClass('opacity-50 pointer-events-none');
+                    $('#catalog-pagination-container').html(data.pagination);
 
-                    // Check Category Filter
-                    const matchesCategory = (activeCategory === 'all' || cardCat === activeCategory);
-                    // Check Search query
-                    const matchesSearch = (searchQuery === '' || name.includes(searchQuery) || desc.includes(searchQuery));
+                    // Update category dropdown display text & value
+                    $('#category-dropdown-btn span').text(data.cat_name);
+                    $('#selected-category-input').val(data.active_cat);
 
-                    if (matchesCategory && matchesSearch) {
-                        $(this).fadeIn(200);
-                        matchCount++;
-                        
-                        // Highlight matching keywords
-                        if (searchQuery !== '') {
-                            const regex = new RegExp(`(${escapeRegExp(searchQuery)})`, 'gi');
-                            const highlighted = originalTitle.replace(regex, '<mark class="bg-indigo-100 text-indigo-900 dark:bg-indigo-900/50 dark:text-indigo-200 rounded-md px-1 py-0.5">$1</mark>');
-                            titleEl.html(highlighted);
-                        } else {
-                            titleEl.text(originalTitle);
-                        }
-                    } else {
-                        $(this).fadeOut(150);
-                    }
-                });
-
-                if (matchCount === 0) {
-                    $('#no-search-results').removeClass('hidden').fadeIn(200);
-                } else {
-                    $('#no-search-results').addClass('hidden');
-                }
-            }
-
-            function escapeRegExp(string) {
-                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            }
-
-            // Render Search Suggestions Autocomplete Dropdown
-            function renderSearchSuggestions() {
-                const suggBox = $('#search-suggestions');
-                const list = $('#suggestions-list');
-                list.empty();
-
-                if (searchQuery === '') {
-                    suggBox.addClass('hidden');
-                    return;
-                }
-
-                let matches = [];
-                $('.product-card').each(function() {
-                    const name = $(this).data('name');
-                    const desc = $(this).data('desc');
-                    
-                    if (name.includes(searchQuery) || desc.includes(searchQuery)) {
-                        const id = $(this).data('id');
-                        const originalName = $(this).find('.product-title').data('original');
-                        const price = $(this).find('.font-display').text();
-                        const image = $(this).find('img').attr('src');
-                        matches.push({ id, name: originalName, price, image });
-                    }
-                });
-
-                if (matches.length === 0) {
-                    suggBox.addClass('hidden');
-                    return;
-                }
-
-                // Show top 5 matches
-                matches.slice(0, 5).forEach(prod => {
-                    const item = $(`
-                        <div class="flex items-center space-x-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition select-none">
-                            <img src="${prod.image}" class="h-10 w-10 object-cover rounded-lg border border-slate-100 dark:border-slate-800">
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">${prod.name}</h4>
-                                <p class="text-[10px] text-primary font-bold font-mono mt-0.5">${prod.price}</p>
-                            </div>
-                        </div>
+                    // Update dropdown list items active state
+                    $('.category-dropdown-item').removeClass('bg-primary/5 text-primary dark:bg-primary/20 dark:text-white').find('svg').remove();
+                    const activeItem = $(`.category-dropdown-item[data-value="${data.active_cat}"]`);
+                    activeItem.addClass('bg-primary/5 text-primary dark:bg-primary/20 dark:text-white');
+                    activeItem.append(`
+                        <svg class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
                     `);
 
-                    item.on('click', function() {
-                        $('#product-search').val(prod.name);
-                        searchQuery = prod.name.toLowerCase();
-                        filterCatalog();
-                        suggBox.addClass('hidden');
-                    });
+                    // Update search input if it was changed from bubble clear
+                    if (query !== $('#product-search').val()) {
+                        $('#product-search').val(query);
+                    }
 
-                    list.append(item);
+                    // Update address bar history
+                    const nextURL = `index.php?page=home&p=${page}&cat=${encodeURIComponent(category)}&q=${encodeURIComponent(query)}`;
+                    window.history.pushState({ path: nextURL }, '', nextURL);
+                }).fail(function() {
+                    $('#catalog-products-container').removeClass('opacity-50 pointer-events-none');
+                    showToast('Gagal memuat produk.', 'error');
                 });
-
-                suggBox.removeClass('hidden');
             }
 
-            // Hide search suggestions on clicking outside
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('#product-search, #search-suggestions').length) {
-                    $('#search-suggestions').addClass('hidden');
+            // Custom Category Dropdown Toggle & Selection Logic
+            const dropdownBtn = $('#category-dropdown-btn');
+            const dropdownMenu = $('#category-dropdown-menu');
+            const dropdownArrow = $('#category-dropdown-arrow');
+            const categoryInput = $('#selected-category-input');
+
+            if (dropdownBtn.length && dropdownMenu.length) {
+                dropdownBtn.on('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.toggleClass('hidden');
+                    dropdownArrow.toggleClass('rotate-180');
+                });
+
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('#category-dropdown-wrapper').length) {
+                        dropdownMenu.addClass('hidden');
+                        dropdownArrow.removeClass('rotate-180');
+                    }
+                });
+
+                $('.category-dropdown-item').on('click', function() {
+                    const val = $(this).data('value');
+                    categoryInput.val(val);
+                    dropdownMenu.addClass('hidden');
+                    dropdownArrow.removeClass('rotate-180');
+                    loadCatalog(1, val, null);
+                });
+            }
+
+            // Intercept search form submit & live input search with debounce
+            const searchForm = $('#product-search').closest('form');
+            if (searchForm.length) {
+                searchForm.on('submit', function(e) {
+                    e.preventDefault();
+                    loadCatalog(1);
+                });
+            }
+
+            let searchTimeout = null;
+            $('#product-search').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    loadCatalog(1);
+                }, 300);
+            });
+
+            // Delegate Filter Bubbles Click Events
+            $(document).on('click', '[data-action="clear-cat"]', function(e) {
+                e.preventDefault();
+                loadCatalog(1, 'all', null);
+            });
+
+            $(document).on('click', '[data-action="clear-q"]', function(e) {
+                e.preventDefault();
+                loadCatalog(1, null, '');
+            });
+
+            $(document).on('click', '[data-action="clear-all"]', function(e) {
+                e.preventDefault();
+                loadCatalog(1, 'all', '');
+            });
+
+            // Delegate Pagination Click Events
+            $(document).on('click', '#catalog-pagination-container a[data-page]', function(e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                loadCatalog(page);
+                // Scroll smoothly to catalog top
+                const target = $("#products");
+                if (target.length) {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 80
+                    }, 400);
                 }
             });
 
@@ -604,8 +792,8 @@ if (isset($_SESSION['cart'])) {
                 }, 3000);
             }
 
-            // AJAX add to cart
-            $('.add-to-cart-form').on('submit', function(e) {
+            // AJAX add to cart (delegated for dynamically loaded cards)
+            $(document).on('submit', '.add-to-cart-form', function(e) {
                 e.preventDefault();
                 const form = $(this);
                 const btn = form.find('button[type="submit"]');
