@@ -4,11 +4,24 @@ require_once __DIR__ . '/../config/helpers.php';
 
 // Wajib Login
 if (!isAuth()) {
+    $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+    if ($is_ajax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Silakan login terlebih dahulu.']);
+        exit;
+    }
     redirect('index.php?page=login');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
     if (empty($_SESSION['cart'])) {
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Keranjang Anda kosong.']);
+            exit;
+        }
         $_SESSION['error'] = "Keranjang Anda kosong.";
         redirect('index.php?page=home');
     }
@@ -17,56 +30,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customer_name = sanitize_input($_POST['customer_name'] ?? '');
     $customer_phone = sanitize_input($_POST['customer_phone'] ?? '');
     $customer_address = sanitize_input($_POST['customer_address'] ?? '');
+    $bank_account_id = intval($_POST['bank_account_id'] ?? 0);
 
-    if (empty($customer_name) || empty($customer_phone) || empty($customer_address)) {
-        $_SESSION['error'] = "Harap lengkapi semua data pengiriman.";
+    if (empty($customer_name) || empty($customer_phone) || empty($customer_address) || $bank_account_id <= 0) {
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Harap lengkapi semua data pengiriman dan pilih metode pembayaran.']);
+            exit;
+        }
+        $_SESSION['error'] = "Harap lengkapi semua data pengiriman dan pilih metode pembayaran.";
         redirect('index.php?page=checkout');
     }
 
-    // Hitung total murni dari database (menghindari manipulasi form HTML)
-    $total_pure = 0;
-    $ids = array_keys($_SESSION['cart']);
-    $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-    
-    // Kita butuh prepare data untuk insert order_items nantinya
-    $stmt = $pdo->prepare("SELECT id, price, stock, name FROM products WHERE id IN ($placeholders)");
-    $stmt->execute($ids);
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $product_data = [];
-    foreach ($products as $p) {
-        $product_data[$p['id']] = $p;
-    }
-
-    // Validasi stok & kalkulasi total
-    foreach ($_SESSION['cart'] as $p_id => $qty) {
-        if (!isset($product_data[$p_id])) {
-            $_SESSION['error'] = "Ada produk yang tidak valid di keranjang Anda.";
-            redirect('index.php?page=cart');
-        }
-        
-        $p_info = $product_data[$p_id];
-        
-        if ($qty > $p_info['stock']) {
-            $_SESSION['error'] = "Stok untuk produk {$p_info['name']} tidak mencukupi (Sisa: {$p_info['stock']}).";
-            redirect('index.php?page=cart');
-        }
-        
-        $total_pure += ($p_info['price'] * $qty);
-    }
-
-    // Generate Kode Unik
-    $unique_code = rand(100, 999);
-    $final_total = $total_pure + $unique_code;
-
     try {
-        // Gunakan Transaction agar jika salah satu gagal, semua di-rollback
+        // Mulai transaksi SEBELUM melakukan query produk dengan FOR UPDATE
         $pdo->beginTransaction();
 
-        // 1. Insert ke tabel orders
+        // 1. Validasi Rekening Bank dengan Row Lock
+        $stmtBank = $pdo->prepare("SELECT id FROM bank_accounts WHERE id = ? AND is_active = 1 FOR UPDATE");
+        $stmtBank->execute([$bank_account_id]);
+        if (!$stmtBank->fetch()) {
+            throw new Exception("Metode pembayaran yang dipilih tidak valid atau dinonaktifkan.");
+        }
+
+        // 2. Query data produk dengan FOR UPDATE untuk mencegah race condition stok
+        $ids = array_keys($_SESSION['cart']);
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
+        $stmt = $pdo->prepare("SELECT id, price, stock, name FROM products WHERE id IN ($placeholders) FOR UPDATE");
+        $stmt->execute($ids);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $product_data = [];
+        foreach ($products as $p) {
+            $product_data[$p['id']] = $p;
+        }
+
+        // 3. Validasi stok & kalkulasi total
+        $total_pure = 0;
+        foreach ($_SESSION['cart'] as $p_id => $qty) {
+            if (!isset($product_data[$p_id])) {
+                throw new Exception("Ada produk yang tidak valid di keranjang Anda.");
+            }
+            
+            $p_info = $product_data[$p_id];
+            
+            if ($qty > $p_info['stock']) {
+                throw new Exception("Stok untuk produk {$p_info['name']} tidak mencukupi (Sisa: {$p_info['stock']}).");
+            }
+            
+            $total_pure += ($p_info['price'] * $qty);
+        }
+
+        // Generate Kode Unik & Total Akhir
+        $unique_code = rand(100, 999);
+        $final_total = $total_pure + $unique_code;
+
+        // 4. Insert ke tabel orders
         $stmtOrder = $pdo->prepare("
-            INSERT INTO orders (user_id, customer_name, customer_phone, customer_address, total_price, unique_code) 
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (user_id, customer_name, customer_phone, customer_address, total_price, unique_code, bank_account_id, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
         ");
         $stmtOrder->execute([
             $user_id, 
@@ -74,12 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $customer_phone, 
             $customer_address, 
             $final_total, 
-            $unique_code
+            $unique_code,
+            $bank_account_id
         ]);
         
         $order_id = $pdo->lastInsertId();
 
-        // 2. Insert ke tabel order_items & kurangi stok
+        // 5. Insert ke tabel order_items & kurangi stok
         $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
         $stmtUpdateStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
         
@@ -93,10 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUpdateStock->execute([$qty, $p_id]);
         }
 
-        // Commit jika semua sukses
+        // Commit transaksi jika semua berhasil
         $pdo->commit();
 
-        // Bersihkan keranjang
+        // Bersihkan keranjang belanja
         unset($_SESSION['cart']);
 
         // Set pesan sukses dengan instruksi pembayaran
@@ -106,10 +129,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (Termasuk kode unik $unique_code untuk verifikasi instan).
         ";
 
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Pesanan berhasil dibuat.', 
+                'redirect_url' => 'index.php?page=invoice&id=' . $order_id
+            ]);
+            exit;
+        }
+
         redirect('index.php?page=invoice&id=' . $order_id);
 
-    } catch (\PDOException $e) {
-        $pdo->rollBack();
+    } catch (\Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            exit;
+        }
+
         $_SESSION['error'] = "Gagal memproses pesanan: " . $e->getMessage();
         redirect('index.php?page=checkout');
     }

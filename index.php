@@ -54,15 +54,70 @@ switch ($page) {
         require __DIR__ . '/views/public/invoice.php';
         break;
 
-    case 'page_builder':
-        checkAdmin();
-        require __DIR__ . '/views/admin/page_builder.php';
+    case 'verify_email':
+        require __DIR__ . '/controllers/VerifyEmailController.php';
         break;
 
+    case 'order_cancel':
+        require __DIR__ . '/controllers/OrderCancelController.php';
+        break;
+
+    // Admin Pages (Rendered through shared layout)
     case 'admin':
-        // Gunakan middleware yang baru kita buat
         checkAdmin();
-        require __DIR__ . '/views/admin/dashboard.php';
+        $admin_page = 'dashboard.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'page_builder':
+        checkAdmin();
+        $admin_page = 'page_builder.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'admin_products':
+        checkAdmin();
+        $admin_page = 'products.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'admin_banks':
+        checkAdmin();
+        $admin_page = 'bank_accounts.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'admin_orders':
+        checkAdmin();
+        $admin_page = 'orders.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    case 'admin_profile':
+        checkAdmin();
+        $admin_page = 'profile.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
+
+    // Admin Process Handlers
+    case 'admin_product_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/ProductController.php';
+        break;
+
+    case 'admin_profile_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/ProfileController.php';
+        break;
+
+    case 'admin_bank_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/BankController.php';
+        break;
+
+    case 'admin_order_process':
+        checkAdmin();
+        require __DIR__ . '/controllers/OrderAdminController.php';
         break;
 
     default:

@@ -5,6 +5,8 @@ require_once __DIR__ . '/../config/helpers.php';
 // Proteksi: Hanya Admin
 checkAdmin();
 
+$is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Looping melalui inputan teks & color
@@ -32,6 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Nama acak dengan timestamp
             $new_filename = 'hero_' . time() . '_' . rand(100, 999) . '.' . $ext;
             $upload_dir = __DIR__ . '/../uploads/';
+
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
             
             if (move_uploaded_file($file['tmp_name'], $upload_dir . $new_filename)) {
                 // Hapus gambar lama jika ada (Optional, untuk kebersihan)
@@ -46,16 +52,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("UPDATE landing_configs SET content_value = ? WHERE section_key = 'hero_image'");
                 $stmt->execute([$new_filename]);
             } else {
-                $_SESSION['error'] = "Gagal memindahkan file yang diupload.";
+                $err = "Gagal memindahkan file yang diupload.";
             }
         } else {
-            $_SESSION['error'] = "Format file tidak didukung. Harap gunakan JPG atau PNG.";
+            $err = "Format file tidak didukung. Harap gunakan JPG atau PNG.";
         }
     }
 
-    if (!isset($_SESSION['error'])) {
+    if (isset($err)) {
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $err]);
+            exit;
+        }
+        $_SESSION['error'] = $err;
+    } else {
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'message' => 'Pengaturan berhasil diperbarui!']);
+            exit;
+        }
         $_SESSION['success'] = "Pengaturan berhasil diperbarui!";
     }
+    
     redirect('index.php?page=page_builder');
 } else {
     redirect('index.php?page=page_builder');
