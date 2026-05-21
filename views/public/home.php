@@ -61,8 +61,12 @@ if ($page_num > $total_pages) {
 }
 $offset = ($page_num - 1) * $items_per_page;
 
-// Fetch products for current page (with variant count)
-$products_query = "SELECT p.*, (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count FROM products p $where_sql ORDER BY p.id DESC LIMIT $items_per_page OFFSET $offset";
+// Fetch products for current page (with variant count & total variant stock)
+$products_query = "SELECT p.*, 
+                   (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+                   COALESCE((SELECT SUM(stock) FROM product_variants pv WHERE pv.product_id = p.id), 0) as total_variant_stock 
+                   FROM products p $where_sql 
+                   ORDER BY p.id DESC LIMIT $items_per_page OFFSET $offset";
 $products_stmt = $pdo->prepare($products_query);
 $products_stmt->execute($query_params);
 $products = $products_stmt->fetchAll();
@@ -140,6 +144,9 @@ ob_start();
 <?php else: ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <?php foreach ($products as $product): ?>
+            <?php 
+            $p_stock = intval($product['stock']) + intval($product['total_variant_stock'] ?? 0);
+            ?>
             <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group" 
                  data-id="<?= $product['id'] ?>"
                  data-category="<?= $product['category_id'] ?? '' ?>">
@@ -149,7 +156,7 @@ ob_start();
                          alt="<?= htmlspecialchars($product['name']) ?>" 
                          loading="lazy"
                          class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
-                    <?php if ($product['stock'] <= 0): ?>
+                    <?php if ($p_stock <= 0): ?>
                         <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
                             <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
                         </div>
@@ -175,7 +182,7 @@ ob_start();
                             </span>
                         </div>
                         
-                        <?php if ($product['stock'] > 0): ?>
+                        <?php if ($p_stock > 0): ?>
                             <?php if ($product['variant_count'] > 0): ?>
                                 <!-- Product has variants: redirect to detail page -->
                                 <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="flex items-center space-x-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold px-3 py-2.5 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-primary/20">

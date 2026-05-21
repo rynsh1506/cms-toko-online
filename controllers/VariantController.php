@@ -54,8 +54,7 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$product_id, $variant_name, $variant_value, $additional_price, $stock]);
         $new_id = $pdo->lastInsertId();
 
-        // Update parent product stock
-        updateProductStockFromVariants($pdo, $product_id);
+        // No longer auto-updating parent stock
 
         // Siapkan data varian yang baru ditambahkan untuk dikembalikan ke frontend
         $newVariant = [
@@ -101,9 +100,7 @@ if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("UPDATE product_variants SET variant_name=?, variant_value=?, additional_price=?, stock=? WHERE id=?");
         $stmt->execute([$variant_name, $variant_value, $additional_price, $stock, $id]);
         
-        if ($product_id > 0) {
-            updateProductStockFromVariants($pdo, $product_id);
-        }
+        // No longer auto-updating parent stock
         
         echo json_encode(['status' => 'success', 'message' => 'Data varian berhasil diperbarui.']);
     } catch (PDOException $e) {
@@ -131,9 +128,7 @@ if ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("DELETE FROM product_variants WHERE id = ?");
         $stmt->execute([$id]);
         
-        if ($product_id > 0) {
-            updateProductStockFromVariants($pdo, $product_id);
-        }
+        // No longer auto-updating parent stock
         
         echo json_encode(['status' => 'success', 'message' => 'Varian berhasil dihapus.']);
     } catch (PDOException $e) {
@@ -142,24 +137,7 @@ if ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Helper untuk update total stok produk dari semua variannya
-function updateProductStockFromVariants($pdo, $product_id) {
-    if ($product_id <= 0) return;
-    try {
-        $stmt = $pdo->prepare("SELECT SUM(stock) as total_stock, COUNT(*) as variant_count FROM product_variants WHERE product_id = ?");
-        $stmt->execute([$product_id]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($result) {
-            // Jika ada varian, set stok produk ke total stok varian. Jika tidak ada varian tersisa, set ke 0
-            $total_stock = $result['variant_count'] > 0 ? intval($result['total_stock']) : 0;
-            $update = $pdo->prepare("UPDATE products SET stock = ? WHERE id = ?");
-            $update->execute([$total_stock, $product_id]);
-        }
-    } catch (PDOException $e) {
-        // Abaikan atau log error jika ada
-    }
-}
+
 
 // Jika action tidak ada yang cocok
 echo json_encode(['status' => 'error', 'message' => 'Aksi sistem tidak dikenali.']);

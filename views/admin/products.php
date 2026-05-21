@@ -66,15 +66,17 @@ $products = $stmt->fetchAll();
                             <td class="p-4">
                                 <?php 
                                 $has_vars = (intval($product['variant_count'] ?? 0) > 0);
-                                $display_stock = $has_vars ? intval($product['total_variant_stock'] ?? 0) : intval($product['stock']);
-                                $stock_label = $has_vars ? ' pcs (Varian)' : ' pcs';
+                                $total_variant_stock = intval($product['total_variant_stock'] ?? 0);
+                                $normal_stock = intval($product['stock'] ?? 0);
+                                $display_stock = $has_vars ? ($total_variant_stock + $normal_stock) : $normal_stock;
+                                $stock_label = $has_vars ? ' pcs (Total: ' . $normal_stock . ' Normal + ' . $total_variant_stock . ' Varian)' : ' pcs';
                                 ?>
                                 <?php if ($display_stock > 5): ?>
                                     <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono"><?= $display_stock . $stock_label ?></span>
                                 <?php elseif ($display_stock > 0): ?>
                                     <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 font-mono"><?= $display_stock . $stock_label ?></span>
                                 <?php else: ?>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400"><?= $has_vars ? 'Habis (Varian)' : 'Habis' ?></span>
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400"><?= $has_vars ? 'Habis' : 'Habis' ?></span>
                                 <?php endif; ?>
                             </td>
                             <td class="p-4">
