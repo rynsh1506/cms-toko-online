@@ -54,7 +54,13 @@ $stmt->execute([$order_id]);
 $items = $stmt->fetchAll();
 
 // Persiapan Link WhatsApp
-$admin_phone = '6281234567890'; // Nomor HP Admin default
+$stmtAdmin = $pdo->query("SELECT phone FROM users WHERE role = 'admin' LIMIT 1");
+$admin_user = $stmtAdmin->fetch();
+$admin_phone = '6281234567890'; // Default jika tidak ada
+if ($admin_user && !empty($admin_user['phone'])) {
+    // Hilangkan karakter non-angka seperti + atau spasi agar format wa.me valid
+    $admin_phone = preg_replace('/[^0-9]/', '', $admin_user['phone']);
+}
 $wa_message = "Halo Admin,\nSaya ingin melakukan konfirmasi pembayaran untuk pesanan berikut:\n\n"
             . "• Order ID: #" . $order['id'] . "\n"
             . "• Nama Penerima: " . $order['customer_name'] . "\n"
