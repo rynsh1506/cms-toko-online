@@ -2,9 +2,11 @@
 // Fetch all categories
 $categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
 
-// Fetch all products with category
+// Fetch all products with category and variant info
 $stmt = $pdo->query("
-    SELECT p.*, c.name as category_name 
+    SELECT p.*, c.name as category_name,
+           (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+           (SELECT SUM(stock) FROM product_variants pv WHERE pv.product_id = p.id) as total_variant_stock
     FROM products p 
     LEFT JOIN categories c ON p.category_id = c.id 
     ORDER BY p.id DESC
@@ -62,12 +64,17 @@ $products = $stmt->fetchAll();
                             </td>
                             <td class="p-4 font-bold text-slate-800 dark:text-slate-200 font-mono">Rp <?= number_format($product['price'], 0, ',', '.') ?></td>
                             <td class="p-4">
-                                <?php if ($product['stock'] > 5): ?>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono"><?= $product['stock'] ?> pcs</span>
-                                <?php elseif ($product['stock'] > 0): ?>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 font-mono"><?= $product['stock'] ?> pcs</span>
+                                <?php 
+                                $has_vars = (intval($product['variant_count'] ?? 0) > 0);
+                                $display_stock = $has_vars ? intval($product['total_variant_stock'] ?? 0) : intval($product['stock']);
+                                $stock_label = $has_vars ? ' pcs (Varian)' : ' pcs';
+                                ?>
+                                <?php if ($display_stock > 5): ?>
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono"><?= $display_stock . $stock_label ?></span>
+                                <?php elseif ($display_stock > 0): ?>
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 font-mono"><?= $display_stock . $stock_label ?></span>
                                 <?php else: ?>
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400">Habis</span>
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400"><?= $has_vars ? 'Habis (Varian)' : 'Habis' ?></span>
                                 <?php endif; ?>
                             </td>
                             <td class="p-4">
