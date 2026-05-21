@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/LandingService.php';
+
+$landingService = new LandingService($pdo);
 
 $action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);
@@ -42,11 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!isset($err)) {
-            $stmt = $pdo->prepare("
-                INSERT INTO banners (title, description, image_url, link_url, is_active, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ");
-            if ($stmt->execute([$title, $description, $image_url, $link_url, $is_active, $sort_order])) {
+            if ($landingService->addBanner($title, $description, $image_url, $link_url, $is_active, $sort_order)) {
                 if ($is_ajax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => true, 'message' => 'Banner promosi berhasil ditambahkan!']);
@@ -76,9 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $is_active = intval($_POST['is_active'] ?? 1);
 
         // Fetch current banner
-        $stmt = $pdo->prepare("SELECT image_url FROM banners WHERE id = ?");
-        $stmt->execute([$id]);
-        $banner = $stmt->fetch();
+        $banner = $landingService->getBannerById($id);
 
         if (!$banner) {
             if ($is_ajax) {
@@ -126,12 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$err) {
-            $stmt = $pdo->prepare("
-                UPDATE banners 
-                SET title = ?, description = ?, image_url = ?, link_url = ?, is_active = ?, sort_order = ?
-                WHERE id = ?
-            ");
-            if ($stmt->execute([$title, $description, $image_url, $link_url, $is_active, $sort_order, $id])) {
+            if ($landingService->updateBanner($id, $title, $description, $image_url, $link_url, $is_active, $sort_order)) {
                 if ($is_ajax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => true, 'message' => 'Banner promosi berhasil diperbarui!']);
@@ -154,9 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } elseif ($action === 'delete') {
     $id = intval($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT image_url FROM banners WHERE id = ?");
-    $stmt->execute([$id]);
-    $banner = $stmt->fetch();
+    $banner = $landingService->getBannerById($id);
 
     if ($banner) {
         $image_url = $banner['image_url'];
@@ -168,8 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $stmt = $pdo->prepare("DELETE FROM banners WHERE id = ?");
-        if ($stmt->execute([$id])) {
+        if ($landingService->deleteBanner($id)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Banner berhasil dihapus!']);

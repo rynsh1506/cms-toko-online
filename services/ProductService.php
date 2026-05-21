@@ -21,6 +21,64 @@ class ProductService {
     }
 
     /**
+     * Count products with filters (category and search).
+     */
+    public function countProductsFiltered($categoryId = 'all', $searchQuery = '') {
+        $where_clauses = [];
+        $query_params = [];
+        if ($categoryId !== 'all') {
+            $where_clauses[] = "category_id = ?";
+            $query_params[] = $categoryId;
+        }
+        if ($searchQuery !== '') {
+            $where_clauses[] = "(name LIKE ? OR description LIKE ?)";
+            $query_params[] = "%$searchQuery%";
+            $query_params[] = "%$searchQuery%";
+        }
+        $where_sql = '';
+        if (!empty($where_clauses)) {
+            $where_sql = "WHERE " . implode(" AND ", $where_clauses);
+        }
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM products $where_sql");
+        $stmt->execute($query_params);
+        return $stmt->fetchColumn();
+    }
+
+    /**
+     * Get products paginated with filters.
+     */
+    public function getProductsFilteredPaginated($categoryId = 'all', $searchQuery = '', $offset = 0, $limit = 12) {
+        $where_clauses = [];
+        $query_params = [];
+        if ($categoryId !== 'all') {
+            $where_clauses[] = "p.category_id = ?";
+            $query_params[] = $categoryId;
+        }
+        if ($searchQuery !== '') {
+            $where_clauses[] = "(p.name LIKE ? OR p.description LIKE ?)";
+            $query_params[] = "%$searchQuery%";
+            $query_params[] = "%$searchQuery%";
+        }
+        $where_sql = '';
+        if (!empty($where_clauses)) {
+            $where_sql = "WHERE " . implode(" AND ", $where_clauses);
+        }
+        
+        $query_params[] = $limit;
+        $query_params[] = $offset;
+
+        $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id $where_sql ORDER BY p.id DESC LIMIT ? OFFSET ?");
+        // Limit and Offset must be bound as INT, so execute with array is tricky if PDO emulation is off, 
+        // but normally it works if PDO::ATTR_EMULATE_PREPARES is true. Better to bind.
+        
+        foreach ($query_params as $index => $param) {
+            $stmt->bindValue($index + 1, $param, is_int($param) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Get product detail by ID.
      */
     public function getProductById($id) {
@@ -85,5 +143,91 @@ class ProductService {
         $stmt = $this->pdo->prepare("SELECT * FROM product_variants WHERE id = ? AND product_id = ?");
         $stmt->execute([$variantId, $productId]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Check if category slug exists.
+     */
+    public function checkCategorySlugExists($slug) {
+        $stmt = $this->pdo->prepare("SELECT id FROM categories WHERE slug = ?");
+        $stmt->execute([$slug]);
+        return $stmt->fetch() ? true : false;
+    }
+
+    /**
+     * Check if category slug exists excluding self.
+     */
+    public function checkCategorySlugExistsExcludingSelf($slug, $id) {
+        $stmt = $this->pdo->prepare("SELECT id FROM categories WHERE slug = ? AND id != ?");
+        $stmt->execute([$slug, $id]);
+        return $stmt->fetch() ? true : false;
+    }
+
+    /**
+     * Add a category.
+     */
+    public function addCategory($name, $slug, $icon, $color) {
+        $stmt = $this->pdo->prepare("INSERT INTO categories (name, slug, icon, color) VALUES (?, ?, ?, ?)");
+        return $stmt->execute([$name, $slug, $icon, $color]);
+    }
+
+    /**
+     * Update a category.
+     */
+    public function updateCategory($id, $name, $slug, $icon, $color) {
+        $stmt = $this->pdo->prepare("UPDATE categories SET name = ?, slug = ?, icon = ?, color = ? WHERE id = ?");
+        return $stmt->execute([$name, $slug, $icon, $color, $id]);
+    }
+
+    /**
+     * Nullify product category relations.
+     */
+    public function nullifyProductsCategory($categoryId) {
+        $stmt = $this->pdo->prepare("UPDATE products SET category_id = NULL WHERE category_id = ?");
+        return $stmt->execute([$categoryId]);
+    }
+
+    /**
+     * Delete a category.
+     */
+    public function deleteCategory($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM categories WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Get variant by ID.
+     */
+    public function getVariantById($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM product_variants WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Add a product variant.
+     */
+    public function addVariant($productId, $variantName, $variantValue, $additionalPrice, $stock) {
+        $stmt = $this->pdo->prepare("INSERT INTO product_variants (product_id, variant_name, variant_value, additional_price, stock) VALUES (?, ?, ?, ?, ?)");
+        if ($stmt->execute([$productId, $variantName, $variantValue, $additionalPrice, $stock])) {
+            return $this->pdo->lastInsertId();
+        }
+        return false;
+    }
+
+    /**
+     * Update a product variant.
+     */
+    public function updateVariant($id, $variantName, $variantValue, $additionalPrice, $stock) {
+        $stmt = $this->pdo->prepare("UPDATE product_variants SET variant_name = ?, variant_value = ?, additional_price = ?, stock = ? WHERE id = ?");
+        return $stmt->execute([$variantName, $variantValue, $additionalPrice, $stock, $id]);
+    }
+
+    /**
+     * Delete a product variant.
+     */
+    public function deleteVariant($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM product_variants WHERE id = ?");
+        return $stmt->execute([$id]);
     }
 }

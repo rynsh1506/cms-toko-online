@@ -144,4 +144,152 @@ class OrderService {
         $stmt = $this->pdo->prepare("UPDATE product_variants SET stock = stock + ? WHERE id = ?");
         return $stmt->execute([$quantity, $variantId]);
     }
+
+    /**
+     * Add a bank account.
+     */
+    public function addBankAccount($bankName, $accountNumber, $accountName) {
+        $stmt = $this->pdo->prepare("INSERT INTO bank_accounts (bank_name, account_number, account_name, is_active) VALUES (?, ?, ?, 1)");
+        return $stmt->execute([$bankName, $accountNumber, $accountName]);
+    }
+
+    /**
+     * Get a bank account by ID.
+     */
+    public function getBankAccountById($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM bank_accounts WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Toggle active status of a bank account.
+     */
+    public function toggleBankAccountStatus($id, $newStatus) {
+        $stmt = $this->pdo->prepare("UPDATE bank_accounts SET is_active = ? WHERE id = ?");
+        return $stmt->execute([$newStatus, $id]);
+    }
+
+    /**
+     * Delete a bank account.
+     */
+    public function deleteBankAccount($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM bank_accounts WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Check if a promo code exists.
+     */
+    public function checkPromoCodeExists($code) {
+        $stmt = $this->pdo->prepare("SELECT id FROM promo_codes WHERE code = ?");
+        $stmt->execute([$code]);
+        return $stmt->fetch() ? true : false;
+    }
+
+    /**
+     * Check if a promo code exists excluding self.
+     */
+    public function checkPromoCodeExistsExcludingSelf($code, $id) {
+        $stmt = $this->pdo->prepare("SELECT id FROM promo_codes WHERE code = ? AND id != ?");
+        $stmt->execute([$code, $id]);
+        return $stmt->fetch() ? true : false;
+    }
+
+    /**
+     * Add a promo code.
+     */
+    public function addPromoCode($code, $discountType, $discountValue, $minOrder, $maxUses, $isActive, $expiresAt) {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO promo_codes (code, discount_type, discount_value, min_order, max_uses, is_active, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        return $stmt->execute([$code, $discountType, $discountValue, $minOrder, $maxUses, $isActive, $expiresAt]);
+    }
+
+    /**
+     * Update a promo code.
+     */
+    public function updatePromoCode($id, $code, $discountType, $discountValue, $minOrder, $maxUses, $isActive, $expiresAt) {
+        $stmt = $this->pdo->prepare("
+            UPDATE promo_codes 
+            SET code = ?, discount_type = ?, discount_value = ?, min_order = ?, max_uses = ?, is_active = ?, expires_at = ?
+            WHERE id = ?
+        ");
+        return $stmt->execute([$code, $discountType, $discountValue, $minOrder, $maxUses, $isActive, $expiresAt, $id]);
+    }
+
+    /**
+     * Delete a promo code.
+     */
+    public function deletePromoCode($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM promo_codes WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Get a promo code by code string.
+     */
+    public function getPromoCodeByCode($code) {
+        $stmt = $this->pdo->prepare("SELECT * FROM promo_codes WHERE code = ?");
+        $stmt->execute([$code]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Lock order for status update.
+     */
+    public function lockOrderForUpdate($orderId) {
+        $stmt = $this->pdo->prepare("SELECT status FROM orders WHERE id = ? FOR UPDATE");
+        $stmt->execute([$orderId]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Update order status.
+     */
+    public function updateOrderStatus($orderId, $status) {
+        $stmt = $this->pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        return $stmt->execute([$status, $orderId]);
+    }
+
+    /**
+     * Get order details joined with bank account info.
+     */
+    public function getOrderWithBankDetails($orderId) {
+        $stmt = $this->pdo->prepare("
+            SELECT o.*, b.bank_name, b.account_number, b.account_name 
+            FROM orders o
+            LEFT JOIN bank_accounts b ON o.bank_account_id = b.id
+            WHERE o.id = ?
+        ");
+        $stmt->execute([$orderId]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Get order items joined with product info.
+     */
+    public function getOrderItemsWithProductInfo($orderId) {
+        $stmt = $this->pdo->prepare("
+            SELECT oi.*, p.name, p.image_url 
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?
+        ");
+        $stmt->execute([$orderId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get admin phone number.
+     */
+    public function getAdminPhone() {
+        $stmtAdmin = $this->pdo->query("SELECT phone FROM users WHERE role = 'admin' LIMIT 1");
+        $admin_user = $stmtAdmin->fetch();
+        if ($admin_user && !empty($admin_user['phone'])) {
+            return preg_replace('/[^0-9]/', '', $admin_user['phone']);
+        }
+        return '6281234567890';
+    }
 }

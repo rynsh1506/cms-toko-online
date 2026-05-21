@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/LandingService.php';
+
+$landingService = new LandingService($pdo);
 
 // Proteksi: Hanya Admin
 checkAdmin();
@@ -15,8 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $safe_key = sanitize_input($key);
             $safe_value = sanitize_input($value); // Boleh XSS sanitize di sini atau saat render
             
-            $stmt = $pdo->prepare("UPDATE landing_configs SET content_value = ? WHERE section_key = ? AND (type = 'text' OR type = 'color')");
-            $stmt->execute([$safe_value, $safe_key]);
+            $landingService->updateConfigValue($safe_key, $safe_value);
         }
     }
 
@@ -41,16 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if (move_uploaded_file($file['tmp_name'], $upload_dir . $new_filename)) {
                 // Hapus gambar lama jika ada (Optional, untuk kebersihan)
-                $stmt = $pdo->prepare("SELECT content_value FROM landing_configs WHERE section_key = 'hero_image'");
-                $stmt->execute();
-                $old_img = $stmt->fetchColumn();
+                $old_img = $landingService->getConfigValueByKey('hero_image');
                 if ($old_img && file_exists($upload_dir . $old_img)) {
                     unlink($upload_dir . $old_img);
                 }
                 
                 // Update database
-                $stmt = $pdo->prepare("UPDATE landing_configs SET content_value = ? WHERE section_key = 'hero_image'");
-                $stmt->execute([$new_filename]);
+                $landingService->updateHeroImage($new_filename);
             } else {
                 $err = "Gagal memindahkan file yang diupload.";
             }
