@@ -278,27 +278,29 @@ if (isset($_SESSION['cart'])) {
         // Track selected variants per group
         const selectedVariants = {};
 
-        // Variant Selection
+        // Variant Selection (click to select, click again to unselect)
         $(document).on('click', '.variant-btn', function () {
             const group = $(this).data('group');
             const variantId = $(this).data('variant-id');
             const variantName = $(this).data('variant-name');
             const variantValue = $(this).data('variant-value');
             const addPrice = parseFloat($(this).data('additional-price')) || 0;
+            const isSelected = $(this).hasClass('selected');
 
-            // Deselect others in same group
+            // Deselect all in same group
             $(`.variant-btn[data-group="${group}"]`).removeClass('selected').css({'background-color': '', 'color': '', 'border-color': ''});
+            $(this).closest('[data-variant-group]').find('.selected-label').text('');
 
-            // Select this
-            $(this).addClass('selected').css({'background-color': '<?= $primary_color ?>', 'color': 'white', 'border-color': 'transparent'});
+            if (!isSelected) {
+                // Select this button
+                $(this).addClass('selected').css({'background-color': '<?= $primary_color ?>', 'color': 'white', 'border-color': 'transparent'});
+                selectedVariants[group] = { id: variantId, name: variantName, value: variantValue, addPrice: addPrice };
+                $(this).closest('[data-variant-group]').find('.selected-label').text(variantValue);
+            } else {
+                // Unselect: remove from tracked selections
+                delete selectedVariants[group];
+            }
 
-            // Track selection
-            selectedVariants[group] = { id: variantId, name: variantName, value: variantValue, addPrice: addPrice };
-
-            // Update label
-            $(this).closest('[data-variant-group]').find('.selected-label').text(variantValue);
-
-            // Update hidden inputs (use last selected variant id for single-variant products, or combine)
             updateVariantInputs();
             updatePrice();
         });

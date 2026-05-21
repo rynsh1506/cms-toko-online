@@ -64,16 +64,16 @@ $current_page = $_GET['page'] ?? 'admin';
 
     <div class="min-h-screen flex flex-col md:flex-row">
         <!-- Sidebar -->
-        <aside class="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-slate-900 dark:bg-slate-950 text-slate-200 flex-shrink-0 flex flex-col justify-between border-r border-slate-800 shadow-xl">
+        <aside class="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 flex-shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-slate-800 shadow-xl transition-colors duration-300">
             <div>
                 <!-- Brand Header -->
-                <div class="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950">
+                <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
                     <a href="index.php?page=admin" class="flex items-center space-x-2">
                                                 <svg class="h-8 w-8 rounded-lg shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-side)" />
-                            <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
-                            <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
-                            <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
+                            <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-side)"/>
+                            <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff"/>
+                            <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff"/>
+                            <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)"/>
                             <defs>
                                 <linearGradient id="logo-grad-nav-side" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
                                     <stop stop-color="#6366f1"/>
@@ -81,55 +81,55 @@ $current_page = $_GET['page'] ?? 'admin';
                                 </linearGradient>
                             </defs>
                         </svg>
-                        <span class="font-extrabold text-xl tracking-tight text-white font-display">Nusa<span class="text-indigo-400">Bay</span></span>
+                        <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white font-display">Nusa<span class="text-indigo-500 dark:text-indigo-400">Bay</span></span>
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <nav class="p-4 space-y-1.5">
-                    <a href="index.php?page=admin" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2 2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
                         </svg>
                         <span>Dashboard</span>
                     </a>
 
-                    <a href="index.php?page=admin_products" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_products' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin_products" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_products' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                         <span>Kelola Produk</span>
                     </a>
 
-                    <a href="index.php?page=admin_categories" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_categories' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin_categories" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_categories' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span>Kelola Kategori</span>
                     </a>
 
-                    <a href="index.php?page=admin_banks" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_banks' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin_banks" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_banks' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                         <span>Rekening Bank</span>
                     </a>
 
-                    <a href="index.php?page=admin_promos" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_promos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin_promos" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_promos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0H8m12 3v10a2 2 0 01-2 2H6a2 2 0 01-2-2V11" />
                         </svg>
                         <span>Kode Promo</span>
                     </a>
 
-                    <a href="index.php?page=admin_banners" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_banners' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin_banners" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_banners' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span>Banner Promo</span>
                     </a>
 
-                    <a href="index.php?page=admin_orders" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_orders' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-100' ?>">
+                    <a href="index.php?page=admin_orders" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition <?= $current_page === 'admin_orders' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' ?>">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                         </svg>
@@ -139,27 +139,27 @@ $current_page = $_GET['page'] ?? 'admin';
             </div>
 
             <!-- Footer / User Info & Storefront link -->
-            <div class="p-4 border-t border-slate-800 bg-slate-950/50">
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50">
                 <div class="flex items-center justify-between mb-4">
                     <a href="index.php?page=admin_profile" class="flex items-center space-x-3 hover:opacity-85 transition">
                         <?php if ($admin_avatar): ?>
-                            <img class="h-9 w-9 rounded-full object-cover border border-slate-700" src="<?= $admin_avatar ?>" alt="Avatar">
+                            <img class="h-9 w-9 rounded-full object-cover border border-slate-300 dark:border-slate-700" src="<?= $admin_avatar ?>" alt="Avatar">
                         <?php else: ?>
-                            <div class="h-9 w-9 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white text-sm">
+                            <div class="h-9 w-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-sm">
                                 <?= strtoupper(substr($admin_name, 0, 1)) ?>
                             </div>
                         <?php endif; ?>
                         <div class="overflow-hidden">
-                            <p class="text-xs font-semibold text-white leading-none truncate"><?= $admin_name ?></p>
-                            <p class="text-[10px] text-slate-500 mt-0.5 truncate"><?= $admin_email ?></p>
+                            <p class="text-xs font-semibold text-slate-800 dark:text-white leading-none truncate"><?= $admin_name ?></p>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 truncate"><?= $admin_email ?></p>
                         </div>
                     </a>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <a href="index.php?page=home" class="flex items-center justify-center space-x-1.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs text-white transition font-medium">
+                    <a href="index.php?page=home" class="flex items-center justify-center space-x-1.5 py-1.5 rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs text-slate-700 dark:text-white transition font-medium">
                         <span>Toko</span>
                     </a>
-                    <a href="index.php?page=auth_process&action=logout" class="flex items-center justify-center space-x-1.5 py-1.5 rounded bg-rose-600/20 text-xs text-red-400 hover:bg-red-600/30 hover:text-red-300 transition font-medium">
+                    <a href="index.php?page=auth_process&action=logout" class="flex items-center justify-center space-x-1.5 py-1.5 rounded bg-rose-100 dark:bg-rose-600/20 text-xs text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-600/30 hover:text-red-700 dark:hover:text-red-300 transition font-medium">
                         <span>Logout</span>
                     </a>
                 </div>
