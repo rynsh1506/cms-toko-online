@@ -1,28 +1,39 @@
 <?php
+// Load PHPMailer secara manual
+require __DIR__ . '/PHPMailer/Exception.php';
+require __DIR__ . '/PHPMailer/PHPMailer.php';
+require __DIR__ . '/PHPMailer/SMTP.php';
 
-/**
- * Kirim email simulasi ke file log
- */
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 function sendMail($to, $subject, $body) {
-    $log_dir = __DIR__ . '/../logs';
-    if (!is_dir($log_dir)) {
-        mkdir($log_dir, 0777, true);
+    $mail = new PHPMailer(true);
+
+    try {
+        // Konfigurasi Server SMTP
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';                     
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'riangg4315@gmail.com';           
+        $mail->Password   = 'dsnp ovdq qrml hmkp';        
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Penerima & Pengirim
+        $mail->setFrom('riangg4315@gmail.com', 'NusaBay Team');
+        $mail->addAddress($to);
+
+        // Konten Email
+        $mail->isHTML(false); 
+        $mail->Subject = $subject;
+        $mail->Body    = $body;
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        // Fallback catat ke log jika gagal kirim asli
+        error_log("Gagal mengirim email: {$mail->ErrorInfo}");
+        return false;
     }
-    
-    $log_file = $log_dir . '/emails.log';
-    
-    $timestamp = date('Y-m-d H:i:s');
-    $email_content = "==================================================\n";
-    $email_content .= "TIMESTAMP: $timestamp\n";
-    $email_content .= "TO: $to\n";
-    $email_content .= "SUBJECT: $subject\n";
-    $email_content .= "BODY:\n$body\n";
-    $email_content .= "==================================================\n\n";
-    
-    file_put_contents($log_file, $email_content, FILE_APPEND);
-    
-    // Juga coba kirim via mail PHP bawaan (jika ada MTA lokal)
-    @mail($to, $subject, $body, "From: no-reply@prostore.com\r\nContent-Type: text/plain; charset=utf-8\r\n");
-    
-    return true;
 }
