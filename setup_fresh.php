@@ -6,7 +6,7 @@ try {
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
     // Drop tables if they exist
-    $tables = ['order_items', 'orders', 'bank_accounts', 'products', 'landing_configs', 'users', 'categories', 'promo_codes', 'banners'];
+    $tables = ['order_items', 'orders', 'bank_accounts', 'product_variants', 'products', 'landing_configs', 'users', 'categories', 'promo_codes', 'banners'];
     foreach ($tables as $table) {
         $pdo->exec("DROP TABLE IF EXISTS `$table`;");
     }
@@ -62,6 +62,21 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
     echo "Tabel 'products' berhasil dibuat.<br>";
+
+    // 3b. Product Variants Table
+    $pdo->exec("
+    CREATE TABLE product_variants (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id INT NOT NULL,
+        variant_name VARCHAR(100) NOT NULL,
+        variant_value VARCHAR(100) NOT NULL,
+        additional_price DECIMAL(10, 2) DEFAULT 0.00,
+        stock INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+    echo "Tabel 'product_variants' berhasil dibuat.<br>";
 
     // 4. Bank Accounts Table
     $pdo->exec("
@@ -123,6 +138,8 @@ try {
         id INT AUTO_INCREMENT PRIMARY KEY,
         order_id INT NOT NULL,
         product_id INT NOT NULL,
+        variant_id INT DEFAULT NULL,
+        variant_info TEXT DEFAULT NULL,
         quantity INT NOT NULL,
         price DECIMAL(10, 2) NOT NULL,
         FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
@@ -232,6 +249,34 @@ try {
     $stmtProd->execute([$cat_ids['olahraga'], 'Tali Skipping Digital dengan Counter', 'Lompat tali pintar dengan penghitung lompatan digital otomatis dan kalori, pegangan anti-selip.', 75000.00, 50, 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=60']);
     
     echo "- Seed products berhasil.<br>";
+
+    // Seed Product Variants (untuk 2 produk pertama sebagai contoh)
+    $stmtVar = $pdo->prepare("
+        INSERT INTO product_variants (product_id, variant_name, variant_value, additional_price, stock)
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $firstProducts = $pdo->query("SELECT id FROM products ORDER BY id ASC LIMIT 2")->fetchAll();
+    if (count($firstProducts) >= 1) {
+        $pid1 = $firstProducts[0]['id']; // Kemeja Flannel
+        $stmtVar->execute([$pid1, 'Ukuran', 'S', 0.00, 10]);
+        $stmtVar->execute([$pid1, 'Ukuran', 'M', 0.00, 15]);
+        $stmtVar->execute([$pid1, 'Ukuran', 'L', 10000.00, 12]);
+        $stmtVar->execute([$pid1, 'Ukuran', 'XL', 20000.00, 8]);
+        $stmtVar->execute([$pid1, 'Warna', 'Indigo', 0.00, 20]);
+        $stmtVar->execute([$pid1, 'Warna', 'Merah', 0.00, 15]);
+        $stmtVar->execute([$pid1, 'Warna', 'Hitam', 15000.00, 10]);
+    }
+    if (count($firstProducts) >= 2) {
+        $pid2 = $firstProducts[1]['id']; // Sepatu Sneakers
+        $stmtVar->execute([$pid2, 'Ukuran', '38', 0.00, 5]);
+        $stmtVar->execute([$pid2, 'Ukuran', '39', 0.00, 8]);
+        $stmtVar->execute([$pid2, 'Ukuran', '40', 0.00, 8]);
+        $stmtVar->execute([$pid2, 'Ukuran', '41', 5000.00, 6]);
+        $stmtVar->execute([$pid2, 'Ukuran', '42', 5000.00, 4]);
+        $stmtVar->execute([$pid2, 'Warna', 'Putih', 0.00, 15]);
+        $stmtVar->execute([$pid2, 'Warna', 'Hitam', 0.00, 16]);
+    }
+    echo "- Seed product variants berhasil.<br>";
 
     // Seed Bank Accounts
     $pdo->exec("

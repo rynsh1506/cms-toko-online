@@ -61,8 +61,8 @@ if ($page_num > $total_pages) {
 }
 $offset = ($page_num - 1) * $items_per_page;
 
-// Fetch products for current page
-$products_query = "SELECT * FROM products $where_sql ORDER BY id DESC LIMIT $items_per_page OFFSET $offset";
+// Fetch products for current page (with variant count)
+$products_query = "SELECT p.*, (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count FROM products p $where_sql ORDER BY p.id DESC LIMIT $items_per_page OFFSET $offset";
 $products_stmt = $pdo->prepare($products_query);
 $products_stmt->execute($query_params);
 $products = $products_stmt->fetchAll();
@@ -144,7 +144,7 @@ ob_start();
                  data-id="<?= $product['id'] ?>"
                  data-category="<?= $product['category_id'] ?? '' ?>">
                 <!-- Image Container -->
-                <div class="relative overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
+                <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="relative block overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
                     <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
                          alt="<?= htmlspecialchars($product['name']) ?>" 
                          loading="lazy"
@@ -154,14 +154,14 @@ ob_start();
                             <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
                         </div>
                     <?php endif; ?>
-                </div>
+                </a>
                 
                 <!-- Content -->
                 <div class="p-6 flex-1 flex flex-col justify-between">
                     <div class="space-y-2.5">
-                        <h3 class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display" data-original="<?= htmlspecialchars($product['name']) ?>">
+                        <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="product-title font-bold text-slate-800 dark:text-white group-hover:text-primary transition duration-300 line-clamp-1 text-sm font-display block" data-original="<?= htmlspecialchars($product['name']) ?>">
                             <?= htmlspecialchars($product['name']) ?>
-                        </h3>
+                        </a>
                         <p class="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed font-light">
                             <?= htmlspecialchars($product['description'] ?? '') ?>
                         </p>
@@ -176,15 +176,30 @@ ob_start();
                         </div>
                         
                         <?php if ($product['stock'] > 0): ?>
-                            <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
-                                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-slate-100/10 cursor-pointer">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            <?php if ($product['variant_count'] > 0): ?>
+                                <!-- Product has variants: redirect to detail page -->
+                                <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="flex items-center space-x-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold px-3 py-2.5 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-primary/20">
+                                    <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2z"/>
                                     </svg>
-                                </button>
-                            </form>
+                                    <span>Pilih Varian</span>
+                                </a>
+                            <?php else: ?>
+                                <!-- No variants: show add to cart + quick checkout -->
+                                <div class="flex items-center space-x-1.5">
+                                    <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
+                                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                        <input type="hidden" name="variant_id" value="0">
+                                        <input type="hidden" name="variant_info" value="">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm cursor-pointer" title="Tambah ke Keranjang">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
                         <?php else: ?>
                             <button disabled class="bg-slate-50 dark:bg-slate-800/40 text-slate-350 dark:text-slate-650 p-3 rounded-2xl cursor-not-allowed">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

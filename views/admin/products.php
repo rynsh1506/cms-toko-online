@@ -82,6 +82,14 @@ $products = $stmt->fetchAll();
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
+                                    <button
+                                        onclick="openVariantModal(<?= $product['id'] ?>, '<?= htmlspecialchars(addslashes($product['name'])) ?>')"
+                                        class="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+                                        title="Kelola Varian">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2zm0 0V3" />
+                                        </svg>
+                                    </button>
                                     <button 
                                         data-id="<?= $product['id'] ?>"
                                         class="btn-delete-product p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition" 
@@ -357,4 +365,158 @@ $products = $stmt->fetchAll();
             });
         });
     });
+</script>
+
+<!-- ===== Variant Modal ===== -->
+<div id="variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto font-sans">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h3 class="text-lg font-extrabold text-slate-800 dark:text-white font-display">Kelola Varian</h3>
+                <p id="variant-modal-product-name" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button onclick="closeVariantModal()" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Variant List -->
+        <div class="p-6 border-b border-slate-100 dark:border-slate-700">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Daftar Varian</h4>
+            <div id="variant-list" class="space-y-2 min-h-[60px]">
+                <p class="text-sm text-slate-400 text-center py-4" id="variant-empty-msg">Belum ada varian untuk produk ini.</p>
+            </div>
+        </div>
+
+        <!-- Add Variant Form -->
+        <div class="p-6">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Tambah Varian Baru</h4>
+            <form id="add-variant-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Nama Varian <span class="text-rose-500">*</span></label>
+                        <input type="text" id="new-variant-name" placeholder="contoh: Ukuran" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Nilai <span class="text-rose-500">*</span></label>
+                        <input type="text" id="new-variant-value" placeholder="contoh: XL" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Harga Tambahan (Rp)</label>
+                        <input type="number" id="new-variant-price" value="0" min="0" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Stok</label>
+                        <input type="number" id="new-variant-stock" value="0" min="0" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition active:scale-[0.98]">
+                    + Tambah Varian
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== VARIANT MODAL ==========
+let currentProductId = null;
+
+function openVariantModal(productId, productName) {
+    currentProductId = productId;
+    document.getElementById('variant-modal-product-name').textContent = productName;
+    document.getElementById('variant-modal').style.display = 'flex';
+    document.getElementById('add-variant-form').reset();
+    loadVariants();
+}
+
+function closeVariantModal() {
+    document.getElementById('variant-modal').style.display = 'none';
+    currentProductId = null;
+}
+
+function loadVariants() {
+    const list = document.getElementById('variant-list');
+    list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Memuat...</p>';
+    $.getJSON('index.php?page=admin_variant_process&action=list&product_id=' + currentProductId, function(data) {
+        if (data.status !== 'success') { list.innerHTML = '<p class="text-xs text-rose-500 text-center py-4">Gagal memuat varian.</p>'; return; }
+        if (data.variants.length === 0) { list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4" id="variant-empty-msg">Belum ada varian untuk produk ini.</p>'; return; }
+        list.innerHTML = '';
+        // Group header
+        const header = '<div class="grid grid-cols-12 gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-1"><span class="col-span-3">Nama</span><span class="col-span-3">Nilai</span><span class="col-span-3">+Harga</span><span class="col-span-2">Stok</span><span class="col-span-1"></span></div>';
+        list.innerHTML = header;
+        data.variants.forEach(function(v) {
+            list.innerHTML += `
+            <div class="variant-row grid grid-cols-12 gap-2 items-center bg-slate-50 dark:bg-slate-700/50 rounded-xl px-3 py-2 text-sm" data-id="${v.id}">
+                <span class="col-span-3 font-medium text-slate-700 dark:text-slate-200 edit-name">${escHtml(v.variant_name)}</span>
+                <span class="col-span-3 text-slate-600 dark:text-slate-300 edit-value">${escHtml(v.variant_value)}</span>
+                <span class="col-span-3 font-mono text-slate-600 dark:text-slate-300 edit-price">${parseInt(v.additional_price) > 0 ? '+Rp ' + Number(v.additional_price).toLocaleString('id-ID') : 'Rp 0'}</span>
+                <span class="col-span-2 font-mono text-slate-600 dark:text-slate-300 edit-stock">${v.stock}</span>
+                <div class="col-span-1 flex space-x-1">
+                    <button onclick="editVariantInline(this, ${v.id}, '${escHtml(v.variant_name)}', '${escHtml(v.variant_value)}', ${v.additional_price}, ${v.stock})" class="p-1 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-slate-400 hover:text-indigo-600 transition" title="Edit">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </button>
+                    <button onclick="deleteVariant(${v.id})" class="p-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/40 text-slate-400 hover:text-rose-600 transition" title="Hapus">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </div>
+            </div>`;
+        });
+    });
+}
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Add Variant
+$('#add-variant-form').on('submit', function(e) {
+    e.preventDefault();
+    const name  = $('#new-variant-name').val().trim();
+    const value = $('#new-variant-value').val().trim();
+    const price = $('#new-variant-price').val();
+    const stock = $('#new-variant-stock').val();
+    if (!name || !value) { alert('Nama varian dan nilai wajib diisi.'); return; }
+    $.post('index.php?page=admin_variant_process&action=add', {
+        product_id: currentProductId, variant_name: name, variant_value: value, additional_price: price, stock: stock
+    }, function(data) {
+        if (data.status === 'success') { $(this)[0] && this.reset(); $('#add-variant-form')[0].reset(); loadVariants(); }
+        else { alert(data.message); }
+    }, 'json');
+});
+
+// Edit Variant (simple prompt-based inline)
+function editVariantInline(btn, id, name, value, price, stock) {
+    const row = $(btn).closest('.variant-row');
+    const newName  = prompt('Nama Varian:', name);
+    if (newName === null) return;
+    const newVal   = prompt('Nilai:', value);
+    if (newVal === null) return;
+    const newPrice = prompt('Harga Tambahan (angka):', price);
+    if (newPrice === null) return;
+    const newStock = prompt('Stok:', stock);
+    if (newStock === null) return;
+
+    $.post('index.php?page=admin_variant_process&action=edit', {
+        id: id, variant_name: newName, variant_value: newVal, additional_price: newPrice, stock: newStock
+    }, function(data) {
+        if (data.status === 'success') { loadVariants(); }
+        else { alert(data.message); }
+    }, 'json');
+}
+
+// Delete Variant
+function deleteVariant(id) {
+    if (!confirm('Hapus varian ini?')) return;
+    $.post('index.php?page=admin_variant_process&action=delete', { id: id }, function(data) {
+        if (data.status === 'success') { loadVariants(); }
+        else { alert(data.message); }
+    }, 'json');
+}
+
+// Close modal on backdrop click
+$('#variant-modal').on('click', function(e) {
+    if (e.target === this) closeVariantModal();
+});
 </script>

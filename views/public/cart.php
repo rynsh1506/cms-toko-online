@@ -15,27 +15,51 @@ $cart_items = [];
 $total_price = 0;
 
 if (!empty($_SESSION['cart'])) {
-    $ids = array_keys($_SESSION['cart']);
-    if (count($ids) > 0) {
-        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-        $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
-        $stmt->execute($ids);
-        $products = $stmt->fetchAll();
-        
-        foreach ($products as $p) {
-            $qty = $_SESSION['cart'][$p['id']];
-            $subtotal = $p['price'] * $qty;
+    if (!empty($_SESSION['cart_meta'])) {
+        // New variant-aware cart system
+        foreach ($_SESSION['cart_meta'] as $cart_key => $meta) {
+            if (!isset($_SESSION['cart'][$cart_key])) continue;
+            $qty = $_SESSION['cart'][$cart_key];
+            $subtotal = $meta['price'] * $qty;
             $total_price += $subtotal;
-            
             $cart_items[] = [
-                'id' => $p['id'],
-                'name' => $p['name'],
-                'price' => $p['price'],
-                'image_url' => $p['image_url'],
-                'stock' => $p['stock'],
-                'qty' => $qty,
-                'subtotal' => $subtotal
+                'cart_key'     => $cart_key,
+                'product_id'   => $meta['product_id'],
+                'variant_id'   => $meta['variant_id'],
+                'name'         => $meta['name'],
+                'price'        => $meta['price'],
+                'image_url'    => $meta['image_url'],
+                'stock'        => $meta['stock'],
+                'variant_info' => $meta['variant_info'] ?? '',
+                'qty'          => $qty,
+                'subtotal'     => $subtotal,
             ];
+        }
+    } else {
+        // Legacy fallback: pure product_id keys
+        $ids = array_filter(array_map('intval', array_keys($_SESSION['cart'])));
+        if (!empty($ids)) {
+            $placeholders = str_repeat('?,', count($ids) - 1) . '?';
+            $stmtP = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+            $stmtP->execute($ids);
+            $products = $stmtP->fetchAll();
+            foreach ($products as $p) {
+                $qty = $_SESSION['cart'][$p['id']] ?? 0;
+                $subtotal = $p['price'] * $qty;
+                $total_price += $subtotal;
+                $cart_items[] = [
+                    'cart_key'     => $p['id'] . '-0',
+                    'product_id'   => $p['id'],
+                    'variant_id'   => 0,
+                    'name'         => $p['name'],
+                    'price'        => $p['price'],
+                    'image_url'    => $p['image_url'],
+                    'stock'        => $p['stock'],
+                    'variant_info' => '',
+                    'qty'          => $qty,
+                    'subtotal'     => $subtotal,
+                ];
+            }
         }
     }
 }
@@ -184,21 +208,30 @@ foreach ($_SESSION['cart'] as $qty) {
                         </thead>
                         <tbody id="cart-table-body" class="divide-y divide-slate-50 dark:divide-slate-800 text-sm">
                             <?php foreach ($cart_items as $item): ?>
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition cart-item-row" data-product-id="<?= $item['id'] ?>">
-                                    <td class="p-4 pl-6 flex items-center space-x-4">
-                                        <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-14 w-14 object-cover rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                                        <span class="font-bold text-slate-800 dark:text-white"><?= htmlspecialchars($item['name']) ?></span>
+                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition cart-item-row" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
+                                    <td class="p-4 pl-6">
+                                        <div class="flex items-center space-x-4">
+                                            <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>">
+                                                <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-14 w-14 object-cover rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                            </a>
+                                            <div>
+                                                <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="font-bold text-slate-800 dark:text-white hover:text-primary transition"><?= htmlspecialchars($item['name']) ?></a>
+                                                <?php if (!empty($item['variant_info'])): ?>
+                                                    <p class="text-xs text-primary font-semibold mt-0.5"><?= htmlspecialchars($item['variant_info']) ?></p>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 font-mono">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>
                                     <td class="p-4">
                                         <div class="flex items-center justify-center">
-                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center rounded-l-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-product-id="<?= $item['id'] ?>">
+                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center rounded-l-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
                                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
                                             </button>
-                                            <input type="text" value="<?= $item['qty'] ?>" 
+                                            <input type="text" value="<?= $item['qty'] ?>"
                                                 class="input-qty h-8 w-12 bg-slate-50 dark:bg-slate-950 border-y border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-center focus:outline-none transition text-xs font-bold font-mono"
-                                                data-product-id="<?= $item['id'] ?>" data-max="<?= $item['stock'] ?>" readonly>
-                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center rounded-r-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-product-id="<?= $item['id'] ?>">
+                                                data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-product-id="<?= $item['product_id'] ?>" data-max="<?= $item['stock'] ?>" readonly>
+                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center rounded-r-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
                                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
                                             </button>
                                         </div>
@@ -206,7 +239,7 @@ foreach ($_SESSION['cart'] as $qty) {
                                     </td>
                                     <td class="subtotal-cell p-4 text-right font-extrabold text-slate-800 dark:text-white font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></td>
                                     <td class="p-4 text-center">
-                                        <button type="button" class="btn-remove-item flex items-center space-x-1 text-rose-500 hover:text-rose-700 font-bold text-xs transition mx-auto" data-product-id="<?= $item['id'] ?>">
+                                        <button type="button" class="btn-remove-item flex items-center space-x-1 text-rose-500 hover:text-rose-700 font-bold text-xs transition mx-auto" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                             <span>Hapus</span>
                                         </button>
@@ -281,53 +314,40 @@ foreach ($_SESSION['cart'] as $qty) {
                 return 'Rp ' + Number(num).toLocaleString('id-ID');
             }
 
-            // Debounce timers & in-flight XHR per product
+            // Debounce timers & in-flight XHR per cart_key
             var _qtyTimers = {};
             var _qtyXhr = {};
 
-            // Send qty update via AJAX (called after debounce)
-            function sendQtyUpdate(productId, qty, inputEl) {
-                // Abort previous in-flight request for this product
-                if (_qtyXhr[productId]) _qtyXhr[productId].abort();
-
-                _qtyXhr[productId] = $.ajax({
+            // Send qty update via AJAX
+            function sendQtyUpdate(cartKey, productId, qty, inputEl) {
+                if (_qtyXhr[cartKey]) _qtyXhr[cartKey].abort();
+                _qtyXhr[cartKey] = $.ajax({
                     url: 'index.php?page=cart_process&action=update',
                     type: 'POST',
-                    data: { product_id: productId, qty: qty, ajax: 1 },
+                    data: { cart_key: cartKey, product_id: productId, qty: qty, ajax: 1 },
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
                             inputEl.closest('tr').find('.subtotal-cell').text(formatRupiah(response.subtotal));
                             $('#grand-total').text(formatRupiah(response.total_price));
                             inputEl.val(response.qty);
-                            $('#cart-badge').text(response.cart_count);
-                            
+                            const badge = $('#cart-badge');
+                            if (response.cart_count > 0) { badge.text(response.cart_count).removeClass('hidden'); } else { badge.addClass('hidden'); }
                             if (response.error_message) {
-                                Swal.fire({
-                                    title: 'Perhatian!',
-                                    text: response.error_message,
-                                    icon: 'warning',
-                                    confirmButtonColor: '<?= $primary_color ?>'
-                                });
+                                Swal.fire({ title: 'Perhatian!', text: response.error_message, icon: 'warning', confirmButtonColor: '<?= $primary_color ?>' });
                             }
                         } else if (response.status === 'removed') {
-                            inputEl.closest('tr').fadeOut(300, function() {
-                                $(this).remove();
-                                checkEmptyCart();
-                            });
+                            inputEl.closest('tr').fadeOut(300, function() { $(this).remove(); checkEmptyCart(); });
                         }
                     },
-                    complete: function() {
-                        delete _qtyXhr[productId];
-                    }
+                    complete: function() { delete _qtyXhr[cartKey]; }
                 });
             }
 
-            // Debounced wrapper: updates input instantly, sends AJAX after 350ms idle
-            function debouncedQtyUpdate(productId, qty, inputEl) {
-                clearTimeout(_qtyTimers[productId]);
-                _qtyTimers[productId] = setTimeout(function() {
-                    sendQtyUpdate(productId, qty, inputEl);
+            function debouncedQtyUpdate(cartKey, productId, qty, inputEl) {
+                clearTimeout(_qtyTimers[cartKey]);
+                _qtyTimers[cartKey] = setTimeout(function() {
+                    sendQtyUpdate(cartKey, productId, qty, inputEl);
                 }, 350);
             }
 
@@ -336,9 +356,11 @@ foreach ($_SESSION['cart'] as $qty) {
                 const row = $(this).closest('tr');
                 const input = row.find('.input-qty');
                 let val = parseInt(input.val()) || 1;
+                const cartKey = input.data('cart-key');
+                const productId = input.data('product-id');
                 if (val > 1) {
                     input.val(val - 1);
-                    debouncedQtyUpdate(input.data('product-id'), val - 1, input);
+                    debouncedQtyUpdate(cartKey, productId, val - 1, input);
                 }
             });
 
@@ -348,27 +370,30 @@ foreach ($_SESSION['cart'] as $qty) {
                 const input = row.find('.input-qty');
                 let val = parseInt(input.val()) || 1;
                 let max = parseInt(input.data('max')) || 999;
+                const cartKey = input.data('cart-key');
+                const productId = input.data('product-id');
                 if (val < max) {
                     input.val(val + 1);
-                    debouncedQtyUpdate(input.data('product-id'), val + 1, input);
+                    debouncedQtyUpdate(cartKey, productId, val + 1, input);
                 }
             });
 
             // AJAX Remove Item
-            $('.btn-remove-item').on('click', function() {
+            $(document).on('click', '.btn-remove-item', function() {
                 const btn = $(this);
-                const productId = btn.data('product-id');
-                
+                const cartKey = btn.data('cart-key');
                 $.ajax({
-                    url: 'index.php?page=cart_process&action=remove&id=' + productId + '&ajax=1',
-                    type: 'GET',
+                    url: 'index.php?page=cart_process&action=remove&ajax=1',
+                    type: 'POST',
+                    data: { cart_key: cartKey, ajax: 1 },
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
                             btn.closest('tr').fadeOut(300, function() {
                                 $(this).remove();
                                 $('#grand-total').text(formatRupiah(response.total_price));
-                                $('#cart-badge').text(response.cart_count);
+                                const badge = $('#cart-badge');
+                                if (response.cart_count > 0) { badge.text(response.cart_count).removeClass('hidden'); } else { badge.addClass('hidden'); }
                                 checkEmptyCart();
                             });
                         }
