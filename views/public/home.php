@@ -502,12 +502,7 @@ if (isset($_GET['ajax'])) {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
-        <div class="max-w-6xl mx-auto px-6 text-center text-xs space-y-2">
-            <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
-            <p class="text-slate-600 font-light">Desain antarmuka premium & dinamis untuk kemudahan berbelanja Anda.</p>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/components/footer.php'; ?>
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
