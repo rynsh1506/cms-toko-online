@@ -2,6 +2,9 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/OrderService.php';
+
+$orderService = new OrderService($pdo);
 
 if (!isAuth()) {
     echo json_encode(['success' => false, 'message' => 'Anda harus login terlebih dahulu.']);
@@ -17,9 +20,7 @@ if (empty($code)) {
 }
 
 try {
-    $stmt = $pdo->prepare("SELECT * FROM promo_codes WHERE code = ?");
-    $stmt->execute([$code]);
-    $promo = $stmt->fetch();
+    $promo = $orderService->getPromoCodeByCode($code);
 
     if (!$promo) {
         echo json_encode(['success' => false, 'message' => 'Kode promo tidak valid atau tidak terdaftar.']);

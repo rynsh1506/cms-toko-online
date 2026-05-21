@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/ProductService.php';
+
+$productService = new ProductService($pdo);
 
 $action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);
@@ -22,9 +25,7 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $quantity_to_add = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
     if ($quantity_to_add <= 0) $quantity_to_add = 1;
 
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
-    $stmt->execute([$product_id]);
-    $product = $stmt->fetch();
+    $product = $productService->getProductById($product_id);
 
     if (!$product) {
         if ($is_ajax) { header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => 'Produk tidak ditemukan.']); exit; }
@@ -35,9 +36,7 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $variant = null;
     $effective_stock = $product['stock'];
     if ($variant_id > 0) {
-        $vStmt = $pdo->prepare("SELECT * FROM product_variants WHERE id = ? AND product_id = ?");
-        $vStmt->execute([$variant_id, $product_id]);
-        $variant = $vStmt->fetch();
+        $variant = $productService->getVariantByIdAndProductId($variant_id, $product_id);
         if (!$variant) {
             if ($is_ajax) { header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => 'Varian tidak valid.']); exit; }
             redirect('index.php?page=home');
@@ -95,9 +94,7 @@ elseif ($action === 'direct_checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') 
     $qty = intval($_POST['quantity'] ?? 1);
     if ($qty <= 0) $qty = 1;
 
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
-    $stmt->execute([$product_id]);
-    $product = $stmt->fetch();
+    $product = $productService->getProductById($product_id);
 
     if (!$product) {
         header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => 'Produk tidak ditemukan.']); exit;
@@ -106,9 +103,7 @@ elseif ($action === 'direct_checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') 
     $variant = null;
     $effective_stock = $product['stock'];
     if ($variant_id > 0) {
-        $vStmt = $pdo->prepare("SELECT * FROM product_variants WHERE id = ? AND product_id = ?");
-        $vStmt->execute([$variant_id, $product_id]);
-        $variant = $vStmt->fetch();
+        $variant = $productService->getVariantByIdAndProductId($variant_id, $product_id);
         if (!$variant) {
             header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => 'Varian tidak valid.']); exit;
         }

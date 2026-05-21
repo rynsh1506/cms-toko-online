@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/ProductService.php';
+
+$productService = new ProductService($pdo);
 
 // Proteksi: Hanya Admin
 checkAdmin();
@@ -28,14 +31,11 @@ if ($action === 'add') {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
 
         // Check if slug exists
-        $stmt_check = $pdo->prepare("SELECT id FROM categories WHERE slug = ?");
-        $stmt_check->execute([$slug]);
-        if ($stmt_check->fetch()) {
+        if ($productService->checkCategorySlugExists($slug)) {
             $slug .= '-' . time();
         }
 
-        $stmt = $pdo->prepare("INSERT INTO categories (name, slug, icon, color) VALUES (?, ?, ?, ?)");
-        if ($stmt->execute([$name, $slug, $icon, $color])) {
+        if ($productService->addCategory($name, $slug, $icon, $color)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Kategori berhasil ditambahkan!']);
@@ -74,14 +74,11 @@ if ($action === 'add') {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
 
         // Check duplicate slug (excluding self)
-        $stmt_check = $pdo->prepare("SELECT id FROM categories WHERE slug = ? AND id != ?");
-        $stmt_check->execute([$slug, $id]);
-        if ($stmt_check->fetch()) {
+        if ($productService->checkCategorySlugExistsExcludingSelf($slug, $id)) {
             $slug .= '-' . time();
         }
 
-        $stmt = $pdo->prepare("UPDATE categories SET name = ?, slug = ?, icon = ?, color = ? WHERE id = ?");
-        if ($stmt->execute([$name, $slug, $icon, $color, $id])) {
+        if ($productService->updateCategory($id, $name, $slug, $icon, $color)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Kategori berhasil diperbarui!']);
@@ -103,11 +100,9 @@ if ($action === 'add') {
     $id = intval($_GET['id'] ?? 0);
     
     // Set associated products' category_id to NULL first to prevent constraint issues
-    $stmt_update_products = $pdo->prepare("UPDATE products SET category_id = NULL WHERE category_id = ?");
-    $stmt_update_products->execute([$id]);
+    $productService->nullifyProductsCategory($id);
 
-    $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ?");
-    if ($stmt->execute([$id])) {
+    if ($productService->deleteCategory($id)) {
         if ($is_ajax) {
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'message' => 'Kategori berhasil dihapus!']);

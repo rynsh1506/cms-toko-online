@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/OrderService.php';
+
+$orderService = new OrderService($pdo);
 
 $action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);
@@ -23,13 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Check unique code
         if (!isset($err)) {
             if ($action === 'add') {
-                $stmt = $pdo->prepare("SELECT id FROM promo_codes WHERE code = ?");
-                $stmt->execute([$code]);
+                $exists = $orderService->checkPromoCodeExists($code);
             } else {
-                $stmt = $pdo->prepare("SELECT id FROM promo_codes WHERE code = ? AND id != ?");
-                $stmt->execute([$code, $id]);
+                $exists = $orderService->checkPromoCodeExistsExcludingSelf($code, $id);
             }
-            if ($stmt->fetch()) {
+            if ($exists) {
                 $err = "Kode promo '$code' sudah terdaftar!";
             }
         }
@@ -39,19 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $expires_at_sql = date('Y-m-d H:i:s', strtotime($expires_at));
             
             if ($action === 'add') {
-                $stmt = $pdo->prepare("
-                    INSERT INTO promo_codes (code, discount_type, discount_value, min_order, max_uses, is_active, expires_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ");
-                $success = $stmt->execute([$code, $discount_type, $discount_value, $min_order, $max_uses, $is_active, $expires_at_sql]);
+                $success = $orderService->addPromoCode($code, $discount_type, $discount_value, $min_order, $max_uses, $is_active, $expires_at_sql);
                 $msg = "Kode promo baru berhasil ditambahkan!";
             } else {
-                $stmt = $pdo->prepare("
-                    UPDATE promo_codes 
-                    SET code = ?, discount_type = ?, discount_value = ?, min_order = ?, max_uses = ?, is_active = ?, expires_at = ?
-                    WHERE id = ?
-                ");
-                $success = $stmt->execute([$code, $discount_type, $discount_value, $min_order, $max_uses, $is_active, $expires_at_sql, $id]);
+                $success = $orderService->updatePromoCode($id, $code, $discount_type, $discount_value, $min_order, $max_uses, $is_active, $expires_at_sql);
                 $msg = "Kode promo berhasil diperbarui!";
             }
 
@@ -78,8 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } elseif ($action === 'delete') {
     $id = intval($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("DELETE FROM promo_codes WHERE id = ?");
-    if ($stmt->execute([$id])) {
+    if ($orderService->deletePromoCode($id)) {
         if ($is_ajax) {
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'message' => 'Kode promo berhasil dihapus!']);

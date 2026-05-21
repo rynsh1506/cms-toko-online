@@ -53,8 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 // Validasi tipe file
                 $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
+                $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
                 $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                if (!in_array($file_ext, $allowed_exts)) {
+                $mime = mime_content_type($file['tmp_name']);
+                
+                if (!in_array($file_ext, $allowed_exts) || !in_array($mime, $allowed_mimes)) {
                     $err = "Format file tidak valid. Harap gunakan format JPG, JPEG, PNG, atau GIF.";
                 } elseif ($file['size'] > 2 * 1024 * 1024) {
                     // Validasi ukuran file (Max 2MB)

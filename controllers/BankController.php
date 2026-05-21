@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/OrderService.php';
+
+$orderService = new OrderService($pdo);
 
 // Proteksi: Hanya Admin
 checkAdmin();
@@ -14,8 +17,7 @@ if ($action === 'add') {
         $account_number = sanitize_input($_POST['account_number']);
         $account_name = sanitize_input($_POST['account_name']);
 
-        $stmt = $pdo->prepare("INSERT INTO bank_accounts (bank_name, account_number, account_name, is_active) VALUES (?, ?, ?, 1)");
-        if ($stmt->execute([$bank_name, $account_number, $account_name])) {
+        if ($orderService->addBankAccount($bank_name, $account_number, $account_name)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Rekening Bank berhasil ditambahkan!']);
@@ -35,14 +37,11 @@ if ($action === 'add') {
 
 } elseif ($action === 'toggle') {
     $id = intval($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT is_active FROM bank_accounts WHERE id = ?");
-    $stmt->execute([$id]);
-    $bank = $stmt->fetch();
+    $bank = $orderService->getBankAccountById($id);
 
     if ($bank) {
         $new_status = $bank['is_active'] ? 0 : 1;
-        $stmt = $pdo->prepare("UPDATE bank_accounts SET is_active = ? WHERE id = ?");
-        if ($stmt->execute([$new_status, $id])) {
+        if ($orderService->toggleBankAccountStatus($id, $new_status)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Status rekening bank berhasil diubah!', 'is_active' => $new_status]);
@@ -69,8 +68,7 @@ if ($action === 'add') {
 
 } elseif ($action === 'delete') {
     $id = intval($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("DELETE FROM bank_accounts WHERE id = ?");
-    if ($stmt->execute([$id])) {
+    if ($orderService->deleteBankAccount($id)) {
         if ($is_ajax) {
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'message' => 'Rekening bank berhasil dihapus!']);

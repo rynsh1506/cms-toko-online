@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/ProductService.php';
+
+$productService = new ProductService($pdo);
 
 // Pastikan semua output dari file ini berformat JSON
 header('Content-Type: application/json');
@@ -17,11 +20,9 @@ if ($action === 'list' && $_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     try {
-        $stmt = $pdo->prepare("SELECT * FROM product_variants WHERE product_id = ? ORDER BY variant_name ASC, id ASC");
-        $stmt->execute([$product_id]);
-        $variants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $variants = $productService->getVariantsByProductId($product_id);
         echo json_encode(['status' => 'success', 'variants' => $variants]);
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Gagal memuat varian: Terjadi kesalahan database.']);
     }
     exit;
@@ -42,36 +43,34 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         // Verifikasi apakah produk terkait benar-benar ada
-        $chk = $pdo->prepare("SELECT id FROM products WHERE id = ?");
-        $chk->execute([$product_id]);
-        if (!$chk->fetch()) { 
+        $product = $productService->getProductById($product_id);
+        if (!$product) { 
             echo json_encode(['status' => 'error', 'message' => 'Produk tidak ditemukan di database.']); 
             exit; 
         }
 
         // Insert varian baru
-        $stmt = $pdo->prepare("INSERT INTO product_variants (product_id, variant_name, variant_value, additional_price, stock) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$product_id, $variant_name, $variant_value, $additional_price, $stock]);
-        $new_id = $pdo->lastInsertId();
+        $new_id = $productService->addVariant($product_id, $variant_name, $variant_value, $additional_price, $stock);
 
-        // No longer auto-updating parent stock
+        if ($new_id) {
+            $newVariant = [
+                'id'               => $new_id, 
+                'product_id'       => $product_id, 
+                'variant_name'     => $variant_name, 
+                'variant_value'    => $variant_value, 
+                'additional_price' => $additional_price, 
+                'stock'            => $stock
+            ];
 
-        // Siapkan data varian yang baru ditambahkan untuk dikembalikan ke frontend
-        $newVariant = [
-            'id'               => $new_id, 
-            'product_id'       => $product_id, 
-            'variant_name'     => $variant_name, 
-            'variant_value'    => $variant_value, 
-            'additional_price' => $additional_price, 
-            'stock'            => $stock
-        ];
-
-        echo json_encode([
-            'status'  => 'success', 
-            'message' => 'Varian produk berhasil ditambahkan.', 
-            'variant' => $newVariant
-        ]);
-    } catch (PDOException $e) {
+            echo json_encode([
+                'status'  => 'success', 
+                'message' => 'Varian produk berhasil ditambahkan.', 
+                'variant' => $newVariant
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan varian.']);
+        }
+    } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan varian. Silakan coba lagi.']);
     }
     exit;
@@ -91,19 +90,9 @@ if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // Ambil product_id sebelum update varian
-        $vStmt = $pdo->prepare("SELECT product_id FROM product_variants WHERE id = ?");
-        $vStmt->execute([$id]);
-        $vData = $vStmt->fetch(PDO::FETCH_ASSOC);
-        $product_id = $vData ? intval($vData['product_id']) : 0;
-
-        $stmt = $pdo->prepare("UPDATE product_variants SET variant_name=?, variant_value=?, additional_price=?, stock=? WHERE id=?");
-        $stmt->execute([$variant_name, $variant_value, $additional_price, $stock, $id]);
-        
-        // No longer auto-updating parent stock
-        
+        $productService->updateVariant($id, $variant_name, $variant_value, $additional_price, $stock);
         echo json_encode(['status' => 'success', 'message' => 'Data varian berhasil diperbarui.']);
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Gagal memperbarui data varian.']);
     }
     exit;
@@ -119,25 +108,13 @@ if ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // Ambil product_id sebelum menghapus varian
-        $vStmt = $pdo->prepare("SELECT product_id FROM product_variants WHERE id = ?");
-        $vStmt->execute([$id]);
-        $vData = $vStmt->fetch(PDO::FETCH_ASSOC);
-        $product_id = $vData ? intval($vData['product_id']) : 0;
-
-        $stmt = $pdo->prepare("DELETE FROM product_variants WHERE id = ?");
-        $stmt->execute([$id]);
-        
-        // No longer auto-updating parent stock
-        
+        $productService->deleteVariant($id);
         echo json_encode(['status' => 'success', 'message' => 'Varian berhasil dihapus.']);
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus varian.']);
     }
     exit;
 }
-
-
 
 // Jika action tidak ada yang cocok
 echo json_encode(['status' => 'error', 'message' => 'Aksi sistem tidak dikenali.']);

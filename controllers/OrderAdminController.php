@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/OrderService.php';
+
+$orderService = new OrderService($pdo);
 
 // Proteksi: Hanya Admin
 checkAdmin();
@@ -20,9 +23,7 @@ if ($action === 'update_status') {
                 $pdo->beginTransaction();
 
                 // Ambil data order untuk divalidasi dengan FOR UPDATE
-                $stmtOrder = $pdo->prepare("SELECT status FROM orders WHERE id = ? FOR UPDATE");
-                $stmtOrder->execute([$order_id]);
-                $order = $stmtOrder->fetch();
+                $order = $orderService->lockOrderForUpdate($order_id);
 
                 if (!$order) {
                     throw new Exception("Pesanan tidak ditemukan.");
@@ -32,20 +33,14 @@ if ($action === 'update_status') {
                 
                 if ($old_status !== $status) {
                     // Update status pesanan
-                    $stmtUpdate = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
-                    $stmtUpdate->execute([$status, $order_id]);
+                    $orderService->updateOrderStatus($order_id, $status);
 
                     // LOGIKA SINKRONISASI STOK BERDASARKAN STATUS TRANSISI
                     
                     // 1. Dari status aktif (pending/paid/shipped/done) ke 'cancelled'
                     // -> Stok dikembalikan (ditambah)
                     if ($status === 'cancelled' && $old_status !== 'cancelled') {
-                        $stmtItems = $pdo->prepare("SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ?");
-                        $stmtItems->execute([$order_id]);
-                        $items = $stmtItems->fetchAll();
-
-                        $stmtRestoreProductStock = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
-                        $stmtRestoreVariantStock = $pdo->prepare("UPDATE product_variants SET stock = stock + ? WHERE id = ?");
+                        $items = $orderService->getOrderItems($order_id);
 
                         foreach ($items as $item) {
                             $qty = intval($item['quantity']);
@@ -53,9 +48,9 @@ if ($action === 'update_status') {
                             $vId = $item['variant_id'] ? intval($item['variant_id']) : null;
 
                             if ($vId) {
-                                $stmtRestoreVariantStock->execute([$qty, $vId]);
+                                $orderService->restoreVariantStock($vId, $qty);
                             } else {
-                                $stmtRestoreProductStock->execute([$qty, $pId]);
+                                $orderService->restoreProductStock($pId, $qty);
                             }
                         }
                     }
@@ -63,12 +58,7 @@ if ($action === 'update_status') {
                     // 2. Dari status 'cancelled' kembali ke status aktif (pending/paid/shipped/done)
                     // -> Stok dipotong ulang (dikurang)
                     if ($old_status === 'cancelled' && $status !== 'cancelled') {
-                        $stmtItems = $pdo->prepare("SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ?");
-                        $stmtItems->execute([$order_id]);
-                        $items = $stmtItems->fetchAll();
-
-                        $stmtDeductProductStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-                        $stmtDeductVariantStock = $pdo->prepare("UPDATE product_variants SET stock = stock - ? WHERE id = ?");
+                        $items = $orderService->getOrderItems($order_id);
 
                         foreach ($items as $item) {
                             $qty = intval($item['quantity']);
@@ -76,9 +66,9 @@ if ($action === 'update_status') {
                             $vId = $item['variant_id'] ? intval($item['variant_id']) : null;
 
                             if ($vId) {
-                                $stmtDeductVariantStock->execute([$qty, $vId]);
+                                $orderService->deductVariantStock($vId, $qty);
                             } else {
-                                $stmtDeductProductStock->execute([$qty, $pId]);
+                                $orderService->deductProductStock($pId, $qty);
                             }
                         }
                     }

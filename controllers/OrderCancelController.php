@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/OrderService.php';
+
+$orderService = new OrderService($pdo);
 
 header('Content-Type: application/json');
 
@@ -22,9 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->beginTransaction();
 
         // Ambil data order untuk divalidasi dengan FOR UPDATE
-        $stmtOrder = $pdo->prepare("SELECT id, status FROM orders WHERE id = ? AND user_id = ? FOR UPDATE");
-        $stmtOrder->execute([$order_id, $user_id]);
-        $order = $stmtOrder->fetch();
+        $order = $orderService->getOrderForUpdate($order_id, $user_id);
 
         if (!$order) {
             throw new Exception("Pesanan tidak ditemukan.");
@@ -35,22 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // 1. Update status pesanan ke cancelled
-        $stmtCancel = $pdo->prepare("
-            UPDATE orders 
-            SET status = 'cancelled', 
-                cancel_reason = 'Dibatalkan oleh pembeli', 
-                cancelled_at = NOW() 
-            WHERE id = ?
-        ");
-        $stmtCancel->execute([$order_id]);
+        $orderService->cancelOrder($order_id);
 
         // 2. Kembalikan stok produk & variannya
-        $stmtItems = $pdo->prepare("SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ?");
-        $stmtItems->execute([$order_id]);
-        $items = $stmtItems->fetchAll();
-
-        $stmtRestoreProductStock = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
-        $stmtRestoreVariantStock = $pdo->prepare("UPDATE product_variants SET stock = stock + ? WHERE id = ?");
+        $items = $orderService->getOrderItems($order_id);
 
         foreach ($items as $item) {
             $qty = intval($item['quantity']);
@@ -59,10 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($vId) {
                 // Kembalikan stok varian
-                $stmtRestoreVariantStock->execute([$qty, $vId]);
+                $orderService->restoreVariantStock($vId, $qty);
             } else {
                 // Produk normal tanpa varian
-                $stmtRestoreProductStock->execute([$qty, $pId]);
+                $orderService->restoreProductStock($pId, $qty);
             }
         }
 

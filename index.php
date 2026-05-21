@@ -11,7 +11,7 @@ $page = isset($_GET['page']) ? sanitize_input($_GET['page']) : 'home';
 // Routing sederhana
 switch ($page) {
     case 'home':
-        require __DIR__ . '/views/public/home.php';
+        require __DIR__ . '/controllers/HomeController.php';
         break;
         
     case 'login':
@@ -47,7 +47,7 @@ switch ($page) {
         break;
 
     case 'checkout':
-        require __DIR__ . '/views/public/checkout.php';
+        require __DIR__ . '/controllers/CheckoutViewController.php';
         break;
 
     case 'checkout_process':
@@ -63,7 +63,7 @@ switch ($page) {
         break;
 
     case 'invoice':
-        require __DIR__ . '/views/public/invoice.php';
+        require __DIR__ . '/controllers/InvoiceViewController.php';
         break;
 
     case 'verify_email':
@@ -86,11 +86,9 @@ switch ($page) {
         require __DIR__ . '/views/public/faq.php';
         break;
 
-    // Admin Pages (Rendered through shared layout)
+    // Admin Pages (Rendered through shared layout or specific controllers)
     case 'admin':
-        checkAdmin();
-        $admin_page = 'dashboard.php';
-        require __DIR__ . '/views/admin/layout.php';
+        require __DIR__ . '/controllers/AdminDashboardController.php';
         break;
 
     case 'admin_settings':

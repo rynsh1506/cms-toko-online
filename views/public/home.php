@@ -1,75 +1,7 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../../config/helpers.php';
-
-// Fetch Configurations
-$stmt = $pdo->query("SELECT section_key, content_value FROM landing_configs");
-$configs_raw = $stmt->fetchAll();
-$configs = [];
-foreach ($configs_raw as $c) {
-    $configs[$c['section_key']] = $c['content_value'];
-}
-
-$hero_title = $configs['hero_title'] ?? 'Selamat Datang di NusaBay';
-$hero_subtitle = $configs['hero_subtitle'] ?? 'Temukan barang impianmu dengan harga terbaik dan terjangkau di sini.';
-$primary_color = $configs['primary_color'] ?? '#6366f1';
-$hero_image = $configs['hero_image'] ?? '';
-
-// Fetch all active categories
-$categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
-
-// Fetch all active promotional banners
-$banners = $pdo->query("SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order ASC, id DESC")->fetchAll();
-
-// Pagination, Category, and Search Filters Setup
-$search_query = isset($_GET['q']) ? trim(sanitize_input($_GET['q'])) : '';
-$active_category = isset($_GET['cat']) ? trim(sanitize_input($_GET['cat'])) : 'all';
-$page_num = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-$items_per_page = 12;
-
-$where_clauses = [];
-$query_params = [];
-
-if ($active_category !== 'all') {
-    $where_clauses[] = "category_id = ?";
-    $query_params[] = $active_category;
-}
-
-if ($search_query !== '') {
-    $where_clauses[] = "(name LIKE ? OR description LIKE ?)";
-    $query_params[] = "%$search_query%";
-    $query_params[] = "%$search_query%";
-}
-
-$where_sql = '';
-if (!empty($where_clauses)) {
-    $where_sql = "WHERE " . implode(" AND ", $where_clauses);
-}
-
-// Count total products matching filters
-$count_query = "SELECT COUNT(*) FROM products $where_sql";
-$count_stmt = $pdo->prepare($count_query);
-$count_stmt->execute($query_params);
-$total_items = (int)$count_stmt->fetchColumn();
-
-$total_pages = ceil($total_items / $items_per_page);
-if ($total_pages < 1) {
-    $total_pages = 1;
-}
-if ($page_num > $total_pages) {
-    $page_num = $total_pages;
-}
-$offset = ($page_num - 1) * $items_per_page;
-
-// Fetch products for current page (with variant count & total variant stock)
-$products_query = "SELECT p.*, 
-                   (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
-                   COALESCE((SELECT SUM(stock) FROM product_variants pv WHERE pv.product_id = p.id), 0) as total_variant_stock 
-                   FROM products p $where_sql 
-                   ORDER BY p.id DESC LIMIT $items_per_page OFFSET $offset";
-$products_stmt = $pdo->prepare($products_query);
-$products_stmt->execute($query_params);
-$products = $products_stmt->fetchAll();
+// Variables $configs, $hero_title, $hero_subtitle, $primary_color, $hero_image
+// $categories, $banners, $products, $total_pages, $page_num, $search_query, $active_category
+// are provided by HomeController.php
 
 // Count Cart Items
 $cart_count = 0;

@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/OrderService.php';
+
+$orderService = new OrderService($pdo);
 
 // Wajib Login
 if (!isAuth()) {
@@ -46,10 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Mulai transaksi SEBELUM melakukan query produk dengan FOR UPDATE
         $pdo->beginTransaction();
 
-        // 1. Validasi Rekening Bank dengan Row Lock
-        $stmtBank = $pdo->prepare("SELECT id FROM bank_accounts WHERE id = ? AND is_active = 1 FOR UPDATE");
-        $stmtBank->execute([$bank_account_id]);
-        if (!$stmtBank->fetch()) {
+        // 1. Validasi Rekening Bank dengan Row Lock menggunakan OrderService
+        if (!$orderService->getActiveBankAccountForUpdate($bank_account_id)) {
             throw new Exception("Metode pembayaran yang dipilih tidak valid atau dinonaktifkan.");
         }
 
@@ -79,9 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Lock product row
-            $stmtProduct = $pdo->prepare("SELECT id, name, price, stock FROM products WHERE id = ? FOR UPDATE");
-            $stmtProduct->execute([$pId]);
-            $product = $stmtProduct->fetch(PDO::FETCH_ASSOC);
+            $product = $orderService->lockProductForUpdate($pId);
 
             if (!$product) {
                 throw new Exception("Produk tidak ditemukan di database.");
@@ -94,9 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($vId > 0) {
                 // Lock variant row
-                $stmtVariant = $pdo->prepare("SELECT id, variant_name, variant_value, additional_price, stock FROM product_variants WHERE id = ? AND product_id = ? FOR UPDATE");
-                $stmtVariant->execute([$vId, $pId]);
-                $variant = $stmtVariant->fetch(PDO::FETCH_ASSOC);
+                $variant = $orderService->lockVariantForUpdate($vId, $pId);
 
                 if (!$variant) {
                     throw new Exception("Varian untuk produk {$product['name']} tidak valid.");
@@ -137,9 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $promo_code_id = !empty($_POST['promo_code_id']) ? intval($_POST['promo_code_id']) : null;
         $discount_amount = 0;
         if ($promo_code_id !== null) {
-            $stmtPromo = $pdo->prepare("SELECT * FROM promo_codes WHERE id = ? FOR UPDATE");
-            $stmtPromo->execute([$promo_code_id]);
-            $promo = $stmtPromo->fetch();
+            $promo = $orderService->getPromoCodeForUpdate($promo_code_id);
             if (!$promo) {
                 throw new Exception("Kode promo tidak valid.");
             }
@@ -168,8 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Update usage count
-            $stmtUpdatePromo = $pdo->prepare("UPDATE promo_codes SET used_count = used_count + 1 WHERE id = ?");
-            $stmtUpdatePromo->execute([$promo_code_id]);
+            $orderService->incrementPromoUsage($promo_code_id);
         }
 
         // Generate Kode Unik & Total Akhir
@@ -177,11 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $final_total = ($total_pure - $discount_amount) + $unique_code;
 
         // 5. Insert ke tabel orders
-        $stmtOrder = $pdo->prepare("
-            INSERT INTO orders (user_id, customer_name, customer_phone, customer_address, total_price, unique_code, bank_account_id, promo_code_id, discount_amount, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-        ");
-        $stmtOrder->execute([
+        $order_id = $orderService->createOrder(
             $user_id, 
             $customer_name, 
             $customer_phone, 
@@ -191,32 +181,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $bank_account_id,
             $promo_code_id,
             $discount_amount
-        ]);
-        
-        $order_id = $pdo->lastInsertId();
+        );
 
         // 6. Insert ke tabel order_items & kurangi stok
-        $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, variant_id, variant_info, quantity, price) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmtUpdateProductStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-        $stmtUpdateVariantStock = $pdo->prepare("UPDATE product_variants SET stock = stock - ? WHERE id = ?");
-        
         foreach ($items_to_process as $item) {
             // Insert item ke database
-            $stmtItem->execute([
+            $orderService->addOrderItem(
                 $order_id,
                 $item['product_id'],
                 $item['variant_id'],
                 $item['variant_info'],
                 $item['quantity'],
                 $item['price']
-            ]);
+            );
             
             if ($item['variant_id']) {
                 // Kurangi stok varian
-                $stmtUpdateVariantStock->execute([$item['quantity'], $item['variant_id']]);
+                $orderService->deductVariantStock($item['variant_id'], $item['quantity']);
             } else {
                 // Kurangi stok utama produk saja
-                $stmtUpdateProductStock->execute([$item['quantity'], $item['product_id']]);
+                $orderService->deductProductStock($item['product_id'], $item['quantity']);
             }
         }
 

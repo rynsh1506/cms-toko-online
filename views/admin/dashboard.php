@@ -1,21 +1,6 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch advanced KPI stats
-$total_products = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
-$total_orders = $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-$total_income = $pdo->query("SELECT SUM(total_price) FROM orders WHERE status != 'pending' AND status != 'cancelled'")->fetchColumn() ?? 0;
-$pending_orders = $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'pending'")->fetchColumn();
-$out_of_stock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock = 0")->fetchColumn();
-
-// Recent orders
-$stmt = $pdo->query("
-    SELECT o.*, u.name as buyer_name 
-    FROM orders o
-    JOIN users u ON o.user_id = u.id
-    ORDER BY o.id DESC LIMIT 5
-");
-$recent_orders = $stmt->fetchAll();
+// Variables $total_products, $total_orders, $total_income, $pending_orders, $out_of_stock, $recent_orders
+// are provided by AdminDashboardController.php
 ?>
 
 <!-- Include Chart.js -->

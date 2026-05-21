@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/AuthService.php';
+
+$authService = new AuthService($pdo);
 
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 
@@ -19,9 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Cari user berdasarkan email
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    $user = $authService->getUserByEmail($email);
 
     if (!$user) {
         if ($is_ajax) {
@@ -54,8 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Update status verifikasi
-    $stmtUpdate = $pdo->prepare("UPDATE users SET email_verified_at = NOW(), verification_token = NULL WHERE id = ?");
-    $stmtUpdate->execute([$user['id']]);
+    $authService->verifyUserEmail($user['id']);
 
     // Auto-login setelah verifikasi berhasil
     $_SESSION['user_id'] = $user['id'];
@@ -87,9 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('index.php?page=home');
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE verification_token = ?");
-    $stmt->execute([$token]);
-    $user = $stmt->fetch();
+    $user = $authService->getUserByToken($token);
 
     if (!$user) {
         $_SESSION['error'] = "Token verifikasi tidak ditemukan atau kedaluwarsa.";
@@ -102,8 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Update status verifikasi
-    $stmtUpdate = $pdo->prepare("UPDATE users SET email_verified_at = NOW(), verification_token = NULL WHERE id = ?");
-    $stmtUpdate->execute([$user['id']]);
+    $authService->verifyUserEmail($user['id']);
 
     // Auto-login
     $_SESSION['user_id'] = $user['id'];
