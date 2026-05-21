@@ -8,13 +8,20 @@ $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HT
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
+if (!isset($_SESSION['cart_meta'])) { 
+    $_SESSION['cart_meta'] = []; 
+}
 
+// --- ADD TO CART ---
 if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = intval($_POST['product_id'] ?? 0);
     $variant_id  = intval($_POST['variant_id'] ?? 0);
     $variant_info_text = trim(sanitize_input($_POST['variant_info'] ?? ''));
+    
+    // FIX BUG: Ambil kuantitas asli yang diinput user, default 1 jika tidak ada
+    $quantity_to_add = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
+    if ($quantity_to_add <= 0) $quantity_to_add = 1;
 
-    // Check product in DB
     $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
     $stmt->execute([$product_id]);
     $product = $stmt->fetch();
@@ -25,7 +32,6 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('index.php?page=home');
     }
 
-    // Validate variant if provided
     $variant = null;
     $effective_stock = $product['stock'];
     if ($variant_id > 0) {
@@ -39,13 +45,10 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $effective_stock = $variant['stock'];
     }
 
-    // Cart key: "productId-variantId" (variantId=0 if no variant)
     $cart_key = $product_id . '-' . $variant_id;
 
-    if (!isset($_SESSION['cart'])) { $_SESSION['cart'] = []; }
-    if (!isset($_SESSION['cart_meta'])) { $_SESSION['cart_meta'] = []; }
-
-    $qty = isset($_SESSION['cart'][$cart_key]) ? $_SESSION['cart'][$cart_key] + 1 : 1;
+    // FIX BUG: Akumulasikan berdasarkan quantity_to_add, bukan + 1
+    $qty = isset($_SESSION['cart'][$cart_key]) ? $_SESSION['cart'][$cart_key] + $quantity_to_add : $quantity_to_add;
 
     if ($qty > $effective_stock) {
         $msg = "Stok tidak mencukupi (Tersedia: $effective_stock).";
@@ -55,7 +58,7 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $_SESSION['cart'][$cart_key] = $qty;
-    // Store metadata (name, price, image, variant info) for easy display
+    
     $additional_price = $variant ? floatval($variant['additional_price']) : 0;
     $_SESSION['cart_meta'][$cart_key] = [
         'product_id'   => $product_id,
@@ -81,12 +84,76 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     $_SESSION['success'] = "Berhasil menambahkan " . htmlspecialchars($product['name']) . " ke keranjang.";
-    redirect('index.php?page=home');
+    redirect('index.php?page=cart');
 }
 
+// --- DIRECT CHECKOUT (BELI LANGSUNG TANPA ANTRI DI CART) ---
+elseif ($action === 'direct_checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $product_id = intval($_POST['product_id'] ?? 0);
+    $variant_id  = intval($_POST['variant_id'] ?? 0);
+    $variant_info_text = trim(sanitize_input($_POST['variant_info'] ?? ''));
+    $qty = intval($_POST['quantity'] ?? 1);
+    if ($qty <= 0) $qty = 1;
+
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+    $stmt->execute([$product_id]);
+    $product = $stmt->fetch();
+
+    if (!$product) {
+        header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => 'Produk tidak ditemukan.']); exit;
+    }
+
+    $variant = null;
+    $effective_stock = $product['stock'];
+    if ($variant_id > 0) {
+        $vStmt = $pdo->prepare("SELECT * FROM product_variants WHERE id = ? AND product_id = ?");
+        $vStmt->execute([$variant_id, $product_id]);
+        $variant = $vStmt->fetch();
+        if (!$variant) {
+            header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => 'Varian tidak valid.']); exit;
+        }
+        $effective_stock = $variant['stock'];
+    }
+
+    if ($qty > $effective_stock) {
+        header('Content-Type: application/json'); echo json_encode(['status' => 'error', 'message' => "Stok tidak mencukupi (Tersedia: $effective_stock)."]); exit;
+    }
+
+    $cart_key = $product_id . '-' . $variant_id;
+    $_SESSION['cart'][$cart_key] = $qty;
+    
+    $additional_price = $variant ? floatval($variant['additional_price']) : 0;
+    $_SESSION['cart_meta'][$cart_key] = [
+        'product_id'   => $product_id,
+        'variant_id'   => $variant_id,
+        'name'         => $product['name'],
+        'base_price'   => floatval($product['price']),
+        'price'        => floatval($product['price']) + $additional_price,
+        'image_url'    => $product['image_url'],
+        'stock'        => $effective_stock,
+        'variant_info' => $variant_info_text,
+    ];
+
+    // Otomatis set hanya item ini yang masuk sesi checkout terpilih
+    $_SESSION['selected_cart_keys'] = [$cart_key];
+
+    session_write_close();
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'success', 'redirect' => 'index.php?page=checkout']);
+    exit;
+}
+
+// --- SET CHECKOUT KEYS (DARI SELEKSI CHECKBOX) ---
+elseif ($action === 'select_checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $_SESSION['selected_cart_keys'] = $_POST['keys'] ?? [];
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'success']);
+    exit;
+}
+
+// --- REMOVE ITEM ---
 elseif ($action === 'remove') {
-    // Support both composite cart_key (new) and plain id (legacy)
-    $cart_key = isset($_POST['cart_key']) ? $_POST['cart_key'] : (isset($_GET['id']) ? intval($_GET['id']) : '');
+    $cart_key = isset($_POST['cart_key']) ? $_POST['cart_key'] : (isset($_GET['id']) ? intval($_GET['id']) . '-0' : '');
 
     if (isset($_SESSION['cart'][$cart_key])) {
         unset($_SESSION['cart'][$cart_key]);
@@ -119,45 +186,57 @@ elseif ($action === 'remove') {
     redirect('index.php?page=cart');
 }
 
+// --- UPDATE QUANTITY VIA CONTROL IN CART ---
 elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cart_key  = $_POST['cart_key'] ?? '';
-    $product_id = intval($_POST['product_id'] ?? 0);
+    $cart_key = $_POST['cart_key'] ?? '';
     $qty = intval($_POST['qty'] ?? 1);
-
-    // Resolve effective cart key
-    if (empty($cart_key) && $product_id > 0) {
-        $cart_key = $product_id . '-0';
-    }
 
     if ($qty <= 0) {
         unset($_SESSION['cart'][$cart_key]);
         if (isset($_SESSION['cart_meta'][$cart_key])) unset($_SESSION['cart_meta'][$cart_key]);
         if ($is_ajax) {
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'removed', 'message' => 'Produk dihapus karena kuantiti 0.']);
+            echo json_encode(['status' => 'removed', 'message' => 'Produk dihapus karena kuantitas diatur 0.']);
             exit;
         }
         redirect('index.php?page=cart');
     }
 
-    // Get effective stock and price from cart_meta or DB
+    $parts = explode('-', $cart_key);
+    $product_id = intval($parts[0] ?? 0);
+    $variant_id = intval($parts[1] ?? 0);
+
     $effective_stock = 999;
     $price = 0;
+
     if (!empty($_SESSION['cart_meta'][$cart_key])) {
         $meta = $_SESSION['cart_meta'][$cart_key];
         $effective_stock = $meta['stock'];
         $price = $meta['price'];
     } else {
-        $stmt = $pdo->prepare("SELECT price, stock FROM products WHERE id = ?");
-        $stmt->execute([$product_id]);
-        $product = $stmt->fetch();
-        if ($product) { $effective_stock = $product['stock']; $price = $product['price']; }
+        $stmtP = $pdo->prepare("SELECT price, stock FROM products WHERE id = ?");
+        $stmtP->execute([$product_id]);
+        $p = $stmtP->fetch();
+        if ($p) {
+            $effective_stock = $p['stock'];
+            $price = floatval($p['price']);
+            
+            if ($variant_id > 0) {
+                $stmtV = $pdo->prepare("SELECT stock, additional_price FROM product_variants WHERE id = ?");
+                $stmtV->execute([$variant_id]);
+                $v = $stmtV->fetch();
+                if ($v) {
+                    $effective_stock = $v['stock'];
+                    $price += floatval($v['additional_price']);
+                }
+            }
+        }
     }
 
     $error_msg = '';
     if ($qty > $effective_stock) {
-        $qty = $effective_stock;
-        $error_msg = "Jumlah disesuaikan ke batas maksimal stok (Tersedia: {$effective_stock}).";
+        $qty = ($effective_stock > 0) ? $effective_stock : 1;
+        $error_msg = "Jumlah disesuaikan ke batas maksimal ketersediaan stok (Tersedia: {$effective_stock}).";
     }
 
     $_SESSION['cart'][$cart_key] = $qty;
@@ -167,7 +246,6 @@ elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($is_ajax) {
         header('Content-Type: application/json');
-        // Recalculate grand total from cart_meta
         $total_price = 0;
         $cart_count = 0;
         foreach ($_SESSION['cart'] as $key => $q) {
@@ -175,6 +253,7 @@ elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $total_price += $p * $q;
             $cart_count += $q;
         }
+        
         echo json_encode([
             'status'        => 'success',
             'qty'           => $qty,
@@ -190,10 +269,10 @@ elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('index.php?page=cart');
 }
 
+// --- CLEAR CART ---
 elseif ($action === 'clear') {
     $_SESSION['cart'] = [];
-    
-    // Optimasi: Lepaskan lock session agar tidak memblokir request lain
+    $_SESSION['cart_meta'] = [];
     session_write_close();
     
     if ($is_ajax) {
