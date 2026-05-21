@@ -48,7 +48,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex items-center justify-center min-h-screen p-6 relative overflow-hidden transition-colors duration-300">
-    
+
     <!-- Background Blob effect -->
     <div class="absolute w-96 h-96 bg-primary/5 rounded-full blur-3xl -top-12 -left-12 -z-10 animate-pulse"></div>
     <div class="absolute w-96 h-96 bg-primary/5 rounded-full blur-3xl -bottom-12 -right-12 -z-10 animate-pulse"></div>
@@ -75,7 +75,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
             <h2 class="text-xl font-bold text-slate-800 dark:text-white font-display">Selamat datang kembali!</h2>
             <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Silakan masukkan detail akun Anda untuk masuk.</p>
         </div>
-        
+
         <!-- Alerts Placeholder -->
         <div id="alert-container">
             <?php if (isset($_SESSION['success'])): ?>
@@ -97,13 +97,13 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
                 <input type="email" name="email" required placeholder="nama@email.com"
                     class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
             </div>
-            
+
             <div>
                 <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Password</label>
                 <input type="password" name="password" required placeholder="••••••••"
                     class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
             </div>
-            
+
             <button type="submit" id="btn-login"
                 class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 active:scale-[0.98] transition shadow-lg shadow-primary/10 text-sm">
                 Masuk
@@ -117,58 +117,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Handle Login AJAX
-            $('#login-form').on('submit', function(e) {
-                e.preventDefault();
-                const form = $(this);
-                const btn = $('#btn-login');
-                
-                btn.prop('disabled', true).text('Memproses...');
-                $('#alert-container').empty();
-                
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: form.serialize(),
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            $('#alert-container').html(`
-                                <div class="bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-800 dark:text-emerald-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                    ${response.message}
-                                </div>
-                            `);
-                            setTimeout(() => {
-                                window.location.href = response.redirect_url;
-                            }, 800);
-                        } else {
-                            $('#alert-container').html(`
-                                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                    ${response.message}
-                                </div>
-                            `);
-                            btn.prop('disabled', false).text('Masuk');
-                            if (response.redirect_url) {
-                                setTimeout(() => {
-                                    window.location.href = response.redirect_url;
-                                }, 1500);
-                            }
-                        }
-                    },
-                    error: function() {
-                        $('#alert-container').html(`
-                            <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                Terjadi kesalahan pada server. Harap coba lagi.
-                            </div>
-                        `);
-                        btn.prop('disabled', false).text('Masuk');
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="assets/js/pages/login.js"></script>
 
 </body>
 </html>

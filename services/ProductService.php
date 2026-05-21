@@ -12,10 +12,16 @@ class ProductService {
      */
     public function getAllProducts($categoryId = null) {
         if ($categoryId) {
-            $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.category_id = ? ORDER BY p.id DESC");
+            $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name,
+                (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+                (SELECT COALESCE(SUM(stock), 0) FROM product_variants pv WHERE pv.product_id = p.id) as total_variant_stock
+                FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.category_id = ? ORDER BY p.id DESC");
             $stmt->execute([$categoryId]);
         } else {
-            $stmt = $this->pdo->query("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.id DESC");
+            $stmt = $this->pdo->query("SELECT p.*, c.name as category_name,
+                (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+                (SELECT COALESCE(SUM(stock), 0) FROM product_variants pv WHERE pv.product_id = p.id) as total_variant_stock
+                FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.id DESC");
         }
         return $stmt->fetchAll();
     }
@@ -63,14 +69,17 @@ class ProductService {
         if (!empty($where_clauses)) {
             $where_sql = "WHERE " . implode(" AND ", $where_clauses);
         }
-        
+
         $query_params[] = $limit;
         $query_params[] = $offset;
 
-        $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id $where_sql ORDER BY p.id DESC LIMIT ? OFFSET ?");
-        // Limit and Offset must be bound as INT, so execute with array is tricky if PDO emulation is off, 
+        $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name,
+            (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+            (SELECT COALESCE(SUM(stock), 0) FROM product_variants pv WHERE pv.product_id = p.id) as total_variant_stock
+            FROM products p LEFT JOIN categories c ON p.category_id = c.id $where_sql ORDER BY p.id DESC LIMIT ? OFFSET ?");
+        // Limit and Offset must be bound as INT, so execute with array is tricky if PDO emulation is off,
         // but normally it works if PDO::ATTR_EMULATE_PREPARES is true. Better to bind.
-        
+
         foreach ($query_params as $index => $param) {
             $stmt->bindValue($index + 1, $param, is_int($param) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
@@ -82,7 +91,10 @@ class ProductService {
      * Get product detail by ID.
      */
     public function getProductById($id) {
-        $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?");
+        $stmt = $this->pdo->prepare("SELECT p.*, c.name as category_name,
+            (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+            (SELECT COALESCE(SUM(stock), 0) FROM product_variants pv WHERE pv.product_id = p.id) as total_variant_stock
+            FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }

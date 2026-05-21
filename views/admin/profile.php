@@ -6,7 +6,7 @@ $stmt->execute([$_SESSION['user_id']]);
 $admin = $stmt->fetch();
 ?>
 <div class="max-w-5xl mx-auto space-y-8 font-sans">
-    
+
     <!-- Header Page -->
     <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
@@ -17,7 +17,7 @@ $admin = $stmt->fetch();
 
     <!-- Main Two-Column Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         <!-- Column 1: Info and Avatar Preview -->
         <div class="space-y-6">
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center transition-colors duration-300">
@@ -34,10 +34,10 @@ $admin = $stmt->fetch();
                         <?php endif; ?>
                     </div>
                 </div>
-                
+
                 <h3 class="text-lg font-bold text-slate-805 dark:text-white mt-4 font-display" id="display-admin-name"><?= htmlspecialchars($admin['name']) ?></h3>
                 <span class="px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 mt-1">Administrator</span>
-                
+
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-4 leading-relaxed italic" id="display-admin-bio">
                     <?= $admin['bio'] ? htmlspecialchars($admin['bio']) : '"Belum menulis deskripsi bio."' ?>
                 </p>
@@ -59,7 +59,7 @@ $admin = $stmt->fetch();
 
         <!-- Column 2 & 3: Forms -->
         <div class="lg:col-span-2 space-y-8">
-            
+
             <!-- Card 1: Biodata -->
             <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm transition-colors duration-300">
                 <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4 font-display flex items-center space-x-2">
@@ -68,7 +68,7 @@ $admin = $stmt->fetch();
                     </svg>
                     <span>Informasi Profil</span>
                 </h2>
-                
+
                 <form id="profile-info-form" action="index.php?page=admin_profile_process&action=update_profile" method="POST" enctype="multipart/form-data" class="space-y-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -80,7 +80,7 @@ $admin = $stmt->fetch();
                             <input type="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 transition">
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">No. Handphone</label>
@@ -142,120 +142,4 @@ $admin = $stmt->fetch();
 
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
-<script>
-    // Live Image Preview for Profile Upload
-    document.getElementById('avatar-input').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewImg = document.getElementById('avatar-preview-img');
-                const placeholder = document.getElementById('avatar-placeholder');
-                
-                previewImg.src = e.target.result;
-                previewImg.classList.remove('hidden');
-                
-                if (placeholder) {
-                    placeholder.classList.add('hidden');
-                }
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    $(document).ready(function() {
-        // AJAX Update Profile Info
-        $('#profile-info-form').on('submit', function(e) {
-            e.preventDefault();
-            const form = $(this);
-            const formData = new FormData(this);
-            formData.append('ajax', 1);
-
-            const btn = $('#btn-save-profile');
-            btn.prop('disabled', true).text('Menyimpan...');
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Sukses!',
-                            text: response.message,
-                            icon: 'success',
-                            confirmButtonColor: '#4f46e5'
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Gagal!',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonColor: '#4f46e5'
-                        });
-                        btn.prop('disabled', false).text('Simpan Perubahan');
-                    }
-                },
-                error: function() {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan sistem saat memperbarui profil.',
-                        icon: 'error',
-                        confirmButtonColor: '#4f46e5'
-                    });
-                    btn.prop('disabled', false).text('Simpan Perubahan');
-                }
-            });
-        });
-
-        // AJAX Update Password
-        $('#profile-password-form').on('submit', function(e) {
-            e.preventDefault();
-            const form = $(this);
-            const btn = $('#btn-save-password');
-            btn.prop('disabled', true).text('Mengubah...');
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: form.serialize() + '&ajax=1',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Sukses!',
-                            text: response.message,
-                            icon: 'success',
-                            confirmButtonColor: '#4f46e5'
-                        }).then(() => {
-                            form[0].reset();
-                            btn.prop('disabled', false).text('Ubah Password');
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Gagal!',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonColor: '#4f46e5'
-                        });
-                        btn.prop('disabled', false).text('Ubah Password');
-                    }
-                },
-                error: function() {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan sistem saat mengubah password.',
-                        icon: 'error',
-                        confirmButtonColor: '#4f46e5'
-                    });
-                    btn.prop('disabled', false).text('Ubah Password');
-                }
-            });
-        });
-    });
-</script>
+<script src="assets/js/pages/admin-profile.js"></script>

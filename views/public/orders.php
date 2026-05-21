@@ -90,7 +90,7 @@ $orders = $stmt->fetchAll();
                 <div class="flex items-center space-x-6">
                     <a href="index.php?page=home" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Beranda</a>
                     <a href="index.php?page=cart" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Keranjang</a>
-                    
+
                     <!-- Dark mode toggle -->
                     <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                         <!-- Sun Icon -->
@@ -177,99 +177,10 @@ $orders = $stmt->fetchAll();
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/sweetalert2.all.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Cancel order handler
-            $('.btn-cancel-order').on('click', function() {
-                const orderId = $(this).data('order-id');
-                const btn = $(this);
-                const row = btn.closest('tr');
-                
-                Swal.fire({
-                    title: 'Batalkan Pesanan?',
-                    text: 'Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini akan mengembalikan stok produk.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Ya, Batalkan!',
-                    cancelButtonText: 'Kembali',
-                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: 'index.php?page=order_cancel',
-                            type: 'POST',
-                            data: { order_id: orderId },
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.success) {
-                                    Swal.fire({
-                                        title: 'Berhasil!',
-                                        text: response.message,
-                                        icon: 'success',
-                                        confirmButtonColor: '<?= $primary_color ?>',
-                                        background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
-                                    }).then(() => {
-                                        // Update status badge
-                                        row.find('td:nth-child(4)').html('<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400">Dibatalkan</span>');
-                                        // Remove cancel button
-                                        btn.remove();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: 'Gagal!',
-                                        text: response.message,
-                                        icon: 'error',
-                                        confirmButtonColor: '<?= $primary_color ?>',
-                                        background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                                        color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
-                                    });
-                                }
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: 'Terjadi kesalahan sistem saat memproses pembatalan.',
-                                    icon: 'error',
-                                    confirmButtonColor: '<?= $primary_color ?>',
-                                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                                    color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-
-            // Theme toggle elements
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const themeToggleSun = document.getElementById('theme-toggle-sun');
-            const themeToggleMoon = document.getElementById('theme-toggle-moon');
-
-            // Set initial toggle icons
-            if (document.documentElement.classList.contains('dark')) {
-                themeToggleSun.classList.remove('hidden');
-            } else {
-                themeToggleMoon.classList.remove('hidden');
-            }
-
-            // Theme toggle click handler
-            themeToggleBtn.addEventListener('click', function() {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    themeToggleSun.classList.add('hidden');
-                    themeToggleMoon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                    themeToggleMoon.classList.add('hidden');
-                    themeToggleSun.classList.remove('hidden');
-                }
-            });
-        });
+        window.NusaBayOrders = {
+            primaryColor: <?= json_encode($primary_color) ?>
+        };
     </script>
+    <script src="assets/js/pages/orders.js"></script>
 </body>
 </html>

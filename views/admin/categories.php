@@ -18,7 +18,7 @@ $categories = $stmt->fetchAll();
         <h3 id="form-title" class="text-lg font-bold mb-4 text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 font-display">Tambah Kategori</h3>
         <form id="category-form" action="index.php?page=admin_category_process&action=add" method="POST" class="space-y-4">
             <input type="hidden" name="id" id="category-id" value="">
-            
+
             <div>
                 <label class="block text-slate-700 dark:text-slate-300 text-xs font-bold mb-1.5">Nama Kategori</label>
                 <input type="text" name="name" id="category-name" required placeholder="misal: Elektronik, Pakaian"
@@ -88,19 +88,19 @@ $categories = $stmt->fetchAll();
                                     </div>
                                 </td>
                                 <td class="p-4 text-center space-x-1">
-                                    <button type="button" 
+                                    <button type="button"
                                             data-id="<?= $cat['id'] ?>"
                                             data-name="<?= htmlspecialchars($cat['name']) ?>"
                                             data-icon="<?= htmlspecialchars($cat['icon'] ?? '') ?>"
                                             data-color="<?= htmlspecialchars($cat['color'] ?? '') ?>"
-                                       class="btn-edit-category inline-block p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition" 
+                                       class="btn-edit-category inline-block p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
                                        title="Edit">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
                                     <button type="button" data-id="<?= $cat['id'] ?>"
-                                       class="btn-delete-category inline-block p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition" 
+                                       class="btn-delete-category inline-block p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
                                        title="Hapus">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -118,147 +118,4 @@ $categories = $stmt->fetchAll();
 
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Toggle to Edit mode
-        $(document).on('click', '.btn-edit-category', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            const name = btn.data('name');
-            const icon = btn.data('icon');
-            const color = btn.data('color');
-
-            $('#form-title').text('Edit Kategori');
-            $('#category-id').val(id);
-            $('#category-name').val(name);
-            $('#category-icon').val(icon);
-            $('#category-color').val(color);
-            
-            $('#category-form').attr('action', 'index.php?page=admin_category_process&action=edit');
-            $('#btn-save-category').text('Perbarui Kategori');
-            $('#btn-cancel-edit').removeClass('hidden');
-        });
-
-        // Reset to Add mode
-        function resetForm() {
-            $('#form-title').text('Tambah Kategori');
-            $('#category-id').val('');
-            $('#category-name').val('');
-            $('#category-icon').val('');
-            $('#category-color').val('');
-            
-            $('#category-form').attr('action', 'index.php?page=admin_category_process&action=add');
-            $('#btn-save-category').text('Simpan Kategori');
-            $('#btn-cancel-edit').addClass('hidden');
-        }
-
-        $('#btn-cancel-edit').on('click', resetForm);
-
-        // AJAX Add / Edit Category
-        $('#category-form').on('submit', function(e) {
-            e.preventDefault();
-            const form = $(this);
-            const btn = $('#btn-save-category');
-            const originalBtnText = btn.text();
-            btn.prop('disabled', true).text('Menyimpan...');
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: form.serialize() + '&ajax=1',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Sukses!',
-                            text: response.message,
-                            icon: 'success',
-                            confirmButtonColor: '#4f46e5'
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Gagal!',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonColor: '#4f46e5'
-                        });
-                        btn.prop('disabled', false).text(originalBtnText);
-                    }
-                },
-                error: function() {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan sistem saat menyimpan kategori.',
-                        icon: 'error',
-                        confirmButtonColor: '#4f46e5'
-                    });
-                    btn.prop('disabled', false).text(originalBtnText);
-                }
-            });
-        });
-
-        // AJAX Delete Category
-        $(document).on('click', '.btn-delete-category', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            
-            Swal.fire({
-                title: 'Hapus Kategori?',
-                text: 'Menghapus kategori ini juga akan menyetel kategori produk yang berkaitan menjadi NULL/kosong. Yakin?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal',
-                background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: 'index.php?page=admin_category_process&action=delete&id=' + id + '&ajax=1',
-                        type: 'GET',
-                        dataType: 'json',
-                        success: function(response) {
-                            if (response.success) {
-                                Swal.fire({
-                                    title: 'Terhapus!',
-                                    text: response.message,
-                                    icon: 'success',
-                                    confirmButtonColor: '#4f46e5'
-                                });
-                                btn.closest('.category-row').fadeOut(300, function() {
-                                    $(this).remove();
-                                    if ($('.category-row').length === 0) {
-                                        $('#category-table-body').html(`
-                                            <tr id="empty-category-row">
-                                                <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800">Belum ada kategori terdaftar. Tambahkan kategori di sebelah kiri.</td>
-                                            </tr>
-                                        `);
-                                    }
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Gagal!',
-                                    text: response.message,
-                                    icon: 'error',
-                                    confirmButtonColor: '#4f46e5'
-                                });
-                            }
-                        },
-                        error: function() {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Terjadi kesalahan sistem saat menghapus kategori.',
-                                icon: 'error',
-                                confirmButtonColor: '#4f46e5'
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    });
-</script>
+<script src="assets/js/pages/admin-categories.js"></script>
