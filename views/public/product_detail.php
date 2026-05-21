@@ -153,7 +153,7 @@ if (isset($_SESSION['cart'])) {
                             <span id="display-price" class="text-3xl font-black text-slate-900 dark:text-white">Rp <?= number_format($product['price'], 0, ',', '.') ?></span>
                             <span id="price-note" class="text-xs text-slate-400 hidden">(termasuk biaya varian)</span>
                         </div>
-                        
+
                         <div class="flex items-center space-x-2 mt-3" id="stock-indicator-container">
                             <span id="stock-dot" class="w-2 h-2 <?= $initial_stock > 5 ? 'bg-emerald-500' : ($initial_stock > 0 ? 'bg-amber-500' : 'bg-rose-500') ?> rounded-full"></span>
                             <span id="stock-text" class="text-xs font-semibold <?= $initial_stock > 5 ? 'text-emerald-600 dark:text-emerald-400' : ($initial_stock > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400') ?>">
@@ -213,10 +213,10 @@ if (isset($_SESSION['cart'])) {
                                 <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Jumlah:</span>
                                 <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                                     <button type="button" id="qty-minus" class="px-3.5 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-lg">−</button>
-                                    
+
                                     <input type="text" id="qty-input" name="quantity" value="1" readonly max="<?= $initial_stock ?>"
                                            class="w-12 text-center py-2 bg-transparent text-sm font-bold text-slate-800 dark:text-white border-x border-slate-200 dark:border-slate-700 focus:outline-none">
-                                           
+
                                     <button type="button" id="qty-plus" class="px-3.5 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-lg">+</button>
                                 </div>
                             </div>
@@ -228,14 +228,14 @@ if (isset($_SESSION['cart'])) {
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                     <span id="cart-btn-text"><?= $initial_stock <= 0 ? 'Stok Habis' : '+ Keranjang' ?></span>
                                 </button>
-                                
-                                <button type="button" id="btn-buy-now" onclick="buyNowBtnAction()" 
+
+                                <button type="button" id="btn-buy-now" onclick="buyNowBtnAction()"
                                     class="flex-1 flex items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 active:scale-[0.98] shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
                                     <?= ($initial_stock <= 0) ? 'disabled' : '' ?>>
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                     <span id="buy-now-btn-text">Beli</span>
                                 </button>
-                                
+
                                 <a href="index.php?page=home" class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                                 </a>
@@ -253,197 +253,13 @@ if (isset($_SESSION['cart'])) {
 
     <script src="assets/js/jquery.min.js"></script>
     <script>
-    $(document).ready(function () {
-        // Theme Toggle
-        const themeBtn = document.getElementById('theme-toggle');
-        const sun = document.getElementById('theme-toggle-sun');
-        const moon = document.getElementById('theme-toggle-moon');
-        if (document.documentElement.classList.contains('dark')) { sun.classList.remove('hidden'); } else { moon.classList.remove('hidden'); }
-        themeBtn.addEventListener('click', function () {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light');
-                sun.classList.add('hidden'); moon.classList.remove('hidden');
-            } else {
-                document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark');
-                moon.classList.add('hidden'); sun.classList.remove('hidden');
-            }
-        });
-
-        // Backend Constants
-        const basePrice = <?= floatval($product['price']) ?>;
-        const hasVariants = <?= $has_variants ? 'true' : 'false' ?>;
-
-        // Variant Selection Logic (Hanya bisa pilih SATU Varian yang mengontrol Stok)
-        $(document).on('click', '.variant-btn', function () {
-            if ($(this).is(':disabled')) return;
-
-            const variantId = $(this).data('variant-id');
-            
-            // Toggle unselect logic: if clicking already selected non-normal variant, revert to Normal
-            if ($(this).hasClass('selected') && variantId !== 0) {
-                $('#btn-variant-normal').click();
-                return;
-            }
-
-            const variantName = $(this).data('variant-name');
-            const variantValue = $(this).data('variant-value');
-            const addPrice = parseFloat($(this).data('additional-price')) || 0;
-            const stock = parseInt($(this).data('stock')) || 0;
-            
-            // Hapus seleksi semua tombol lain
-            $('.variant-btn').removeClass('selected').css({'background-color': '', 'color': '', 'border-color': ''});
-            
-            // Tandai yang diklik
-            $(this).addClass('selected').css({'background-color': '<?= $primary_color ?>', 'color': 'white', 'border-color': 'transparent'});
-
-            // Set Form Inputs
-            $('#selected-variant-id').val(variantId);
-            if (variantId === 0) {
-                $('#selected-variant-info').val('');
-            } else {
-                $('#selected-variant-info').val(variantName + ': ' + variantValue);
-            }
-
-            // Update Harga
-            const finalPrice = basePrice + addPrice;
-            $('#display-price').text('Rp ' + finalPrice.toLocaleString('id-ID'));
-            if (addPrice > 0) { $('#price-note').removeClass('hidden'); } else { $('#price-note').addClass('hidden'); }
-
-            // Update Stok Display & Kuantitas Input
-            $('#qty-input').attr('max', stock);
-            
-            // Kalau input qty saat ini lebih besar dari stok varian, turunkan otomatis
-            let currentQty = parseInt($('#qty-input').val()) || 1;
-            if (currentQty > stock) {
-                $('#qty-input').val(stock);
-            }
-
-            // Update Indikator Stok UI
-            $('#stock-dot').removeClass('bg-emerald-500 bg-amber-500 bg-rose-500');
-            $('#stock-text').removeClass('text-emerald-600 text-amber-600 text-rose-600 dark:text-emerald-400 dark:text-amber-400 dark:text-rose-400');
-            
-            if (stock > 5) {
-                $('#stock-dot').addClass('bg-emerald-500');
-                $('#stock-text').addClass('text-emerald-600 dark:text-emerald-400').text('Tersedia: ' + stock + ' pcs');
-                enableButtons();
-            } else if (stock > 0) {
-                $('#stock-dot').addClass('bg-amber-500');
-                $('#stock-text').addClass('text-amber-600 dark:text-amber-400').text('Sisa sedikit: ' + stock + ' pcs');
-                enableButtons();
-            } else {
-                $('#stock-dot').addClass('bg-rose-500');
-                $('#stock-text').addClass('text-rose-600 dark:text-rose-400').text('Stok varian habis');
-                disableButtons('Stok Habis');
-            }
-        });
-
-        function enableButtons() {
-            $('#btn-add-cart, #btn-buy-now').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
-            $('#cart-btn-text').text('+ Keranjang');
-            $('#buy-now-btn-text').text('Beli');
-        }
-
-        function disableButtons(text) {
-            $('#btn-add-cart, #btn-buy-now').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
-            $('#cart-btn-text').text(text);
-            $('#buy-now-btn-text').text('Beli');
-        }
-
-        // Qty controls
-        $('#qty-minus').on('click', function () {
-            let val = parseInt($('#qty-input').val()) || 1;
-            if (val > 1) { $('#qty-input').val(val - 1); }
-        });
-        
-        $('#qty-plus').on('click', function () {
-            let val = parseInt($('#qty-input').val()) || 1;
-            const max = parseInt($('#qty-input').attr('max')) || 999;
-            
-            if (val < max) { 
-                $('#qty-input').val(val + 1); 
-            } else {
-                showToast('Maksimal jumlah stok tercapai.', 'error');
-            }
-        });
-
-        // Toast helper
-        function showToast(message, type) {
-            const bg = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
-            const toast = $(`<div class="flex items-center space-x-2.5 px-5 py-3 rounded-2xl text-white font-bold text-xs shadow-2xl transition-all duration-300 transform translate-y-4 opacity-0 ${bg}"><span>${message}</span></div>`);
-            $('#toast-container').append(toast);
-            setTimeout(() => toast.removeClass('translate-y-4 opacity-0'), 10);
-            setTimeout(() => { toast.addClass('translate-y-4 opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        // AJAX Add to Cart
-        $('#add-to-cart-form').on('submit', function (e) {
-            e.preventDefault();
-            
-            const btn = $(this).find('button[type="submit"]');
-            btn.prop('disabled', true).addClass('opacity-70');
-            $('#cart-btn-text').text('Memproses...');
-
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: $(this).serialize() + '&ajax=1',
-                dataType: 'json',
-                success: function (data) {
-                    if (data.status === 'success') {
-                        showToast(data.message, 'success');
-                        const badge = $('#cart-badge');
-                        badge.text(data.cart_count).removeClass('hidden');
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                },
-                error: function () { showToast('Terjadi kesalahan koneksi. Coba lagi.', 'error'); },
-                complete: function () {
-                    btn.prop('disabled', false).removeClass('opacity-70');
-                    $('#cart-btn-text').text('+ Keranjang');
-                }
-            });
-        });
-        
-        // Expose buyNowBtnAction ke global window
-        window.buyNowBtnAction = function() {
-            const pId = <?= intval($product['id']) ?>;
-            const vId = $('#selected-variant-id').val() || 0; 
-            const qty = $('#qty-input').val() || 1;
-            const vInfo = $('#selected-variant-info').val() || '';
-            
-            $('#btn-buy-now').prop('disabled', true).addClass('opacity-70');
-            $('#buy-now-btn-text').text('Memproses...');
-
-            $.ajax({
-                url: 'index.php?page=cart_process&action=direct_checkout',
-                type: 'POST',
-                data: {
-                    product_id: pId,
-                    variant_id: vId,
-                    quantity: qty,
-                    variant_info: vInfo,
-                    ajax: 1
-                },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.status === 'success' && response.redirect) {
-                        window.location.href = response.redirect;
-                    } else {
-                        showToast(response.message || 'Gagal memproses checkout.', 'error');
-                        $('#btn-buy-now').prop('disabled', false).removeClass('opacity-70');
-                        $('#buy-now-btn-text').text('Beli');
-                    }
-                },
-                error: function() {
-                    showToast('Terjadi kesalahan sistem.', 'error');
-                    $('#btn-buy-now').prop('disabled', false).removeClass('opacity-70');
-                    $('#buy-now-btn-text').text('Beli');
-                }
-            });
+        window.NusaBayProductDetail = {
+            basePrice: <?= json_encode((float) $product['price']) ?>,
+            hasVariants: <?= $has_variants ? 'true' : 'false' ?>,
+            productId: <?= json_encode((int) $product['id']) ?>,
+            primaryColor: <?= json_encode($primary_color) ?>
         };
-
-    });
     </script>
+    <script src="assets/js/pages/product-detail.js"></script>
 </body>
 </html>

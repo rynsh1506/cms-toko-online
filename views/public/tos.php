@@ -67,13 +67,13 @@ $primary_color = $configs['primary_color'] ?? '#6366f1';
         <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-12 shadow-sm border border-slate-100 dark:border-slate-800">
             <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white font-display mb-4">Syarat & Ketentuan</h1>
             <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 border-b border-slate-100 dark:border-slate-800 pb-6">Pembaruan Terakhir: <?= date('d F Y') ?></p>
-            
+
             <div class="space-y-8 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                 <section>
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-3">1. Pendahuluan</h2>
                     <p>Selamat datang di NusaBay. Dengan mengakses dan menggunakan layanan kami, Anda dianggap telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku di bawah ini. Jika Anda tidak menyetujui salah satu bagian dari ketentuan ini, Anda tidak diperkenankan untuk menggunakan layanan kami.</p>
                 </section>
-                
+
                 <section>
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-3">2. Akun Pengguna</h2>
                     <ul class="list-disc pl-5 space-y-2">

@@ -25,7 +25,7 @@ function getConfigValue($key, $configs) {
 
 <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 font-sans">
     <form id="settingsForm" action="index.php?page=config_process" method="POST" enctype="multipart/form-data" class="space-y-8">
-        
+
         <!-- Hero Section -->
         <div>
             <h3 class="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-5 font-display">Tampilan Beranda (Hero)</h3>
@@ -108,54 +108,4 @@ function getConfigValue($key, $configs) {
 
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#settingsForm').on('submit', function(e) {
-        e.preventDefault();
-        const form = $(this);
-        const formData = new FormData(this);
-        formData.append('ajax', 1);
-        
-        const btn = $('#btn-save');
-        btn.prop('disabled', true).text('Menyimpan...');
-
-        $.ajax({
-            url: form.attr('action'),
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        title: 'Sukses!',
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonColor: '#4f46e5'
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Gagal!',
-                        text: response.message,
-                        icon: 'error',
-                        confirmButtonColor: '#4f46e5'
-                    });
-                    btn.prop('disabled', false).text('Simpan Pengaturan');
-                }
-            },
-            error: function() {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan sistem saat menyimpan pengaturan.',
-                    icon: 'error',
-                    confirmButtonColor: '#4f46e5'
-                });
-                btn.prop('disabled', false).text('Simpan Pengaturan');
-            }
-        });
-    });
-});
-</script>
+<script src="assets/js/pages/admin-settings.js"></script>

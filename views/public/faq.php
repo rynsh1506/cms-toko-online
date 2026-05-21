@@ -128,22 +128,7 @@ $primary_color = $configs['primary_color'] ?? '#6366f1';
     </main>
 
     <?php require __DIR__ . '/components/footer.php'; ?>
-    
-    <script>
-        // Simple Accordion Script
-        const faqItems = document.querySelectorAll('.faq-item');
-        faqItems.forEach(item => {
-            const btn = item.querySelector('.faq-btn');
-            btn.addEventListener('click', () => {
-                const isActive = item.classList.contains('faq-active');
-                // Tutup semua
-                faqItems.forEach(i => i.classList.remove('faq-active'));
-                // Buka yang di-klik jika sebelumnya tidak aktif
-                if (!isActive) {
-                    item.classList.add('faq-active');
-                }
-            });
-        });
-    </script>
+
+    <script src="assets/js/pages/faq.js"></script>
 </body>
 </html>

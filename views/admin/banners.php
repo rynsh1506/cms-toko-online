@@ -12,7 +12,7 @@ $banners = $stmt->fetchAll();
         <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-display">Kelola Banner Promo</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Atur slideshow banner promosi yang tampil di halaman utama toko Anda.</p>
     </div>
-    <button 
+    <button
         onclick="openAddBannerModal()"
         class="inline-flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/25 active:scale-[0.98] cursor-pointer">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,12 +68,12 @@ $banners = $stmt->fetchAll();
 
                 <!-- Footer Actions -->
                 <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-700/50 flex justify-end space-x-3">
-                    <button 
+                    <button
                         onclick="openEditBannerModal(<?= htmlspecialchars(json_encode($banner)) ?>)"
                         class="px-3.5 py-1.5 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-655 text-xs font-bold rounded-lg transition">
                         Edit
                     </button>
-                    <button 
+                    <button
                         data-id="<?= $banner['id'] ?>"
                         class="btn-delete-banner px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg transition">
                         Hapus
@@ -170,174 +170,4 @@ $banners = $stmt->fetchAll();
 
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
-<script>
-    const modal = document.getElementById('bannerModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const bannerForm = document.getElementById('bannerForm');
-    
-    const bannerId = document.getElementById('bannerId');
-    const bannerTitle = document.getElementById('bannerTitle');
-    const bannerDesc = document.getElementById('bannerDesc');
-    const bannerLink = document.getElementById('bannerLink');
-    const bannerSort = document.getElementById('bannerSort');
-    const bannerActive = document.getElementById('bannerActive');
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-    const bannerImagePreview = document.getElementById('bannerImagePreview');
-    const bannerImageFile = document.getElementById('bannerImageFile');
-
-    function openAddBannerModal() {
-        modalTitle.innerText = "Tambah Banner Baru";
-        bannerForm.action = "index.php?page=admin_banner_process&action=add";
-        
-        bannerId.value = "";
-        bannerTitle.value = "";
-        bannerDesc.value = "";
-        bannerLink.value = "";
-        bannerSort.value = "0";
-        bannerActive.value = "1";
-        bannerImageFile.required = true;
-        imagePreviewContainer.classList.add('hidden');
-        bannerImagePreview.src = "";
-        
-        modal.classList.remove('hidden');
-    }
-
-    function openEditBannerModal(banner) {
-        modalTitle.innerText = "Edit Banner";
-        bannerForm.action = "index.php?page=admin_banner_process&action=edit";
-        
-        bannerId.value = banner.id;
-        bannerTitle.value = banner.title || "";
-        bannerDesc.value = banner.description || "";
-        bannerLink.value = banner.link_url || "";
-        bannerSort.value = banner.sort_order;
-        bannerActive.value = banner.is_active;
-        bannerImageFile.required = false;
-
-        if (banner.image_url) {
-            bannerImagePreview.src = banner.image_url;
-            imagePreviewContainer.classList.remove('hidden');
-        } else {
-            imagePreviewContainer.classList.add('hidden');
-        }
-        
-        modal.classList.remove('hidden');
-    }
-
-    function closeBannerModal() {
-        modal.classList.add('hidden');
-    }
-
-    $(document).ready(function() {
-        // Save (Add / Edit) Banner AJAX
-        $('#bannerForm').on('submit', function(e) {
-            e.preventDefault();
-            const form = $(this);
-            const formData = new FormData(this);
-            formData.append('ajax', 1);
-            
-            const btn = $('#btn-save-banner');
-            btn.prop('disabled', true).text('Menyimpan...');
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Sukses!',
-                            text: response.message,
-                            icon: 'success',
-                            confirmButtonColor: '#4f46e5'
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Gagal!',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonColor: '#4f46e5'
-                        });
-                        btn.prop('disabled', false).text('Simpan');
-                    }
-                },
-                error: function() {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan sistem saat menyimpan banner.',
-                        icon: 'error',
-                        confirmButtonColor: '#4f46e5'
-                    });
-                    btn.prop('disabled', false).text('Simpan');
-                }
-            });
-        });
-
-        // Delete Banner AJAX
-        $('.btn-delete-banner').on('click', function() {
-            const btn = $(this);
-            const id = btn.data('id');
-            
-            Swal.fire({
-                title: 'Hapus Banner Promo?',
-                text: 'Apakah Anda yakin ingin menghapus banner ini? Tindakan ini tidak dapat dibatalkan.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal',
-                background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: 'index.php?page=admin_banner_process&action=delete&id=' + id + '&ajax=1',
-                        type: 'GET',
-                        dataType: 'json',
-                        success: function(response) {
-                            if (response.success) {
-                                Swal.fire({
-                                    title: 'Terhapus!',
-                                    text: response.message,
-                                    icon: 'success',
-                                    confirmButtonColor: '#4f46e5'
-                                });
-                                btn.closest('.banner-card').fadeOut(300, function() {
-                                    $(this).remove();
-                                    if ($('.banner-card').length === 0) {
-                                        $('#banners-container').html(`
-                                            <div class="col-span-full bg-white dark:bg-slate-800 p-8 rounded-2xl text-center text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-700">
-                                                Belum ada banner promosi. Klik tombol "Tambah Banner" untuk memulai.
-                                            </div>
-                                        `);
-                                    }
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Gagal!',
-                                    text: response.message,
-                                    icon: 'error',
-                                    confirmButtonColor: '#4f46e5'
-                                });
-                            }
-                        },
-                        error: function() {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Terjadi kesalahan sistem saat menghapus banner.',
-                                icon: 'error',
-                                confirmButtonColor: '#4f46e5'
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    });
-</script>
+<script src="assets/js/pages/admin-banners.js"></script>

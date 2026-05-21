@@ -1,193 +1,94 @@
 <?php
 session_start();
 
-// Include database & helpers
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/config/helpers.php';
 
-// Ambil parameter 'page', default ke 'home'
 $page = isset($_GET['page']) ? sanitize_input($_GET['page']) : 'home';
 
-// Routing sederhana
-switch ($page) {
-    case 'home':
-        require __DIR__ . '/controllers/HomeController.php';
-        break;
-        
-    case 'login':
-        require __DIR__ . '/views/public/login.php';
-        break;
+$controllerRoutes = [
+    'home' => ['HomeController'],
+    'auth_process' => ['AuthController'],
+    'cart_process' => ['CartController'],
+    'config_process' => ['ConfigController'],
+    'checkout' => ['CheckoutViewController'],
+    'checkout_process' => ['CheckoutController'],
+    'validate_promo' => ['PromoValidateController'],
+    'invoice' => ['InvoiceViewController'],
+    'verify_email' => ['VerifyEmailController'],
+    'order_cancel' => ['OrderCancelController'],
+    'admin' => ['AdminDashboardController'],
+    'admin_product_process' => ['ProductController'],
+    'admin_profile_process' => ['ProfileController'],
+    'admin_bank_process' => ['BankController'],
+    'admin_order_process' => ['OrderAdminController'],
+    'admin_promo_process' => ['PromoController'],
+    'admin_banner_process' => ['BannerController'],
+    'admin_category_process' => ['CategoryController'],
+    'admin_variant_process' => ['VariantController'],
+    'dashboard_api' => ['DashboardApiController'],
+];
 
-    case 'register':
-        require __DIR__ . '/views/public/register.php';
-        break;
+$publicPageRoutes = [
+    'login' => 'login.php',
+    'register' => 'register.php',
+    'verify' => 'verify.php',
+    'product_detail' => 'product_detail.php',
+    'cart' => 'cart.php',
+    'orders' => 'orders.php',
+    'tos' => 'tos.php',
+    'privacy' => 'privacy.php',
+    'faq' => 'faq.php',
+];
 
-    case 'verify':
-        require __DIR__ . '/views/public/verify.php';
-        break;
+$adminPageRoutes = [
+    'admin_settings' => 'settings.php',
+    'admin_products' => 'products.php',
+    'admin_banks' => 'bank_accounts.php',
+    'admin_orders' => 'orders.php',
+    'admin_promos' => 'promo_codes.php',
+    'admin_banners' => 'banners.php',
+    'admin_categories' => 'categories.php',
+    'admin_profile' => 'profile.php',
+];
 
-    case 'auth_process':
-        require __DIR__ . '/controllers/AuthController.php';
-        break;
+$adminControllerPages = [
+    'admin_product_process',
+    'admin_profile_process',
+    'admin_bank_process',
+    'admin_order_process',
+    'admin_promo_process',
+    'admin_banner_process',
+    'admin_category_process',
+    'admin_variant_process',
+    'dashboard_api',
+];
 
-    case 'product_detail':
-        require __DIR__ . '/views/public/product_detail.php';
-        break;
-
-    case 'cart':
-        require __DIR__ . '/views/public/cart.php';
-        break;
-
-    case 'cart_process':
-        require __DIR__ . '/controllers/CartController.php';
-        break;
-
-    case 'config_process':
-        require __DIR__ . '/controllers/ConfigController.php';
-        break;
-
-    case 'checkout':
-        require __DIR__ . '/controllers/CheckoutViewController.php';
-        break;
-
-    case 'checkout_process':
-        require __DIR__ . '/controllers/CheckoutController.php';
-        break;
-
-    case 'validate_promo':
-        require __DIR__ . '/controllers/PromoValidateController.php';
-        break;
-
-    case 'orders':
-        require __DIR__ . '/views/public/orders.php';
-        break;
-
-    case 'invoice':
-        require __DIR__ . '/controllers/InvoiceViewController.php';
-        break;
-
-    case 'verify_email':
-        require __DIR__ . '/controllers/VerifyEmailController.php';
-        break;
-
-    case 'order_cancel':
-        require __DIR__ . '/controllers/OrderCancelController.php';
-        break;
-
-    case 'tos':
-        require __DIR__ . '/views/public/tos.php';
-        break;
-
-    case 'privacy':
-        require __DIR__ . '/views/public/privacy.php';
-        break;
-
-    case 'faq':
-        require __DIR__ . '/views/public/faq.php';
-        break;
-
-    // Admin Pages (Rendered through shared layout or specific controllers)
-    case 'admin':
-        require __DIR__ . '/controllers/AdminDashboardController.php';
-        break;
-
-    case 'admin_settings':
+if (isset($controllerRoutes[$page])) {
+    if (in_array($page, $adminControllerPages, true)) {
         checkAdmin();
-        $admin_page = 'settings.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
+    }
 
-    case 'admin_products':
-        checkAdmin();
-        $admin_page = 'products.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    case 'admin_banks':
-        checkAdmin();
-        $admin_page = 'bank_accounts.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    case 'admin_orders':
-        checkAdmin();
-        $admin_page = 'orders.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    case 'admin_promos':
-        checkAdmin();
-        $admin_page = 'promo_codes.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    case 'admin_banners':
-        checkAdmin();
-        $admin_page = 'banners.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    case 'admin_categories':
-        checkAdmin();
-        $admin_page = 'categories.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    case 'admin_profile':
-        checkAdmin();
-        $admin_page = 'profile.php';
-        require __DIR__ . '/views/admin/layout.php';
-        break;
-
-    // Admin Process Handlers
-    case 'admin_product_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/ProductController.php';
-        break;
-
-    case 'admin_profile_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/ProfileController.php';
-        break;
-
-    case 'admin_bank_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/BankController.php';
-        break;
-
-    case 'admin_order_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/OrderAdminController.php';
-        break;
-
-    case 'admin_promo_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/PromoController.php';
-        break;
-
-    case 'admin_banner_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/BannerController.php';
-        break;
-
-    case 'admin_category_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/CategoryController.php';
-        break;
-
-    case 'admin_variant_process':
-        checkAdmin();
-        require __DIR__ . '/controllers/VariantController.php';
-        break;
-
-    case 'dashboard_api':
-        checkAdmin();
-        require __DIR__ . '/controllers/DashboardApiController.php';
-        break;
-
-    default:
-        // Halaman 404 sederhana
-        http_response_code(404);
-        echo "404 - Halaman tidak ditemukan.";
-        break;
+    [$className] = $controllerRoutes[$page];
+    require_once __DIR__ . '/controllers/' . $className . '.php';
+    $controller = new $className($pdo);
+    $controller->handle();
+    exit;
 }
+
+if (isset($publicPageRoutes[$page])) {
+    require_once __DIR__ . '/controllers/PublicPageController.php';
+    $controller = new PublicPageController($pdo, $publicPageRoutes[$page]);
+    $controller->handle();
+    exit;
+}
+
+if (isset($adminPageRoutes[$page])) {
+    require_once __DIR__ . '/controllers/AdminPageController.php';
+    $controller = new AdminPageController($pdo, $adminPageRoutes[$page]);
+    $controller->handle();
+    exit;
+}
+
+http_response_code(404);
+echo "404 - Halaman tidak ditemukan.";

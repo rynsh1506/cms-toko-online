@@ -28,7 +28,7 @@ ob_start();
 <?php if ($active_category !== 'all' || $search_query !== ''): ?>
     <div class="flex flex-wrap gap-2.5 mb-8 items-center">
         <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 mr-1">Filter Aktif:</span>
-        
+
         <!-- Category Bubble -->
         <?php if ($active_category !== 'all'): ?>
             <div class="flex items-center space-x-1.5 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light px-4 py-2 rounded-full text-xs font-extrabold border border-primary/20 shadow-sm select-none">
@@ -76,16 +76,16 @@ ob_start();
 <?php else: ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <?php foreach ($products as $product): ?>
-            <?php 
+            <?php
             $p_stock = intval($product['stock']) + intval($product['total_variant_stock'] ?? 0);
             ?>
-            <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group" 
+            <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group"
                  data-id="<?= $product['id'] ?>"
                  data-category="<?= $product['category_id'] ?? '' ?>">
                 <!-- Image Container -->
                 <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="relative block overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
-                    <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>" 
-                         alt="<?= htmlspecialchars($product['name']) ?>" 
+                    <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>"
+                         alt="<?= htmlspecialchars($product['name']) ?>"
                          loading="lazy"
                          class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
                     <?php if ($p_stock <= 0): ?>
@@ -94,7 +94,7 @@ ob_start();
                         </div>
                     <?php endif; ?>
                 </a>
-                
+
                 <!-- Content -->
                 <div class="p-6 flex-1 flex flex-col justify-between">
                     <div class="space-y-2.5">
@@ -105,7 +105,7 @@ ob_start();
                             <?= htmlspecialchars($product['description'] ?? '') ?>
                         </p>
                     </div>
-                    
+
                     <div class="mt-6 flex items-center justify-between">
                         <div class="flex flex-col">
                             <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Harga</span>
@@ -113,7 +113,7 @@ ob_start();
                                 Rp <?= number_format($product['price'], 0, ',', '.') ?>
                             </span>
                         </div>
-                        
+
                         <?php if ($p_stock > 0): ?>
                             <?php if ($product['variant_count'] > 0): ?>
                                 <!-- Product has variants: redirect to detail page -->
@@ -291,7 +291,7 @@ if (isset($_GET['ajax'])) {
                     </svg>
                     <span>Nusa<span class="text-primary">Bay</span></span>
                 </a>
-                
+
                 <!-- Nav Links -->
                 <div class="flex items-center space-x-6">
                     <a href="index.php?page=cart" id="cart-link" class="relative p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition flex items-center justify-center">
@@ -400,12 +400,12 @@ if (isset($_GET['ajax'])) {
                         </a>
                     </div>
                 </div>
-                
+
                 <!-- Graphic/Image -->
                 <div class="flex justify-center relative">
                     <!-- Background Blob effect -->
                     <div class="absolute w-72 h-72 bg-primary/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
-                    
+
                     <div class="animate-float">
                         <?php if (!empty($hero_image)): ?>
                             <img src="uploads/<?= htmlspecialchars($hero_image) ?>" alt="Hero Banner" class="max-w-sm sm:max-w-md w-full object-cover rounded-3xl shadow-2xl border-4 border-white dark:border-slate-800">
@@ -420,23 +420,23 @@ if (isset($_GET['ajax'])) {
 
     <!-- Catalog Section -->
     <main id="products" class="max-w-6xl mx-auto px-6 py-20 flex-1 w-full">
-        
+
         <!-- Live Search Bar and Headline -->
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-6 border-b border-slate-100 dark:border-slate-800 pb-8">
             <div>
                 <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight font-display">Katalog Produk</h2>
                 <p class="text-sm text-slate-400 mt-2 font-sans">Daftar produk serba ada terlengkap dengan penawaran terbaik hari ini.</p>
             </div>
-            
+
             <!-- Search & Filter Form -->
             <form method="GET" action="index.php" class="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
                 <input type="hidden" name="page" value="home">
-                
+
                 <!-- Custom Category Dropdown Container -->
                 <div class="relative w-full sm:w-56" id="category-dropdown-wrapper">
                     <!-- Hidden input to submit with the form -->
                     <input type="hidden" name="cat" id="selected-category-input" value="<?= htmlspecialchars($active_category) ?>">
-                    
+
                     <!-- Dropdown Button -->
                     <button type="button" id="category-dropdown-btn" class="flex items-center justify-between w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl px-5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition shadow-sm cursor-pointer select-none">
                         <span class="truncate">
@@ -457,7 +457,7 @@ if (isset($_GET['ajax'])) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
-                    
+
                     <!-- Dropdown Menu List -->
                     <div id="category-dropdown-menu" class="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden hidden z-50 transition duration-150">
                         <div class="p-1.5 max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -489,12 +489,12 @@ if (isset($_GET['ajax'])) {
         <div id="filter-bubbles-container" class="mb-6">
             <?= $bubbles_html ?>
         </div>
-        
+
         <!-- Products Grid / Empty State -->
         <div id="catalog-products-container" class="w-full min-h-[300px]">
             <?= $grid_html ?>
         </div>
-        
+
         <!-- Pagination Controls -->
         <div id="catalog-pagination-container">
             <?= $pagination_html ?>
@@ -506,286 +506,6 @@ if (isset($_GET['ajax'])) {
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Theme toggle logic
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const themeToggleSun = document.getElementById('theme-toggle-sun');
-            const themeToggleMoon = document.getElementById('theme-toggle-moon');
-
-            if (document.documentElement.classList.contains('dark')) {
-                themeToggleSun.classList.remove('hidden');
-            } else {
-                themeToggleMoon.classList.remove('hidden');
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    themeToggleSun.classList.add('hidden');
-                    themeToggleMoon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                    themeToggleMoon.classList.add('hidden');
-                    themeToggleSun.classList.remove('hidden');
-                }
-            });
-
-            // Banner Slideshow Logic
-            const slides = $('.carousel-slide');
-            const dots = $('.carousel-dot');
-            let currentSlide = 0;
-            let slideInterval = null;
-
-            function showSlide(index) {
-                if (slides.length === 0) return;
-                slides.removeClass('opacity-100 z-10').addClass('opacity-0 z-0');
-                dots.removeClass('bg-white w-6').addClass('bg-white/40 w-2');
-                
-                currentSlide = (index + slides.length) % slides.length;
-                
-                $(slides[currentSlide]).removeClass('opacity-0 z-0').addClass('opacity-100 z-10');
-                $(dots[currentSlide]).removeClass('bg-white/40 w-2').addClass('bg-white w-6');
-            }
-
-            function startSlideShow() {
-                slideInterval = setInterval(function() {
-                    showSlide(currentSlide + 1);
-                }, 5000);
-            }
-
-            function stopSlideShow() {
-                clearInterval(slideInterval);
-            }
-
-            $('#prevSlide').on('click', function() {
-                stopSlideShow();
-                showSlide(currentSlide - 1);
-                startSlideShow();
-            });
-
-            $('#nextSlide').on('click', function() {
-                stopSlideShow();
-                showSlide(currentSlide + 1);
-                startSlideShow();
-            });
-
-            $('.carousel-dot').on('click', function() {
-                const idx = parseInt($(this).data('index'));
-                stopSlideShow();
-                showSlide(idx);
-                startSlideShow();
-            });
-
-            if (slides.length > 0) {
-                startSlideShow();
-            }
-
-            // AJAX Catalog Reload Function
-            function loadCatalog(page = 1, category = null, query = null) {
-                if (category === null) category = $('#selected-category-input').val();
-                if (query === null) query = $('#product-search').val();
-
-                const url = `index.php?page=home&ajax=1&p=${page}&cat=${encodeURIComponent(category)}&q=${encodeURIComponent(query)}`;
-
-                // Show loading state by opacity
-                $('#catalog-products-container').addClass('opacity-50 pointer-events-none transition duration-150');
-
-                $.getJSON(url, function(data) {
-                    // Update DOM
-                    $('#filter-bubbles-container').html(data.bubbles);
-                    $('#catalog-products-container').html(data.grid).removeClass('opacity-50 pointer-events-none');
-                    $('#catalog-pagination-container').html(data.pagination);
-
-                    // Update category dropdown display text & value
-                    $('#category-dropdown-btn span').text(data.cat_name);
-                    $('#selected-category-input').val(data.active_cat);
-
-                    // Update dropdown list items active state
-                    $('.category-dropdown-item').removeClass('bg-primary/5 text-primary dark:bg-primary/20 dark:text-white').find('svg').remove();
-                    const activeItem = $(`.category-dropdown-item[data-value="${data.active_cat}"]`);
-                    activeItem.addClass('bg-primary/5 text-primary dark:bg-primary/20 dark:text-white');
-                    activeItem.append(`
-                        <svg class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                    `);
-
-                    // Update search input if it was changed from bubble clear
-                    if (query !== $('#product-search').val()) {
-                        $('#product-search').val(query);
-                    }
-
-                    // Update address bar history
-                    const nextURL = `index.php?page=home&p=${page}&cat=${encodeURIComponent(category)}&q=${encodeURIComponent(query)}`;
-                    window.history.pushState({ path: nextURL }, '', nextURL);
-                }).fail(function() {
-                    $('#catalog-products-container').removeClass('opacity-50 pointer-events-none');
-                    showToast('Gagal memuat produk.', 'error');
-                });
-            }
-
-            // Custom Category Dropdown Toggle & Selection Logic
-            const dropdownBtn = $('#category-dropdown-btn');
-            const dropdownMenu = $('#category-dropdown-menu');
-            const dropdownArrow = $('#category-dropdown-arrow');
-            const categoryInput = $('#selected-category-input');
-
-            if (dropdownBtn.length && dropdownMenu.length) {
-                dropdownBtn.on('click', function(e) {
-                    e.stopPropagation();
-                    dropdownMenu.toggleClass('hidden');
-                    dropdownArrow.toggleClass('rotate-180');
-                });
-
-                $(document).on('click', function(e) {
-                    if (!$(e.target).closest('#category-dropdown-wrapper').length) {
-                        dropdownMenu.addClass('hidden');
-                        dropdownArrow.removeClass('rotate-180');
-                    }
-                });
-
-                $('.category-dropdown-item').on('click', function() {
-                    const val = $(this).data('value');
-                    categoryInput.val(val);
-                    dropdownMenu.addClass('hidden');
-                    dropdownArrow.removeClass('rotate-180');
-                    loadCatalog(1, val, null);
-                });
-            }
-
-            // Intercept search form submit & live input search with debounce
-            const searchForm = $('#product-search').closest('form');
-            if (searchForm.length) {
-                searchForm.on('submit', function(e) {
-                    e.preventDefault();
-                    loadCatalog(1);
-                });
-            }
-
-            let searchTimeout = null;
-            $('#product-search').on('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() {
-                    loadCatalog(1);
-                }, 300);
-            });
-
-            // Delegate Filter Bubbles Click Events
-            $(document).on('click', '[data-action="clear-cat"]', function(e) {
-                e.preventDefault();
-                loadCatalog(1, 'all', null);
-            });
-
-            $(document).on('click', '[data-action="clear-q"]', function(e) {
-                e.preventDefault();
-                loadCatalog(1, null, '');
-            });
-
-            $(document).on('click', '[data-action="clear-all"]', function(e) {
-                e.preventDefault();
-                loadCatalog(1, 'all', '');
-            });
-
-            // Delegate Pagination Click Events
-            $(document).on('click', '#catalog-pagination-container a[data-page]', function(e) {
-                e.preventDefault();
-                const page = $(this).data('page');
-                loadCatalog(page);
-                // Scroll smoothly to catalog top
-                const target = $("#products");
-                if (target.length) {
-                    $('html, body').animate({
-                        scrollTop: target.offset().top - 80
-                    }, 400);
-                }
-            });
-
-            // Toast helper
-            function showToast(message, type = 'success') {
-                const toast = $('<div class="fixed bottom-6 right-6 px-5 py-3 rounded-2xl text-white font-bold text-xs shadow-2xl flex items-center space-x-2.5 transition-all duration-300 transform translate-y-10 opacity-0 z-50"></div>');
-                
-                if (type === 'success') {
-                    toast.addClass('bg-emerald-600');
-                    toast.html(`
-                        <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>${message}</span>
-                    `);
-                } else {
-                    toast.addClass('bg-rose-600');
-                    toast.html(`
-                        <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>${message}</span>
-                    `);
-                }
-                
-                $('body').append(toast);
-                
-                // Animate entrance
-                setTimeout(() => {
-                    toast.removeClass('translate-y-10 opacity-0');
-                }, 10);
-                
-                // Animate exit and remove
-                setTimeout(() => {
-                    toast.addClass('translate-y-10 opacity-0');
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 300);
-                }, 3000);
-            }
-
-            // AJAX add to cart (delegated for dynamically loaded cards)
-            $(document).on('submit', '.add-to-cart-form', function(e) {
-                e.preventDefault();
-                const form = $(this);
-                const btn = form.find('button[type="submit"]');
-                
-                if (btn.prop('disabled')) return;
-                
-                btn.prop('disabled', true).addClass('opacity-70 cursor-not-allowed');
-                const btnSpan = btn.find('span');
-                const originalText = btnSpan.text();
-                btnSpan.text('Memproses...');
-
-                const formData = form.serialize() + '&ajax=1';
-                
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: formData,
-                    dataType: 'json',
-                    success: function(data) {
-                        if (data.status === 'success') {
-                            // Update navbar count
-                            const badge = $('#cart-badge');
-                            if (badge.length) {
-                                badge.text(data.cart_count).removeClass('hidden');
-                            } else {
-                                const newBadge = $('<span id="cart-badge" class="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md shadow-primary/20 font-sans"></span>');
-                                newBadge.text(data.cart_count);
-                                $('#cart-link').append(newBadge);
-                            }
-                        } else {
-                            showToast(data.message, 'error');
-                        }
-                    },
-                    error: function() {
-                        showToast('Terjadi kesalahan saat menambahkan produk.', 'error');
-                    },
-                    complete: function() {
-                        btn.prop('disabled', false).removeClass('opacity-70 cursor-not-allowed');
-                        btnSpan.text(originalText);
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="assets/js/pages/home.js"></script>
 </body>
 </html>

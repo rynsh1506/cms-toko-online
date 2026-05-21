@@ -89,7 +89,7 @@
 
     <!-- Main Container -->
     <main class="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
-        
+
         <!-- Cetak Invoice & Notifikasi Sukses -->
         <?php if (isset($_SESSION['success'])): ?>
             <div class="bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-800 dark:text-emerald-400 p-4 rounded-r-xl mb-6 shadow-sm print:hidden text-xs font-semibold">
@@ -113,7 +113,7 @@
 
         <!-- Panel Invoice -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors duration-300">
-            
+
             <!-- Header Invoice -->
             <div class="p-8 bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -123,7 +123,7 @@
                 <div class="text-left md:text-right">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">Tanggal Pesanan</span>
                     <span class="font-bold text-slate-800 dark:text-slate-200 text-sm font-mono mt-1 block"><?= date('d F Y, H:i', strtotime($order['created_at'])) ?></span>
-                    
+
                     <div class="mt-2.5">
                         <?php if ($order['status'] === 'pending'): ?>
                             <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400">Menunggu Pembayaran</span>
@@ -237,33 +237,6 @@
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Theme toggle logic
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const themeToggleSun = document.getElementById('theme-toggle-sun');
-            const themeToggleMoon = document.getElementById('theme-toggle-moon');
-
-            if (document.documentElement.classList.contains('dark')) {
-                themeToggleSun.classList.remove('hidden');
-            } else {
-                themeToggleMoon.classList.remove('hidden');
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    themeToggleSun.classList.add('hidden');
-                    themeToggleMoon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                    themeToggleMoon.classList.add('hidden');
-                    themeToggleSun.classList.remove('hidden');
-                }
-            });
-        });
-    </script>
+    <script src="assets/js/pages/invoice.js"></script>
 </body>
 </html>

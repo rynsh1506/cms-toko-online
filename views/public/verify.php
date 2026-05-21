@@ -53,7 +53,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex items-center justify-center min-h-screen p-6 relative overflow-hidden transition-colors duration-300">
-    
+
     <!-- Background Blob effect -->
     <div class="absolute w-96 h-96 bg-primary/5 rounded-full blur-3xl -top-12 -left-12 -z-10 animate-pulse"></div>
     <div class="absolute w-96 h-96 bg-primary/5 rounded-full blur-3xl -bottom-12 -right-12 -z-10 animate-pulse"></div>
@@ -79,7 +79,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
             <h2 class="text-xl font-bold text-slate-800 dark:text-white font-display">Verifikasi Akun Anda</h2>
             <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Kami telah mengirimkan 6-digit kode verifikasi ke email Anda.</p>
         </div>
-        
+
         <!-- Alerts Placeholder -->
         <div id="alert-container">
             <?php if (isset($_SESSION['success'])): ?>
@@ -103,7 +103,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
 
             <div>
                 <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-3 text-center">Masukkan 6-Digit Kode Verifikasi</label>
-                
+
                 <!-- Individual digit inputs for sleek premium OTP UI -->
                 <div class="flex justify-between gap-2" id="otp-input-container">
                     <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-xl font-bold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-900 dark:text-white transition">
@@ -116,7 +116,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
                 <!-- Hidden input to store combined code -->
                 <input type="hidden" name="code" id="verification-code">
             </div>
-            
+
             <button type="submit" id="btn-verify"
                 class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 active:scale-[0.98] transition shadow-lg shadow-primary/10 text-sm">
                 Verifikasi Akun
@@ -124,13 +124,13 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
         </form>
 
         <div class="mt-6 text-center text-xs text-slate-500">
-            Tidak menerima kode? 
+            Tidak menerima kode?
             <button type="button" id="btn-resend" class="text-primary font-bold hover:underline ml-1 disabled:opacity-50 disabled:cursor-not-allowed">
                 Kirim Ulang Kode
             </button>
             <span id="countdown-text" class="block mt-2 text-slate-400 hidden">Silakan tunggu <span id="countdown-timer">30</span> detik sebelum kirim ulang.</span>
         </div>
-        
+
         <p class="text-center text-xs text-slate-500 mt-4">
             Kembali ke <a href="index.php?page=login" class="text-primary font-bold hover:underline">Masuk</a>
         </p>
@@ -138,164 +138,6 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Sleek OTP Digits Navigation Logic
-            const inputs = $('.otp-digit');
-            
-            inputs.on('input', function() {
-                const index = inputs.index(this);
-                if (this.value && index < inputs.length - 1) {
-                    inputs.eq(index + 1).focus();
-                }
-                combineDigits();
-            });
-
-            inputs.on('keydown', function(e) {
-                const index = inputs.index(this);
-                if (e.key === 'Backspace') {
-                    if (!this.value && index > 0) {
-                        inputs.eq(index - 1).focus().val('');
-                    }
-                }
-                combineDigits();
-            });
-            
-            inputs.on('paste', function(e) {
-                e.preventDefault();
-                const pasteData = (e.originalEvent.clipboardData || window.clipboardData).getData('text').trim();
-                if (/^\d{6}$/.test(pasteData)) {
-                    for (let i = 0; i < inputs.length; i++) {
-                        inputs.eq(i).val(pasteData[i]);
-                    }
-                    inputs.last().focus();
-                    combineDigits();
-                }
-            });
-
-            function combineDigits() {
-                let code = '';
-                inputs.each(function() {
-                    code += this.value;
-                });
-                $('#verification-code').val(code);
-            }
-
-            // Handle OTP Verification Form Submit
-            $('#verify-form').on('submit', function(e) {
-                e.preventDefault();
-                combineDigits();
-                
-                const form = $(this);
-                const btn = $('#btn-verify');
-                
-                btn.prop('disabled', true).text('Memproses...');
-                $('#alert-container').empty();
-                
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: form.serialize(),
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            $('#alert-container').html(`
-                                <div class="bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-800 dark:text-emerald-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold font-display">
-                                    ${response.message}
-                                </div>
-                            `);
-                            setTimeout(() => {
-                                window.location.href = response.redirect_url;
-                            }, 1000);
-                        } else {
-                            $('#alert-container').html(`
-                                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                    ${response.message}
-                                </div>
-                            `);
-                            btn.prop('disabled', false).text('Verifikasi Akun');
-                        }
-                    },
-                    error: function() {
-                        $('#alert-container').html(`
-                            <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                Terjadi kesalahan pada server. Harap coba lagi.
-                            </div>
-                        `);
-                        btn.prop('disabled', false).text('Verifikasi Akun');
-                    }
-                });
-            });
-
-            // Resend Verification Code logic with Countdown
-            let countdown = 0;
-            let timerInterval;
-
-            function startTimer() {
-                countdown = 30;
-                $('#btn-resend').prop('disabled', true);
-                $('#countdown-text').removeClass('hidden');
-                $('#countdown-timer').text(countdown);
-                
-                timerInterval = setInterval(() => {
-                    countdown--;
-                    $('#countdown-timer').text(countdown);
-                    if (countdown <= 0) {
-                        clearInterval(timerInterval);
-                        $('#btn-resend').prop('disabled', false);
-                        $('#countdown-text').addClass('hidden');
-                    }
-                }, 1000);
-            }
-
-            $('#btn-resend').on('click', function() {
-                const email = $('#email-field').val();
-                if (!email) {
-                    $('#alert-container').html(`
-                        <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                            Harap isi alamat email terlebih dahulu untuk mengirim ulang kode!
-                        </div>
-                    `);
-                    return;
-                }
-
-                const btn = $(this);
-                btn.prop('disabled', true);
-                
-                $.ajax({
-                    url: 'index.php?page=auth_process&action=resend_code',
-                    type: 'POST',
-                    data: { email: email },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            $('#alert-container').html(`
-                                <div class="bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-800 dark:text-emerald-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold font-display">
-                                    ${response.message}
-                                </div>
-                            `);
-                            startTimer();
-                        } else {
-                            $('#alert-container').html(`
-                                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                    ${response.message}
-                                </div>
-                            `);
-                            btn.prop('disabled', false);
-                        }
-                    },
-                    error: function() {
-                        $('#alert-container').html(`
-                            <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                                Gagal mengirim ulang kode. Silakan coba lagi.
-                            </div>
-                        `);
-                        btn.prop('disabled', false);
-                    }
-                });
-            });
-
-        });
-    </script>
+    <script src="assets/js/pages/verify.js"></script>
 </body>
 </html>

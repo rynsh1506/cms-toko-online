@@ -67,7 +67,7 @@
                         </svg>
                         <span>Keranjang</span>
                     </a>
-                    
+
                     <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                         <svg id="theme-toggle-sun" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-3.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
@@ -82,31 +82,31 @@
     </nav>
 
     <main class="max-w-6xl mx-auto px-6 py-12 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         <div class="lg:col-span-2 space-y-8">
             <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 font-display">Detail Pengiriman</h2>
-                
+
                 <div id="checkout-alert"></div>
 
                 <form id="checkout-form" action="index.php?page=checkout_process" method="POST" class="space-y-6">
                     <input type="hidden" name="promo_code_id" id="hidden_promo_id" value="">
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nama Penerima</label>
-                        <input type="text" name="customer_name" required value="<?= htmlspecialchars($_SESSION['name'] ?? '') ?>" 
+                        <input type="text" name="customer_name" required value="<?= htmlspecialchars($_SESSION['name'] ?? '') ?>"
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
                     </div>
-                    
+
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nomor WhatsApp / HP</label>
-                        <input type="text" name="customer_phone" required placeholder="081234567890" 
+                        <input type="text" name="customer_phone" required placeholder="081234567890"
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
                         <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Harap gunakan nomor aktif untuk konfirmasi pesanan via WhatsApp.</p>
                     </div>
-                    
+
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Alamat Lengkap</label>
-                        <textarea name="customer_address" required rows="3" placeholder="Jalan, RT/RW, Kecamatan, Kota, Kode Pos" 
+                        <textarea name="customer_address" required rows="3" placeholder="Jalan, RT/RW, Kecamatan, Kota, Kode Pos"
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm"></textarea>
                     </div>
 
@@ -146,12 +146,12 @@
         <div>
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm sticky top-24">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 font-display">Ringkasan Pesanan</h3>
-                
+
                 <div class="space-y-4 mb-6 max-h-[22rem] overflow-y-auto pr-2">
                     <?php foreach ($cart_items as $item): ?>
                         <div class="flex justify-between items-start text-xs gap-3">
                             <span class="text-slate-600 dark:text-slate-300 leading-relaxed">
-                                <?= htmlspecialchars($item['name']) ?> 
+                                <?= htmlspecialchars($item['name']) ?>
                                 <span class="text-slate-400 dark:text-slate-500 font-semibold whitespace-nowrap ml-1">x<?= $item['qty'] ?></span>
                             </span>
                             <span class="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap font-mono mt-0.5">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
@@ -163,7 +163,7 @@
                     <span class="text-slate-600 dark:text-slate-300 text-xs font-bold">Total Sementara</span>
                     <span class="text-slate-900 dark:text-white font-bold font-mono" id="summary-subtotal">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
                 </div>
-                
+
                 <div class="hidden justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-4" id="promo-discount-row">
                     <span>Diskon Promo (<span id="promo-code-applied"></span>)</span>
                     <span class="font-mono">-Rp <span id="promo-discount-value">0</span></span>
@@ -189,7 +189,7 @@
                     <span>Kode Unik Transfer</span>
                     <span class="font-bold text-amber-600 dark:text-amber-500">(Dibuat otomatis)</span>
                 </div>
-                
+
                 <div class="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 p-4 rounded-2xl text-[10px] text-indigo-700 dark:text-indigo-400 flex items-start space-x-2.5">
                     <svg class="h-4 w-4 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -198,128 +198,17 @@
                 </div>
             </div>
         </div>
-        
+
     </main>
 
     <?php require __DIR__ . '/components/footer.php'; ?>
 
     <script src="assets/js/jquery.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Theme toggle logic
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const themeToggleSun = document.getElementById('theme-toggle-sun');
-            const themeToggleMoon = document.getElementById('theme-toggle-moon');
-
-            if (document.documentElement.classList.contains('dark')) {
-                themeToggleSun.classList.remove('hidden');
-            } else {
-                themeToggleMoon.classList.remove('hidden');
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    themeToggleSun.classList.add('hidden');
-                    themeToggleMoon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                    themeToggleMoon.classList.add('hidden');
-                    themeToggleSun.classList.remove('hidden');
-                }
-            });
-
-            // Promo Code Apply Logic
-            let subtotalVal = <?= $total_price ?>;
-            let appliedPromoId = null;
-
-            $('#btn-apply-promo').on('click', function() {
-                const code = $('#promo-input').val().trim();
-                const statusMsg = $('#promo-status-msg');
-                
-                if (code === '') {
-                    statusMsg.text('Masukkan kode promo terlebih dahulu.').removeClass().addClass('text-[10px] mt-1.5 font-semibold text-rose-500').show();
-                    return;
-                }
-
-                statusMsg.text('Memeriksa...').removeClass().addClass('text-[10px] mt-1.5 font-semibold text-slate-400').show();
-
-                $.ajax({
-                    url: 'index.php?page=validate_promo',
-                    type: 'POST',
-                    data: { code: code, total_price: subtotalVal },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            appliedPromoId = response.promo_id;
-                            $('#hidden_promo_id').value = response.promo_id; 
-                            document.getElementById('hidden_promo_id').value = response.promo_id;
-                            
-                            statusMsg.text(response.message).removeClass().addClass('text-[10px] mt-1.5 font-semibold text-emerald-500').show();
-                            
-                            // Update values
-                            $('#promo-code-applied').text(response.code);
-                            $('#promo-discount-value').text(new Intl.NumberFormat('id-ID').format(response.discount_amount));
-                            $('#promo-discount-row').removeClass('hidden').addClass('flex');
-                            
-                            const finalTotal = subtotalVal - response.discount_amount;
-                            $('#summary-total').text('Rp ' + new Intl.NumberFormat('id-ID').format(finalTotal));
-                        } else {
-                            statusMsg.text(response.message).removeClass().addClass('text-[10px] mt-1.5 font-semibold text-rose-500').show();
-                            
-                            // Reset values
-                            $('#promo-discount-row').removeClass('flex').addClass('hidden');
-                            $('#summary-total').text('Rp ' + new Intl.NumberFormat('id-ID').format(subtotalVal));
-                            document.getElementById('hidden_promo_id').value = "";
-                        }
-                    },
-                    error: function() {
-                        statusMsg.text('Terjadi kesalahan koneksi sistem.').removeClass().addClass('text-[10px] mt-1.5 font-semibold text-rose-500').show();
-                    }
-                });
-            });
-
-            // AJAX Form Submit
-            $('#checkout-form').on('submit', function(e) {
-                e.preventDefault();
-                const form = $(this);
-                const btn = $('#btn-submit-checkout');
-                
-                btn.prop('disabled', true).text('Memproses Pesanan...');
-                $('#checkout-alert').empty();
-                
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: form.serialize(),
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            window.location.href = response.redirect_url;
-                        } else {
-                            $('#checkout-alert').html(`
-                                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-4 rounded-r-xl mb-6 text-xs font-semibold">
-                                    ${response.message}
-                                </div>
-                            `);
-                            btn.prop('disabled', false).text('Selesaikan Pesanan');
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                    },
-                    error: function() {
-                        $('#checkout-alert').html(`
-                            <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-4 rounded-r-xl mb-6 text-xs font-semibold">
-                                Terjadi kesalahan sistem saat memproses checkout. Silakan coba kembali.
-                            </div>
-                        `);
-                        btn.prop('disabled', false).text('Selesaikan Pesanan');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                });
-            });
-        });
+        window.NusaBayCheckout = {
+            subtotal: <?= json_encode((float) $total_price) ?>
+        };
     </script>
+    <script src="assets/js/pages/checkout.js"></script>
 </body>
 </html>

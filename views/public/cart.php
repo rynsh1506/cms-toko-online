@@ -62,7 +62,7 @@ if (!empty($_SESSION['cart'])) {
         }
 
         if ($qty > $stock) {
-            $qty = ($stock > 0) ? $stock : 1; 
+            $qty = ($stock > 0) ? $stock : 1;
             $_SESSION['cart'][$cart_key] = $qty;
         }
 
@@ -150,7 +150,7 @@ if (!empty($_SESSION['cart'])) {
                         </svg>
                         <span class="hidden sm:inline">Kembali Belanja</span>
                     </a>
-                    
+
                     <a href="index.php?page=cart" id="cart-link" class="relative p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -197,9 +197,9 @@ if (!empty($_SESSION['cart'])) {
 
         <?php if (!empty($cart_items)): ?>
             <div id="cart-container" class="flex flex-col lg:flex-row gap-8 items-start relative">
-                
+
                 <div class="w-full lg:w-2/3 space-y-4">
-                    
+
                     <div class="flex justify-between items-center bg-white dark:bg-slate-900 rounded-2xl p-4 px-5 border border-slate-100 dark:border-slate-800 shadow-sm">
                         <div class="flex items-center space-x-3">
                             <input type="checkbox" id="select-all-checkbox" class="rounded border-slate-300 text-primary focus:ring-primary h-5 w-5 accent-indigo-600 cursor-pointer" checked>
@@ -214,13 +214,13 @@ if (!empty($_SESSION['cart'])) {
                     <div id="cart-items-wrapper" class="space-y-4">
                         <?php foreach ($cart_items as $item): ?>
                             <div class="cart-item-row bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
-                                
+
                                 <input type="checkbox" class="item-checkbox rounded border-slate-300 text-primary focus:ring-primary h-5 w-5 accent-indigo-600 cursor-pointer" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-price="<?= $item['price'] ?>" checked>
-                                
+
                                 <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="shrink-0 block ml-1">
                                     <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-20 w-20 object-cover rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
                                 </a>
-                                
+
                                 <div class="flex-1 min-w-0">
                                     <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="text-base font-bold text-slate-800 dark:text-white hover:text-primary transition line-clamp-1"><?= htmlspecialchars($item['name']) ?></a>
                                     <?php if (!empty($item['variant_info'])): ?>
@@ -235,7 +235,7 @@ if (!empty($_SESSION['cart'])) {
                                     <button type="button" class="btn-remove-item text-slate-400 hover:text-rose-500 transition p-1" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
-                                    
+
                                     <div class="flex flex-col items-center">
                                         <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 overflow-hidden shadow-sm scale-90 origin-right">
                                             <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg></button>
@@ -253,7 +253,7 @@ if (!empty($_SESSION['cart'])) {
                 <div class="w-full lg:w-1/3 lg:sticky lg:top-28">
                     <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-md">
                         <h2 class="text-base font-bold text-slate-900 dark:text-white mb-4 font-display uppercase tracking-wider">Ringkasan Belanja</h2>
-                        
+
                         <div class="space-y-3 text-sm border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
                             <div class="flex justify-between text-slate-500 dark:text-slate-400">
                                 <span>Total Harga (<span id="summary-count">0</span> barang)</span>
@@ -272,7 +272,7 @@ if (!empty($_SESSION['cart'])) {
                         </button>
                     </div>
                 </div>
-                
+
             </div>
         <?php endif; ?>
     </main>
@@ -282,223 +282,10 @@ if (!empty($_SESSION['cart'])) {
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/sweetalert2.all.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Theme toggle
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const themeToggleSun = document.getElementById('theme-toggle-sun');
-            const themeToggleMoon = document.getElementById('theme-toggle-moon');
-
-            if (document.documentElement.classList.contains('dark')) {
-                themeToggleSun.classList.remove('hidden');
-            } else {
-                themeToggleMoon.classList.remove('hidden');
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                document.documentElement.classList.toggle('dark');
-                if (document.documentElement.classList.contains('dark')) {
-                    localStorage.setItem('theme', 'dark');
-                    themeToggleMoon.classList.add('hidden');
-                    themeToggleSun.classList.remove('hidden');
-                } else {
-                    localStorage.setItem('theme', 'light');
-                    themeToggleSun.classList.add('hidden');
-                    themeToggleMoon.classList.remove('hidden');
-                }
-            });
-
-            function formatRupiah(num) {
-                return 'Rp ' + Number(num).toLocaleString('id-ID');
-            }
-
-            // Fungsi Utama Menghitung Sisi Samping Sesuai Pilihan Checkbox
-            function calculateSelectedSummary() {
-                let totalPrice = 0;
-                let totalCount = 0;
-
-                $('.item-checkbox:checked').each(function() {
-                    const row = $(this).closest('.cart-item-row');
-                    const price = parseFloat($(this).data('price'));
-                    const qty = parseInt(row.find('.input-qty').val()) || 1;
-                    
-                    totalPrice += price * qty;
-                    totalCount += qty;
-                });
-
-                $('#summary-total, #grand-total').text(formatRupiah(totalPrice));
-                $('#summary-count, #btn-checkout-count').text(totalCount);
-
-                if (totalCount === 0) {
-                    $('#btn-checkout-action').addClass('opacity-50 pointer-events-none').prop('disabled', true);
-                } else {
-                    $('#btn-checkout-action').removeClass('opacity-50 pointer-events-none').prop('disabled', false);
-                }
-            }
-
-            // Jalankan perhitungan pertama kali load
-            calculateSelectedSummary();
-
-            // Event Checkbox Item diubah
-            $(document).on('change', '.item-checkbox', function() {
-                const totalItems = $('.item-checkbox').length;
-                const totalChecked = $('.item-checkbox:checked').length;
-                
-                $('#select-all-checkbox').prop('checked', totalItems === totalChecked);
-                calculateSelectedSummary();
-            });
-
-            // Event Pilih Semua
-            $('#select-all-checkbox').on('change', function() {
-                $('.item-checkbox').prop('checked', this.checked);
-                calculateSelectedSummary();
-            });
-
-            var _qtyTimers = {};
-            var _qtyXhr = {};
-
-            function sendQtyUpdate(cartKey, qty, inputEl) {
-                if (_qtyXhr[cartKey]) _qtyXhr[cartKey].abort();
-                _qtyXhr[cartKey] = $.ajax({
-                    url: 'index.php?page=cart_process&action=update',
-                    type: 'POST',
-                    data: { cart_key: cartKey, qty: qty, ajax: 1 },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            inputEl.val(response.qty);
-                            calculateSelectedSummary(); // Update total tagihan samping secara live
-                            
-                            const badge = $('#cart-badge');
-                            if (response.cart_count > 0) { 
-                                badge.text(response.cart_count).removeClass('hidden'); 
-                            } else { 
-                                badge.addClass('hidden'); 
-                            }
-                            
-                            if (response.error_message) {
-                                Swal.fire({ title: 'Perhatian!', text: response.error_message, icon: 'warning', confirmButtonColor: '<?= $primary_color ?>' });
-                            }
-                        } else if (response.status === 'removed') {
-                            inputEl.closest('.cart-item-row').fadeOut(300, function() { $(this).remove(); checkEmptyCart(); });
-                        }
-                    },
-                    complete: function() { delete _qtyXhr[cartKey]; }
-                });
-            }
-
-            function debouncedQtyUpdate(cartKey, qty, inputEl) {
-                clearTimeout(_qtyTimers[cartKey]);
-                _qtyTimers[cartKey] = setTimeout(function() {
-                    sendQtyUpdate(cartKey, qty, inputEl);
-                }, 300);
-            }
-
-            $(document).on('click', '.btn-qty-minus', function() {
-                const input = $(this).siblings('.input-qty');
-                let val = parseInt(input.val()) || 1;
-                const cartKey = input.data('cart-key');
-                if (val > 1) {
-                    input.val(val - 1);
-                    debouncedQtyUpdate(cartKey, val - 1, input);
-                }
-            });
-
-            $(document).on('click', '.btn-qty-plus', function() {
-                const input = $(this).siblings('.input-qty');
-                let val = parseInt(input.val()) || 1;
-                let max = parseInt(input.data('max')) || 999;
-                const cartKey = input.data('cart-key');
-                if (val < max) {
-                    input.val(val + 1);
-                    debouncedQtyUpdate(cartKey, val + 1, input);
-                }
-            });
-
-            // Klik Tombol Checkout "Beli"
-            $('#btn-checkout-action').on('click', function(e) {
-                e.preventDefault();
-                let selectedKeys = [];
-                
-                $('.item-checkbox:checked').each(function() {
-                    selectedKeys.push($(this).data('cart-key'));
-                });
-
-                if (selectedKeys.length === 0) return;
-
-                $.ajax({
-                    url: 'index.php?page=cart_process&action=select_checkout',
-                    type: 'POST',
-                    data: { keys: selectedKeys, ajax: 1 },
-                    dataType: 'json',
-                    success: function(res) {
-                        window.location.href = 'index.php?page=checkout';
-                    }
-                });
-            });
-
-            $(document).on('click', '.btn-remove-item', function() {
-                const btn = $(this);
-                const cartKey = btn.data('cart-key');
-                $.ajax({
-                    url: 'index.php?page=cart_process&action=remove&ajax=1',
-                    type: 'POST',
-                    data: { cart_key: cartKey, ajax: 1 },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            btn.closest('.cart-item-row').fadeOut(300, function() {
-                                $(this).remove();
-                                
-                                const badge = $('#cart-badge');
-                                if (response.cart_count > 0) { 
-                                    badge.text(response.cart_count).removeClass('hidden');
-                                } else { 
-                                    badge.addClass('hidden'); 
-                                }
-                                
-                                checkEmptyCart();
-                            });
-                        }
-                    }
-                });
-            });
-
-            $('#btn-clear-cart').on('click', function() {
-                Swal.fire({
-                    title: 'Kosongkan Keranjang?',
-                    text: 'Semua produk pilihanmu akan dihapus.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Ya, Kosongkan!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: 'index.php?page=cart_process&action=clear&ajax=1',
-                            type: 'GET',
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.status === 'success') {
-                                    $('#cart-container').remove();
-                                    $('#cart-badge').text(0).addClass('hidden');
-                                    checkEmptyCart();
-                                }
-                            }
-                        });
-                    }
-                });
-            });
-
-            function checkEmptyCart() {
-                if ($('.cart-item-row').length === 0) {
-                    $('#cart-container').remove();
-                    $('#cart-empty-placeholder').removeClass('hidden').fadeIn(300);
-                } else {
-                    calculateSelectedSummary();
-                }
-            }
-        });
+        window.NusaBayCart = {
+            primaryColor: <?= json_encode($primary_color) ?>
+        };
     </script>
+    <script src="assets/js/pages/cart.js"></script>
 </body>
 </html>
