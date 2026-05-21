@@ -13,15 +13,17 @@ function sendMail($to, $subject, $body) {
     try {
         // Konfigurasi Server SMTP
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';                     
+        $mail->Host       = $_ENV['SMTP_HOST'] ?? 'smtp.gmail.com';                     
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'riangg4315@gmail.com';           
-        $mail->Password   = 'dsnp ovdq qrml hmkp';        
+        $mail->Username   = $_ENV['SMTP_USER'] ?? 'riangg4315@gmail.com';           
+        $mail->Password   = $_ENV['SMTP_PASS'] ?? 'dsnp ovdq qrml hmkp';        
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->Port       = (int)($_ENV['SMTP_PORT'] ?? 587);
 
         // Penerima & Pengirim
-        $mail->setFrom('riangg4315@gmail.com', 'NusaBay Team');
+        $from_email = $_ENV['SMTP_FROM_EMAIL'] ?? 'riangg4315@gmail.com';
+        $from_name = $_ENV['SMTP_FROM_NAME'] ?? 'NusaBay Team';
+        $mail->setFrom($from_email, $from_name);
         $mail->addAddress($to);
 
         // Konten Email

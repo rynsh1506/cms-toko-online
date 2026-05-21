@@ -9,6 +9,13 @@ function sanitize_input($string) {
 }
 
 /**
+ * Escapes HTML for output encoding.
+ */
+function e($value) {
+    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+/**
  * Redirect ke halaman tertentu
  */
 function redirect($url) {

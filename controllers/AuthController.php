@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/AuthService.php';
+
+$authService = new AuthService($pdo);
 
 $action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
@@ -10,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = sanitize_input($_POST['name'] ?? '');
         $email = sanitize_input($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
+        $agree_tos = isset($_POST['agree_tos']);
         
         if (empty($name) || empty($email) || empty($password)) {
             if ($is_ajax) {
@@ -21,10 +25,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('index.php?page=register');
         }
 
+        if (!$agree_tos) {
+            if ($is_ajax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi.']);
+                exit;
+            }
+            $_SESSION['error'] = "Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi.";
+            redirect('index.php?page=register');
+        }
+
         // Cek apakah email sudah ada
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        if ($stmt->fetch()) {
+        if ($authService->isEmailRegistered($email)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'message' => 'Email sudah terdaftar!']);
@@ -35,18 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Cek apakah tabel kosong, jika iya, jadikan admin
-        $stmt = $pdo->query("SELECT COUNT(*) FROM users");
-        $count = $stmt->fetchColumn();
+        $count = $authService->countUsers();
         $role = ($count == 0) ? 'admin' : 'user';
-
-        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-        $verification_token = sprintf("%06d", mt_rand(100000, 999999));
         
         try {
-            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, verification_token) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $email, $hashed_password, $role, $verification_token]);
-            
-            $user_id = $pdo->lastInsertId();
+            $user_data = $authService->registerUser($name, $email, $password, $role);
+            $verification_token = $user_data['verification_token'];
             
             $_SESSION['verify_email'] = $email;
 
@@ -96,11 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('index.php?page=login');
         }
 
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        // Menggunakan AuthService untuk mencocokkan email & password
+        $user = $authService->authenticate($email, $password);
 
-        if ($user && password_verify($password, $user['password'])) {
+        if ($user) {
             if ($user['email_verified_at'] === null) {
                 $_SESSION['verify_email'] = $email;
                 $verify_url = "index.php?page=verify&email=" . urlencode($email);
@@ -157,9 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('index.php?page=verify');
         }
 
-        $stmt = $pdo->prepare("SELECT id, name, email_verified_at FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        $user = $authService->getUserByEmail($email);
 
         if (!$user) {
             if ($is_ajax) {
@@ -182,8 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $new_otp = sprintf("%06d", mt_rand(100000, 999999));
-        $stmtUpdate = $pdo->prepare("UPDATE users SET verification_token = ? WHERE id = ?");
-        $stmtUpdate->execute([$new_otp, $user['id']]);
+        $authService->updateVerificationToken($user['id'], $new_otp);
 
         require_once __DIR__ . '/../config/mailer.php';
         $subject = "Verifikasi Pendaftaran Akun NusaBay (Kirim Ulang)";

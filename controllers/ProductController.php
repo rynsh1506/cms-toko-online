@@ -1,9 +1,12 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../services/ProductService.php';
 
 // Proteksi: Hanya Admin
 checkAdmin();
+
+$productService = new ProductService($pdo);
 
 $action = $_GET['action'] ?? '';
 $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);
@@ -46,8 +49,7 @@ if ($action === 'add') {
         }
 
         if (!isset($err)) {
-            $stmt = $pdo->prepare("INSERT INTO products (category_id, name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?)");
-            if ($stmt->execute([$category_id, $name, $description, $price, $stock, $image_url])) {
+            if ($productService->addProduct($category_id, $name, $description, $price, $stock, $image_url)) {
                 if ($is_ajax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => true, 'message' => 'Produk berhasil ditambahkan!']);
@@ -80,9 +82,7 @@ if ($action === 'add') {
         $stock = intval($_POST['stock']);
 
         // Fetch current product
-        $stmt = $pdo->prepare("SELECT image_url FROM products WHERE id = ?");
-        $stmt->execute([$id]);
-        $product = $stmt->fetch();
+        $product = $productService->getProductById($id);
 
         if (!$product) {
             if ($is_ajax) {
@@ -131,8 +131,7 @@ if ($action === 'add') {
         }
 
         if (!$err) {
-            $stmt = $pdo->prepare("UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ?");
-            if ($stmt->execute([$category_id, $name, $description, $price, $stock, $image_url, $id])) {
+            if ($productService->updateProduct($id, $category_id, $name, $description, $price, $stock, $image_url)) {
                 if ($is_ajax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => true, 'message' => 'Produk berhasil diperbarui!']);
@@ -157,9 +156,7 @@ if ($action === 'add') {
 
 } elseif ($action === 'delete') {
     $id = intval($_GET['id'] ?? 0);
-    $stmt = $pdo->prepare("SELECT image_url FROM products WHERE id = ?");
-    $stmt->execute([$id]);
-    $product = $stmt->fetch();
+    $product = $productService->getProductById($id);
 
     if ($product) {
         $image_url = $product['image_url'];
@@ -171,8 +168,7 @@ if ($action === 'add') {
             }
         }
 
-        $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
-        if ($stmt->execute([$id])) {
+        if ($productService->deleteProduct($id)) {
             if ($is_ajax) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Produk berhasil dihapus!']);
