@@ -150,6 +150,11 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
                                 </div>
                             `);
                             btn.prop('disabled', false).text('Masuk');
+                            if (response.redirect_url) {
+                                setTimeout(() => {
+                                    window.location.href = response.redirect_url;
+                                }, 1500);
+                            }
                         }
                     },
                     error: function() {
