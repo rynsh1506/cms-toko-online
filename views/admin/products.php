@@ -12,7 +12,6 @@ $stmt = $pdo->query("
 $products = $stmt->fetchAll();
 ?>
 
-<!-- Title & CTA -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 font-sans">
     <div>
         <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-display">Kelola Produk</h1>
@@ -26,7 +25,6 @@ $products = $stmt->fetchAll();
     </button>
 </div>
 
-<!-- Products Table -->
 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden font-sans transition-colors duration-300">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -108,14 +106,11 @@ $products = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- Modal Pop-up CRUD Produk -->
 <div id="productModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
-    <!-- Backdrop -->
     <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"></div>
 
     <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100 dark:border-slate-800">
-            <!-- Modal Header -->
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white font-display" id="modalTitle">Tambah Produk Baru</h3>
                 <button onclick="closeModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none">
@@ -125,25 +120,21 @@ $products = $stmt->fetchAll();
                 </button>
             </div>
 
-            <!-- Form -->
             <form id="productForm" action="index.php?page=admin_product_process&action=add" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="prodId">
                 <div class="p-6 space-y-4">
-                    <!-- Nama Produk -->
                     <div>
                         <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Nama Produk</label>
                         <input type="text" name="name" id="prodName" required
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
                     </div>
 
-                    <!-- Deskripsi -->
                     <div>
                         <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Deskripsi</label>
                         <textarea name="description" id="prodDesc" rows="3" required
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"></textarea>
                     </div>
 
-                    <!-- Kategori -->
                     <div>
                         <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Kategori</label>
                         <select name="category_id" id="prodCategoryId" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
@@ -155,14 +146,12 @@ $products = $stmt->fetchAll();
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <!-- Harga -->
                         <div>
                             <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Harga (Rp)</label>
                             <input type="number" name="price" id="prodPrice" required min="0"
                                 class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm">
                         </div>
 
-                        <!-- Stok -->
                         <div>
                             <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Stok</label>
                             <input type="number" name="stock" id="prodStock" required min="0"
@@ -170,7 +159,6 @@ $products = $stmt->fetchAll();
                         </div>
                     </div>
 
-                    <!-- Gambar Upload -->
                     <div>
                         <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1 text-sm">Gambar Produk</label>
                         <div id="imagePreviewContainer" class="mb-2.5 hidden">
@@ -183,7 +171,6 @@ $products = $stmt->fetchAll();
                     </div>
                 </div>
 
-                <!-- Modal Actions -->
                 <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-3 bg-slate-50 dark:bg-slate-800/50">
                     <button type="button" onclick="closeModal()" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm transition">Batal</button>
                     <button type="submit" id="btn-save-product" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md shadow-indigo-600/10 transition active:scale-[0.98]">Simpan</button>
@@ -367,10 +354,8 @@ $products = $stmt->fetchAll();
     });
 </script>
 
-<!-- ===== Variant Modal ===== -->
 <div id="variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto font-sans">
-        <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
             <div>
                 <h3 class="text-lg font-extrabold text-slate-800 dark:text-white font-display">Kelola Varian</h3>
@@ -381,7 +366,6 @@ $products = $stmt->fetchAll();
             </button>
         </div>
 
-        <!-- Variant List -->
         <div class="p-6 border-b border-slate-100 dark:border-slate-700">
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Daftar Varian</h4>
             <div id="variant-list" class="space-y-2 min-h-[60px]">
@@ -389,7 +373,6 @@ $products = $stmt->fetchAll();
             </div>
         </div>
 
-        <!-- Add Variant Form -->
         <div class="p-6">
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Tambah Varian Baru</h4>
             <form id="add-variant-form" class="space-y-3">
@@ -411,7 +394,7 @@ $products = $stmt->fetchAll();
                         <input type="number" id="new-variant-stock" value="0" min="0" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
                     </div>
                 </div>
-                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition active:scale-[0.98]">
+                <button type="submit" id="btn-submit-variant" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition active:scale-[0.98]">
                     + Tambah Varian
                 </button>
             </form>
@@ -440,8 +423,14 @@ function loadVariants() {
     const list = document.getElementById('variant-list');
     list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Memuat...</p>';
     $.getJSON('index.php?page=admin_variant_process&action=list&product_id=' + currentProductId, function(data) {
-        if (data.status !== 'success') { list.innerHTML = '<p class="text-xs text-rose-500 text-center py-4">Gagal memuat varian.</p>'; return; }
-        if (data.variants.length === 0) { list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4" id="variant-empty-msg">Belum ada varian untuk produk ini.</p>'; return; }
+        if (data.status !== 'success') { 
+            list.innerHTML = '<p class="text-xs text-rose-500 text-center py-4">Gagal memuat varian.</p>'; 
+            return; 
+        }
+        if (data.variants.length === 0) { 
+            list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4" id="variant-empty-msg">Belum ada varian untuk produk ini.</p>'; 
+            return; 
+        }
         list.innerHTML = '';
         // Group header
         const header = '<div class="grid grid-cols-12 gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-1"><span class="col-span-3">Nama</span><span class="col-span-3">Nilai</span><span class="col-span-3">+Harga</span><span class="col-span-2">Stok</span><span class="col-span-1"></span></div>';
@@ -470,25 +459,65 @@ function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// Add Variant
+// Add Variant (Sudah diperbaiki dengan popup SweetAlert)
 $('#add-variant-form').on('submit', function(e) {
     e.preventDefault();
     const name  = $('#new-variant-name').val().trim();
     const value = $('#new-variant-value').val().trim();
     const price = $('#new-variant-price').val();
     const stock = $('#new-variant-stock').val();
-    if (!name || !value) { alert('Nama varian dan nilai wajib diisi.'); return; }
+    
+    if (!name || !value) { 
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Nama varian dan nilai wajib diisi.'
+        });
+        return; 
+    }
+
+    const btnSubmit = $('#btn-submit-variant');
+    const originalBtnText = btnSubmit.html();
+    btnSubmit.prop('disabled', true).text('Menyimpan...');
+
     $.post('index.php?page=admin_variant_process&action=add', {
-        product_id: currentProductId, variant_name: name, variant_value: value, additional_price: price, stock: stock
+        product_id: currentProductId, 
+        variant_name: name, 
+        variant_value: value, 
+        additional_price: price, 
+        stock: stock
     }, function(data) {
-        if (data.status === 'success') { $(this)[0] && this.reset(); $('#add-variant-form')[0].reset(); loadVariants(); }
-        else { alert(data.message); }
-    }, 'json');
+        btnSubmit.prop('disabled', false).html(originalBtnText);
+        
+        if (data.status === 'success') { 
+            $('#add-variant-form')[0].reset(); 
+            loadVariants(); 
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: data.message || 'Varian baru berhasil ditambahkan.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else { 
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: data.message
+            });
+        }
+    }, 'json').fail(function() {
+        btnSubmit.prop('disabled', false).html(originalBtnText);
+        Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Sistem',
+            text: 'Gagal terhubung ke server.'
+        });
+    });
 });
 
-// Edit Variant (simple prompt-based inline)
+// Edit Variant (Sudah ditambahkan SweetAlert)
 function editVariantInline(btn, id, name, value, price, stock) {
-    const row = $(btn).closest('.variant-row');
     const newName  = prompt('Nama Varian:', name);
     if (newName === null) return;
     const newVal   = prompt('Nilai:', value);
@@ -501,18 +530,70 @@ function editVariantInline(btn, id, name, value, price, stock) {
     $.post('index.php?page=admin_variant_process&action=edit', {
         id: id, variant_name: newName, variant_value: newVal, additional_price: newPrice, stock: newStock
     }, function(data) {
-        if (data.status === 'success') { loadVariants(); }
-        else { alert(data.message); }
-    }, 'json');
+        if (data.status === 'success') { 
+            loadVariants(); 
+            Swal.fire({
+                icon: 'success',
+                title: 'Diperbarui!',
+                text: data.message || 'Data varian berhasil diubah.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else { 
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: data.message
+            }); 
+        }
+    }, 'json').fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Sistem',
+            text: 'Gagal terhubung ke server.'
+        });
+    });
 }
 
-// Delete Variant
+// Delete Variant (Sudah ditambahkan SweetAlert Confirm)
 function deleteVariant(id) {
-    if (!confirm('Hapus varian ini?')) return;
-    $.post('index.php?page=admin_variant_process&action=delete', { id: id }, function(data) {
-        if (data.status === 'success') { loadVariants(); }
-        else { alert(data.message); }
-    }, 'json');
+    Swal.fire({
+        title: 'Hapus Varian?',
+        text: 'Data varian ini akan dihapus permanen.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post('index.php?page=admin_variant_process&action=delete', { id: id }, function(data) {
+                if (data.status === 'success') { 
+                    loadVariants(); 
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terhapus!',
+                        text: data.message || 'Varian berhasil dihapus.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else { 
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: data.message
+                    }); 
+                }
+            }, 'json').fail(function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan Sistem',
+                    text: 'Gagal terhubung ke server.'
+                });
+            });
+        }
+    });
 }
 
 // Close modal on backdrop click
