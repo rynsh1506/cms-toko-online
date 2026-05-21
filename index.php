@@ -74,6 +74,18 @@ switch ($page) {
         require __DIR__ . '/controllers/OrderCancelController.php';
         break;
 
+    case 'tos':
+        require __DIR__ . '/views/public/tos.php';
+        break;
+
+    case 'privacy':
+        require __DIR__ . '/views/public/privacy.php';
+        break;
+
+    case 'faq':
+        require __DIR__ . '/views/public/faq.php';
+        break;
+
     // Admin Pages (Rendered through shared layout)
     case 'admin':
         checkAdmin();
@@ -81,6 +93,11 @@ switch ($page) {
         require __DIR__ . '/views/admin/layout.php';
         break;
 
+    case 'admin_settings':
+        checkAdmin();
+        $admin_page = 'settings.php';
+        require __DIR__ . '/views/admin/layout.php';
+        break;
 
     case 'admin_products':
         checkAdmin();

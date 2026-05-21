@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = sanitize_input($_POST['name'] ?? '');
         $email = sanitize_input($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
+        $agree_tos = isset($_POST['agree_tos']);
         
         if (empty($name) || empty($email) || empty($password)) {
             if ($is_ajax) {
@@ -18,6 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $_SESSION['error'] = "Semua field harus diisi!";
+            redirect('index.php?page=register');
+        }
+
+        if (!$agree_tos) {
+            if ($is_ajax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi.']);
+                exit;
+            }
+            $_SESSION['error'] = "Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi.";
             redirect('index.php?page=register');
         }
 

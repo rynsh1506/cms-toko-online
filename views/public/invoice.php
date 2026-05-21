@@ -300,11 +300,7 @@ $wa_link = "https://wa.me/" . $admin_phone . "?text=" . urlencode($wa_message);
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-6 mt-auto print:hidden">
-        <div class="max-w-6xl mx-auto px-6 text-center text-xs">
-            <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/components/footer.php'; ?>
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
