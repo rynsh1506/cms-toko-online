@@ -211,12 +211,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $item['price']
             ]);
             
-            // Kurangi stok
             if ($item['variant_id']) {
                 // Kurangi stok varian
                 $stmtUpdateVariantStock->execute([$item['quantity'], $item['variant_id']]);
-                // Kurangi juga stok utama produk (karena stok produk utama adalah jumlah stok variannya)
-                $stmtUpdateProductStock->execute([$item['quantity'], $item['product_id']]);
             } else {
                 // Kurangi stok utama produk saja
                 $stmtUpdateProductStock->execute([$item['quantity'], $item['product_id']]);

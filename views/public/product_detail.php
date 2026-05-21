@@ -35,8 +35,8 @@ if ($has_variants) {
     }
 }
 
-// Tentukan stok awal yang ditampilkan (jika punya varian, tampilkan total stok varian dulu)
-$initial_stock = $has_variants ? $total_variant_stock : $product['stock'];
+// Tentukan stok awal yang ditampilkan (jika punya varian, tampilkan total stok normal + varian)
+$initial_stock = $has_variants ? ($total_variant_stock + intval($product['stock'])) : intval($product['stock']);
 
 // Cart count
 $cart_count = 0;

@@ -54,7 +54,6 @@ if ($action === 'update_status') {
 
                             if ($vId) {
                                 $stmtRestoreVariantStock->execute([$qty, $vId]);
-                                $stmtRestoreProductStock->execute([$qty, $pId]);
                             } else {
                                 $stmtRestoreProductStock->execute([$qty, $pId]);
                             }
@@ -78,7 +77,6 @@ if ($action === 'update_status') {
 
                             if ($vId) {
                                 $stmtDeductVariantStock->execute([$qty, $vId]);
-                                $stmtDeductProductStock->execute([$qty, $pId]);
                             } else {
                                 $stmtDeductProductStock->execute([$qty, $pId]);
                             }

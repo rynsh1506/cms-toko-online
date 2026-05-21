@@ -60,8 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($vId) {
                 // Kembalikan stok varian
                 $stmtRestoreVariantStock->execute([$qty, $vId]);
-                // Kembalikan juga stok induk (karena stok induk adalah jumlah stok varian)
-                $stmtRestoreProductStock->execute([$qty, $pId]);
             } else {
                 // Produk normal tanpa varian
                 $stmtRestoreProductStock->execute([$qty, $pId]);
