@@ -44,14 +44,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
         $stmtCancel->execute([$order_id]);
 
-        // 2. Kembalikan stok produk
-        $stmtItems = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+        // 2. Kembalikan stok produk & variannya
+        $stmtItems = $pdo->prepare("SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ?");
         $stmtItems->execute([$order_id]);
         $items = $stmtItems->fetchAll();
 
-        $stmtRestoreStock = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+        $stmtRestoreProductStock = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+        $stmtRestoreVariantStock = $pdo->prepare("UPDATE product_variants SET stock = stock + ? WHERE id = ?");
+
         foreach ($items as $item) {
-            $stmtRestoreStock->execute([$item['quantity'], $item['product_id']]);
+            $qty = intval($item['quantity']);
+            $pId = intval($item['product_id']);
+            $vId = $item['variant_id'] ? intval($item['variant_id']) : null;
+
+            if ($vId) {
+                // Kembalikan stok varian
+                $stmtRestoreVariantStock->execute([$qty, $vId]);
+                // Kembalikan juga stok induk (karena stok induk adalah jumlah stok varian)
+                $stmtRestoreProductStock->execute([$qty, $pId]);
+            } else {
+                // Produk normal tanpa varian
+                $stmtRestoreProductStock->execute([$qty, $pId]);
+            }
         }
 
         $pdo->commit();
