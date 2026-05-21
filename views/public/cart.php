@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../config/helpers.php';
 
-// Fetch Configurations for Dynamic Styles
 $stmt = $pdo->query("SELECT section_key, content_value FROM landing_configs");
 $configs_raw = $stmt->fetchAll();
 $configs = [];
@@ -13,61 +12,77 @@ $primary_color = $configs['primary_color'] ?? '#6366f1';
 
 $cart_items = [];
 $total_price = 0;
+$cart_count = 0;
 
 if (!empty($_SESSION['cart'])) {
-    if (!empty($_SESSION['cart_meta'])) {
-        // New variant-aware cart system
-        foreach ($_SESSION['cart_meta'] as $cart_key => $meta) {
-            if (!isset($_SESSION['cart'][$cart_key])) continue;
-            $qty = $_SESSION['cart'][$cart_key];
-            $subtotal = $meta['price'] * $qty;
-            $total_price += $subtotal;
-            $cart_items[] = [
-                'cart_key'     => $cart_key,
-                'product_id'   => $meta['product_id'],
-                'variant_id'   => $meta['variant_id'],
-                'name'         => $meta['name'],
-                'price'        => $meta['price'],
-                'image_url'    => $meta['image_url'],
-                'stock'        => $meta['stock'],
-                'variant_info' => $meta['variant_info'] ?? '',
-                'qty'          => $qty,
-                'subtotal'     => $subtotal,
+    foreach ($_SESSION['cart'] as $cart_key => $qty) {
+        $parts = explode('-', $cart_key);
+        $product_id = intval($parts[0] ?? 0);
+        $variant_id = intval($parts[1] ?? 0);
+
+        if (isset($_SESSION['cart_meta'][$cart_key])) {
+            $meta = $_SESSION['cart_meta'][$cart_key];
+            $stock = $meta['stock'];
+            $price = $meta['price'];
+            $name = $meta['name'];
+            $img = $meta['image_url'];
+            $v_info = $meta['variant_info'] ?? '';
+        } else {
+            $stmtP = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+            $stmtP->execute([$product_id]);
+            $p = $stmtP->fetch();
+            if (!$p) continue;
+
+            $stock = $p['stock'];
+            $price = floatval($p['price']);
+            $name = $p['name'];
+            $img = $p['image_url'];
+            $v_info = '';
+
+            if ($variant_id > 0) {
+                $stmtV = $pdo->prepare("SELECT * FROM product_variants WHERE id = ?");
+                $stmtV->execute([$variant_id]);
+                $v = $stmtV->fetch();
+                if ($v) {
+                    $stock = $v['stock'];
+                    $price += floatval($v['additional_price']);
+                    $v_info = $v['variant_name'] . ': ' . $v['variant_value'];
+                }
+            }
+
+            $_SESSION['cart_meta'][$cart_key] = [
+                'product_id'   => $product_id,
+                'variant_id'   => $variant_id,
+                'name'         => $name,
+                'price'        => $price,
+                'image_url'    => $img,
+                'stock'        => $stock,
+                'variant_info' => $v_info
             ];
         }
-    } else {
-        // Legacy fallback: pure product_id keys
-        $ids = array_filter(array_map('intval', array_keys($_SESSION['cart'])));
-        if (!empty($ids)) {
-            $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-            $stmtP = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
-            $stmtP->execute($ids);
-            $products = $stmtP->fetchAll();
-            foreach ($products as $p) {
-                $qty = $_SESSION['cart'][$p['id']] ?? 0;
-                $subtotal = $p['price'] * $qty;
-                $total_price += $subtotal;
-                $cart_items[] = [
-                    'cart_key'     => $p['id'] . '-0',
-                    'product_id'   => $p['id'],
-                    'variant_id'   => 0,
-                    'name'         => $p['name'],
-                    'price'        => $p['price'],
-                    'image_url'    => $p['image_url'],
-                    'stock'        => $p['stock'],
-                    'variant_info' => '',
-                    'qty'          => $qty,
-                    'subtotal'     => $subtotal,
-                ];
-            }
-        }
-    }
-}
 
-// Count Cart Items for badge
-$cart_count = 0;
-foreach ($_SESSION['cart'] as $qty) {
-    $cart_count += $qty;
+        if ($qty > $stock) {
+            $qty = ($stock > 0) ? $stock : 1; 
+            $_SESSION['cart'][$cart_key] = $qty;
+        }
+
+        $subtotal = $price * $qty;
+        $total_price += $subtotal;
+        $cart_count += $qty;
+
+        $cart_items[] = [
+            'cart_key'     => $cart_key,
+            'product_id'   => $product_id,
+            'variant_id'   => $variant_id,
+            'name'         => $name,
+            'price'        => $price,
+            'image_url'    => $img,
+            'stock'        => $stock,
+            'variant_info' => $v_info,
+            'qty'          => $qty,
+            'subtotal'     => $subtotal,
+        ];
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -76,9 +91,7 @@ foreach ($_SESSION['cart'] as $qty) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keranjang Belanja - NusaBay</title>
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <!-- Tailwind CSS -->
     <script src="assets/js/tailwind.js"></script>
     <script>
         tailwind.config = {
@@ -100,7 +113,6 @@ foreach ($_SESSION['cart'] as $qty) {
             document.documentElement.classList.remove('dark');
         }
     </script>
-    <!-- Google Fonts Outfit & Inter -->
     <link href="assets/css/fonts.css" rel="stylesheet">
     <style>
         body {
@@ -113,13 +125,11 @@ foreach ($_SESSION['cart'] as $qty) {
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Navbar -->
     <nav class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex justify-between items-center h-20">
                 <a href="index.php?page=home" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:opacity-85 transition font-display flex items-center space-x-2">
-                    <!-- Geometric NusaBay Logo -->
-                                        <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-global)" />
                         <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
                         <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
@@ -138,11 +148,10 @@ foreach ($_SESSION['cart'] as $qty) {
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        <span>Kembali Belanja</span>
+                        <span class="hidden sm:inline">Kembali Belanja</span>
                     </a>
                     
-                    <!-- Cart badge icon -->
-                    <a href="index.php?page=cart" id="cart-link" class="relative p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    <a href="index.php?page=cart" id="cart-link" class="relative p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
@@ -152,14 +161,13 @@ foreach ($_SESSION['cart'] as $qty) {
                     </a>
 
                     <?php if (isAuth()): ?>
-                        <a href="index.php?page=orders" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Pesanan Saya</a>
+                        <a href="index.php?page=orders" class="hidden sm:inline text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Pesanan Saya</a>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
-                            <a href="index.php?page=admin" class="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-xl transition">Admin Panel</a>
+                            <a href="index.php?page=admin" class="hidden md:inline text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-xl transition">Admin Panel</a>
                         <?php endif; ?>
                         <a href="index.php?page=auth_process&action=logout" class="text-sm font-bold text-red-500 hover:text-red-700 transition">Logout</a>
                     <?php endif; ?>
 
-                    <!-- Dark mode toggle -->
                     <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                         <svg id="theme-toggle-sun" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-3.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
@@ -173,118 +181,113 @@ foreach ($_SESSION['cart'] as $qty) {
         </div>
     </nav>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl mx-auto px-6 py-12 flex-1 w-full">
-        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-8 font-display">Keranjang Belanja</h1>
+    <main class="max-w-6xl mx-auto px-6 py-10 flex-1 w-full">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-8 font-display">Keranjang Belanja</h1>
 
-        <!-- Alert messages container -->
-        <div id="cart-alert"></div>
-
-        <!-- Empty state placeholder -->
-        <div id="cart-empty-placeholder" class="<?= empty($cart_items) ? '' : 'hidden' ?> bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-md mx-auto">
-            <svg class="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div id="cart-empty-placeholder" class="<?= empty($cart_items) ? '' : 'hidden' ?> bg-white dark:bg-slate-900 rounded-3xl p-16 text-center border border-slate-100 dark:border-slate-800 shadow-sm max-w-lg mx-auto mt-10">
+            <svg class="h-16 w-16 text-slate-200 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            <p class="text-slate-400 dark:text-slate-500 font-semibold mb-6">Keranjang belanja Anda masih kosong.</p>
+            <p class="text-slate-500 dark:text-slate-400 font-semibold mb-6">Keranjang belanjamu masih kosong nih.</p>
             <a href="index.php?page=home" class="inline-flex items-center space-x-2 bg-primary text-white font-bold py-3.5 px-6 rounded-2xl hover:opacity-90 transition text-sm shadow-lg shadow-primary/25">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <span>Cari Produk Terbaik</span>
+                <span>Cari Produk Sekarang</span>
             </a>
         </div>
 
-        <!-- Cart items list -->
         <?php if (!empty($cart_items)): ?>
-            <div id="cart-card" class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800 transition-colors duration-300">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                <th class="p-4 pl-6">Produk</th>
-                                <th class="p-4">Harga</th>
-                                <th class="p-4 text-center w-48">Jumlah</th>
-                                <th class="p-4 text-right">Subtotal</th>
-                                <th class="p-4 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cart-table-body" class="divide-y divide-slate-50 dark:divide-slate-800 text-sm">
-                            <?php foreach ($cart_items as $item): ?>
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition cart-item-row" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
-                                    <td class="p-4 pl-6">
-                                        <div class="flex items-center space-x-4">
-                                            <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>">
-                                                <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-14 w-14 object-cover rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                                            </a>
-                                            <div>
-                                                <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="font-bold text-slate-800 dark:text-white hover:text-primary transition"><?= htmlspecialchars($item['name']) ?></a>
-                                                <?php if (!empty($item['variant_info'])): ?>
-                                                    <p class="text-xs text-primary font-semibold mt-0.5"><?= htmlspecialchars($item['variant_info']) ?></p>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 font-mono">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>
-                                    <td class="p-4">
-                                        <div class="flex items-center justify-center">
-                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center rounded-l-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
-                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
-                                            </button>
-                                            <input type="text" value="<?= $item['qty'] ?>"
-                                                class="input-qty h-8 w-12 bg-slate-50 dark:bg-slate-950 border-y border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-center focus:outline-none transition text-xs font-bold font-mono"
-                                                data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-product-id="<?= $item['product_id'] ?>" data-max="<?= $item['stock'] ?>" readonly>
-                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center rounded-r-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
-                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-                                            </button>
-                                        </div>
-                                        <p class="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Tersedia: <?= $item['stock'] ?> pcs</p>
-                                    </td>
-                                    <td class="subtotal-cell p-4 text-right font-extrabold text-slate-800 dark:text-white font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></td>
-                                    <td class="p-4 text-center">
-                                        <button type="button" class="btn-remove-item flex items-center space-x-1 text-rose-500 hover:text-rose-700 font-bold text-xs transition mx-auto" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
-                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            <span>Hapus</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Summary & Checkout Button -->
-                <div class="p-8 bg-slate-50/50 dark:bg-slate-800/20 flex flex-col sm:flex-row justify-between items-center border-t border-slate-100 dark:border-slate-800 gap-6">
-                    <button type="button" id="btn-clear-cart" class="inline-flex items-center space-x-1.5 text-xs text-rose-500 hover:text-rose-700 font-bold transition">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        <span>Kosongkan Keranjang</span>
-                    </button>
+            <div id="cart-container" class="flex flex-col lg:flex-row gap-8 items-start relative">
+                
+                <div class="w-full lg:w-2/3 space-y-4">
                     
-                    <div class="text-right space-y-4 w-full sm:w-auto">
-                        <div class="flex items-baseline justify-end space-x-2">
-                            <span class="text-slate-500 dark:text-slate-400 text-xs font-semibold">Total Sementara:</span>
-                            <span id="grand-total" class="text-2xl font-black text-primary font-display">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
+                    <div class="flex justify-between items-center bg-white dark:bg-slate-900 rounded-2xl p-4 px-5 border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="select-all-checkbox" class="rounded border-slate-300 text-primary focus:ring-primary h-5 w-5 accent-indigo-600 cursor-pointer" checked>
+                            <label for="select-all-checkbox" class="text-sm font-bold text-slate-600 dark:text-slate-400 cursor-pointer select-none">Pilih Semua</label>
                         </div>
-                        <a href="index.php?page=checkout" class="inline-flex items-center justify-center space-x-2 w-full sm:w-auto bg-primary text-white font-bold py-3.5 px-8 rounded-2xl shadow-xl shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition text-sm text-center">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                            <span>Lanjut ke Checkout</span>
-                        </a>
+                        <button type="button" id="btn-clear-cart" class="text-xs font-bold text-rose-500 hover:text-rose-700 transition flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            Hapus Semua
+                        </button>
+                    </div>
+
+                    <div id="cart-items-wrapper" class="space-y-4">
+                        <?php foreach ($cart_items as $item): ?>
+                            <div class="cart-item-row bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
+                                
+                                <input type="checkbox" class="item-checkbox rounded border-slate-300 text-primary focus:ring-primary h-5 w-5 accent-indigo-600 cursor-pointer" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-price="<?= $item['price'] ?>" checked>
+                                
+                                <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="shrink-0 block ml-1">
+                                    <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-20 w-20 object-cover rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                </a>
+                                
+                                <div class="flex-1 min-w-0">
+                                    <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="text-base font-bold text-slate-800 dark:text-white hover:text-primary transition line-clamp-1"><?= htmlspecialchars($item['name']) ?></a>
+                                    <?php if (!empty($item['variant_info'])): ?>
+                                        <p class="text-xs text-primary font-semibold mt-0.5"><?= htmlspecialchars($item['variant_info']) ?></p>
+                                    <?php endif; ?>
+                                    <div class="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100 font-mono">
+                                        Rp <?= number_format($item['price'], 0, ',', '.') ?>
+                                    </div>
+                                </div>
+
+                                <div class="shrink-0 flex flex-col items-end justify-between h-20">
+                                    <button type="button" class="btn-remove-item text-slate-400 hover:text-rose-500 transition p-1" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                    
+                                    <div class="flex flex-col items-center">
+                                        <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 overflow-hidden shadow-sm scale-90 origin-right">
+                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg></button>
+                                            <input type="text" value="<?= $item['qty'] ?>" class="input-qty h-8 w-10 bg-transparent text-center font-bold text-xs text-slate-800 dark:text-white focus:outline-none" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-max="<?= $item['stock'] ?>" readonly>
+                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg></button>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400 mt-0.5">Stok: <?= $item['stock'] ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
+
+                <div class="w-full lg:w-1/3 lg:sticky lg:top-28">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-md">
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white mb-4 font-display uppercase tracking-wider">Ringkasan Belanja</h2>
+                        
+                        <div class="space-y-3 text-sm border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                            <div class="flex justify-between text-slate-500 dark:text-slate-400">
+                                <span>Total Harga (<span id="summary-count">0</span> barang)</span>
+                                <span id="summary-total" class="font-bold text-slate-800 dark:text-slate-200 font-mono">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-6 flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-800 dark:text-white">Total Tagihan</span>
+                            <span id="grand-total" class="text-xl font-black text-primary font-display">Rp 0</span>
+                        </div>
+
+                        <button type="button" id="btn-checkout-action" class="flex items-center justify-center space-x-2 w-full bg-primary text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition text-sm">
+                            <span>Beli (<span id="btn-checkout-count">0</span>)</span>
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                        </button>
+                    </div>
+                </div>
+                
             </div>
         <?php endif; ?>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
         <div class="max-w-6xl mx-auto px-6 text-center text-xs">
             <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Theme toggle logic
+            // Theme toggle
             const themeToggleBtn = document.getElementById('theme-toggle');
             const themeToggleSun = document.getElementById('theme-toggle-sun');
             const themeToggleMoon = document.getElementById('theme-toggle-moon');
@@ -296,89 +299,147 @@ foreach ($_SESSION['cart'] as $qty) {
             }
 
             themeToggleBtn.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
                 if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    themeToggleSun.classList.add('hidden');
-                    themeToggleMoon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.add('dark');
                     localStorage.setItem('theme', 'dark');
                     themeToggleMoon.classList.add('hidden');
                     themeToggleSun.classList.remove('hidden');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeToggleSun.classList.add('hidden');
+                    themeToggleMoon.classList.remove('hidden');
                 }
             });
 
-            // Helper to format currency
             function formatRupiah(num) {
                 return 'Rp ' + Number(num).toLocaleString('id-ID');
             }
 
-            // Debounce timers & in-flight XHR per cart_key
+            // Fungsi Utama Menghitung Sisi Samping Sesuai Pilihan Checkbox
+            function calculateSelectedSummary() {
+                let totalPrice = 0;
+                let totalCount = 0;
+
+                $('.item-checkbox:checked').each(function() {
+                    const row = $(this).closest('.cart-item-row');
+                    const price = parseFloat($(this).data('price'));
+                    const qty = parseInt(row.find('.input-qty').val()) || 1;
+                    
+                    totalPrice += price * qty;
+                    totalCount += qty;
+                });
+
+                $('#summary-total, #grand-total').text(formatRupiah(totalPrice));
+                $('#summary-count, #btn-checkout-count').text(totalCount);
+
+                if (totalCount === 0) {
+                    $('#btn-checkout-action').addClass('opacity-50 pointer-events-none').prop('disabled', true);
+                } else {
+                    $('#btn-checkout-action').removeClass('opacity-50 pointer-events-none').prop('disabled', false);
+                }
+            }
+
+            // Jalankan perhitungan pertama kali load
+            calculateSelectedSummary();
+
+            // Event Checkbox Item diubah
+            $(document).on('change', '.item-checkbox', function() {
+                const totalItems = $('.item-checkbox').length;
+                const totalChecked = $('.item-checkbox:checked').length;
+                
+                $('#select-all-checkbox').prop('checked', totalItems === totalChecked);
+                calculateSelectedSummary();
+            });
+
+            // Event Pilih Semua
+            $('#select-all-checkbox').on('change', function() {
+                $('.item-checkbox').prop('checked', this.checked);
+                calculateSelectedSummary();
+            });
+
             var _qtyTimers = {};
             var _qtyXhr = {};
 
-            // Send qty update via AJAX
-            function sendQtyUpdate(cartKey, productId, qty, inputEl) {
+            function sendQtyUpdate(cartKey, qty, inputEl) {
                 if (_qtyXhr[cartKey]) _qtyXhr[cartKey].abort();
                 _qtyXhr[cartKey] = $.ajax({
                     url: 'index.php?page=cart_process&action=update',
                     type: 'POST',
-                    data: { cart_key: cartKey, product_id: productId, qty: qty, ajax: 1 },
+                    data: { cart_key: cartKey, qty: qty, ajax: 1 },
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            inputEl.closest('tr').find('.subtotal-cell').text(formatRupiah(response.subtotal));
-                            $('#grand-total').text(formatRupiah(response.total_price));
                             inputEl.val(response.qty);
+                            calculateSelectedSummary(); // Update total tagihan samping secara live
+                            
                             const badge = $('#cart-badge');
-                            if (response.cart_count > 0) { badge.text(response.cart_count).removeClass('hidden'); } else { badge.addClass('hidden'); }
+                            if (response.cart_count > 0) { 
+                                badge.text(response.cart_count).removeClass('hidden'); 
+                            } else { 
+                                badge.addClass('hidden'); 
+                            }
+                            
                             if (response.error_message) {
                                 Swal.fire({ title: 'Perhatian!', text: response.error_message, icon: 'warning', confirmButtonColor: '<?= $primary_color ?>' });
                             }
                         } else if (response.status === 'removed') {
-                            inputEl.closest('tr').fadeOut(300, function() { $(this).remove(); checkEmptyCart(); });
+                            inputEl.closest('.cart-item-row').fadeOut(300, function() { $(this).remove(); checkEmptyCart(); });
                         }
                     },
                     complete: function() { delete _qtyXhr[cartKey]; }
                 });
             }
 
-            function debouncedQtyUpdate(cartKey, productId, qty, inputEl) {
+            function debouncedQtyUpdate(cartKey, qty, inputEl) {
                 clearTimeout(_qtyTimers[cartKey]);
                 _qtyTimers[cartKey] = setTimeout(function() {
-                    sendQtyUpdate(cartKey, productId, qty, inputEl);
-                }, 350);
+                    sendQtyUpdate(cartKey, qty, inputEl);
+                }, 300);
             }
 
-            // − button
             $(document).on('click', '.btn-qty-minus', function() {
-                const row = $(this).closest('tr');
-                const input = row.find('.input-qty');
+                const input = $(this).siblings('.input-qty');
                 let val = parseInt(input.val()) || 1;
                 const cartKey = input.data('cart-key');
-                const productId = input.data('product-id');
                 if (val > 1) {
                     input.val(val - 1);
-                    debouncedQtyUpdate(cartKey, productId, val - 1, input);
+                    debouncedQtyUpdate(cartKey, val - 1, input);
                 }
             });
 
-            // + button
             $(document).on('click', '.btn-qty-plus', function() {
-                const row = $(this).closest('tr');
-                const input = row.find('.input-qty');
+                const input = $(this).siblings('.input-qty');
                 let val = parseInt(input.val()) || 1;
                 let max = parseInt(input.data('max')) || 999;
                 const cartKey = input.data('cart-key');
-                const productId = input.data('product-id');
                 if (val < max) {
                     input.val(val + 1);
-                    debouncedQtyUpdate(cartKey, productId, val + 1, input);
+                    debouncedQtyUpdate(cartKey, val + 1, input);
                 }
             });
 
-            // AJAX Remove Item
+            // Klik Tombol Checkout "Beli"
+            $('#btn-checkout-action').on('click', function(e) {
+                e.preventDefault();
+                let selectedKeys = [];
+                
+                $('.item-checkbox:checked').each(function() {
+                    selectedKeys.push($(this).data('cart-key'));
+                });
+
+                if (selectedKeys.length === 0) return;
+
+                $.ajax({
+                    url: 'index.php?page=cart_process&action=select_checkout',
+                    type: 'POST',
+                    data: { keys: selectedKeys, ajax: 1 },
+                    dataType: 'json',
+                    success: function(res) {
+                        window.location.href = 'index.php?page=checkout';
+                    }
+                });
+            });
+
             $(document).on('click', '.btn-remove-item', function() {
                 const btn = $(this);
                 const cartKey = btn.data('cart-key');
@@ -389,11 +450,16 @@ foreach ($_SESSION['cart'] as $qty) {
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            btn.closest('tr').fadeOut(300, function() {
+                            btn.closest('.cart-item-row').fadeOut(300, function() {
                                 $(this).remove();
-                                $('#grand-total').text(formatRupiah(response.total_price));
+                                
                                 const badge = $('#cart-badge');
-                                if (response.cart_count > 0) { badge.text(response.cart_count).removeClass('hidden'); } else { badge.addClass('hidden'); }
+                                if (response.cart_count > 0) { 
+                                    badge.text(response.cart_count).removeClass('hidden');
+                                } else { 
+                                    badge.addClass('hidden'); 
+                                }
+                                
                                 checkEmptyCart();
                             });
                         }
@@ -401,19 +467,15 @@ foreach ($_SESSION['cart'] as $qty) {
                 });
             });
 
-            // AJAX Clear Cart
             $('#btn-clear-cart').on('click', function() {
                 Swal.fire({
                     title: 'Kosongkan Keranjang?',
-                    text: 'Apakah Anda yakin ingin menghapus semua produk dari keranjang belanja?',
-                    icon: 'question',
+                    text: 'Semua produk pilihanmu akan dihapus.',
+                    icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Ya, Kosongkan!',
-                    cancelButtonText: 'Batal',
-                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937'
+                    confirmButtonText: 'Ya, Kosongkan!'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
@@ -422,11 +484,9 @@ foreach ($_SESSION['cart'] as $qty) {
                             dataType: 'json',
                             success: function(response) {
                                 if (response.status === 'success') {
-                                    $('#cart-card').fadeOut(300, function() {
-                                        $(this).remove();
-                                        $('#cart-badge').text(0).addClass('hidden');
-                                        checkEmptyCart();
-                                    });
+                                    $('#cart-container').remove();
+                                    $('#cart-badge').text(0).addClass('hidden');
+                                    checkEmptyCart();
                                 }
                             }
                         });
@@ -434,12 +494,12 @@ foreach ($_SESSION['cart'] as $qty) {
                 });
             });
 
-            // Check if cart is empty and show placeholder
             function checkEmptyCart() {
-                if ($('#cart-table-body tr').length === 0) {
-                    $('#cart-card').remove();
-                    $('#cart-badge').addClass('hidden');
+                if ($('.cart-item-row').length === 0) {
+                    $('#cart-container').remove();
                     $('#cart-empty-placeholder').removeClass('hidden').fadeIn(300);
+                } else {
+                    calculateSelectedSummary();
                 }
             }
         });

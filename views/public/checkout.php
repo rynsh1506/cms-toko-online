@@ -11,7 +11,13 @@ if (!isAuth()) {
 // Pastikan keranjang tidak kosong
 if (empty($_SESSION['cart'])) {
     $_SESSION['error'] = "Keranjang Anda kosong.";
-    redirect('index.php?page=home');
+    redirect('index.php?page=cart');
+}
+
+// Pastikan ada item yang dipilih dari halaman cart
+if (empty($_SESSION['selected_cart_keys'])) {
+    $_SESSION['error'] = "Pilih minimal satu produk untuk di-checkout.";
+    redirect('index.php?page=cart');
 }
 
 // Fetch Configurations for Dynamic Styles
@@ -27,28 +33,64 @@ $primary_color = $configs['primary_color'] ?? '#6366f1';
 $banks_stmt = $pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1");
 $active_banks = $banks_stmt->fetchAll();
 
-// Hitung ringkasan
+// Hitung ringkasan HANYA untuk item yang dipilih (dicentang)
 $cart_items = [];
 $total_price = 0;
-$ids = array_keys($_SESSION['cart']);
+$checkout_keys = $_SESSION['selected_cart_keys'];
 
-if (count($ids) > 0) {
-    $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-    $stmt = $pdo->prepare("SELECT id, name, price FROM products WHERE id IN ($placeholders)");
-    $stmt->execute($ids);
-    $products = $stmt->fetchAll();
+foreach ($checkout_keys as $cart_key) {
+    // Lewati jika karena alasan tertentu key tidak ada di keranjang aktual
+    if (!isset($_SESSION['cart'][$cart_key])) continue;
     
-    foreach ($products as $p) {
-        $qty = $_SESSION['cart'][$p['id']];
-        $subtotal = $p['price'] * $qty;
-        $total_price += $subtotal;
+    $qty = intval($_SESSION['cart'][$cart_key]);
+    
+    // Ambil detail produk & varian dari Meta Session biar cepat (sudah kita buat di CartController)
+    if (isset($_SESSION['cart_meta'][$cart_key])) {
+        $meta = $_SESSION['cart_meta'][$cart_key];
+        $name = $meta['name'];
+        if (!empty($meta['variant_info'])) {
+            $name .= ' (' . $meta['variant_info'] . ')'; // Tambahkan label varian ke nama produk
+        }
+        $price = $meta['price'];
+    } else {
+        // Fallback jika meta hilang: Tarik manual dari DB berdasarkan pecahan ID Produk & Varian
+        $parts = explode('-', $cart_key);
+        $pId = intval($parts[0] ?? 0);
+        $vId = intval($parts[1] ?? 0);
         
-        $cart_items[] = [
-            'name' => $p['name'],
-            'qty' => $qty,
-            'subtotal' => $subtotal
-        ];
+        $stmtP = $pdo->prepare("SELECT name, price FROM products WHERE id = ?");
+        $stmtP->execute([$pId]);
+        $p = $stmtP->fetch();
+        if (!$p) continue;
+        
+        $name = $p['name'];
+        $price = floatval($p['price']);
+        
+        if ($vId > 0) {
+            $stmtV = $pdo->prepare("SELECT variant_name, variant_value, additional_price FROM product_variants WHERE id = ?");
+            $stmtV->execute([$vId]);
+            $v = $stmtV->fetch();
+            if ($v) {
+                $name .= ' (' . $v['variant_name'] . ': ' . $v['variant_value'] . ')';
+                $price += floatval($v['additional_price']);
+            }
+        }
     }
+    
+    $subtotal = $price * $qty;
+    $total_price += $subtotal;
+    
+    $cart_items[] = [
+        'name' => $name,
+        'qty' => $qty,
+        'subtotal' => $subtotal
+    ];
+}
+
+// Jika ternyata keranjang filter kosong (misal dari sesi usang)
+if (empty($cart_items)) {
+    $_SESSION['error'] = "Pesanan tidak valid, silakan ulangi.";
+    redirect('index.php?page=cart');
 }
 ?>
 <!DOCTYPE html>
@@ -57,9 +99,7 @@ if (count($ids) > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - NusaBay</title>
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <!-- Tailwind CSS -->
     <script src="assets/js/tailwind.js"></script>
     <script>
         tailwind.config = {
@@ -81,7 +121,6 @@ if (count($ids) > 0) {
             document.documentElement.classList.remove('dark');
         }
     </script>
-    <!-- Google Fonts Outfit & Inter -->
     <link href="assets/css/fonts.css" rel="stylesheet">
     <style>
         body {
@@ -94,13 +133,11 @@ if (count($ids) > 0) {
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Navbar -->
     <nav class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex justify-between items-center h-20">
                 <a href="index.php?page=home" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:opacity-85 transition font-display flex items-center space-x-2">
-                    <!-- Geometric NusaBay Logo -->
-                                        <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-global)" />
                         <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
                         <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
@@ -122,7 +159,6 @@ if (count($ids) > 0) {
                         <span>Keranjang</span>
                     </a>
                     
-                    <!-- Dark mode toggle -->
                     <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                         <svg id="theme-toggle-sun" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-3.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
@@ -136,15 +172,12 @@ if (count($ids) > 0) {
         </div>
     </nav>
 
-    <!-- Main Container -->
     <main class="max-w-6xl mx-auto px-6 py-12 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- Kolom Form Pengiriman & Metode Pembayaran -->
         <div class="lg:col-span-2 space-y-8">
             <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 font-display">Detail Pengiriman</h2>
                 
-                <!-- Errors placeholder -->
                 <div id="checkout-alert"></div>
 
                 <form id="checkout-form" action="index.php?page=checkout_process" method="POST" class="space-y-6">
@@ -168,7 +201,6 @@ if (count($ids) > 0) {
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm"></textarea>
                     </div>
 
-                    <!-- Pilih Bank -->
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-3">Pilih Metode Pembayaran</label>
                         <?php if (empty($active_banks)): ?>
@@ -202,16 +234,18 @@ if (count($ids) > 0) {
             </div>
         </div>
 
-        <!-- Kolom Ringkasan Pesanan (Right Column) -->
         <div>
             <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm sticky top-24">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 font-display">Ringkasan Pesanan</h3>
                 
-                <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1">
+                <div class="space-y-4 mb-6 max-h-[22rem] overflow-y-auto pr-2">
                     <?php foreach ($cart_items as $item): ?>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-600 dark:text-slate-300 truncate mr-3"><?= htmlspecialchars($item['name']) ?> <span class="text-slate-400 dark:text-slate-500">x<?= $item['qty'] ?></span></span>
-                            <span class="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap font-mono">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
+                        <div class="flex justify-between items-start text-xs gap-3">
+                            <span class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                                <?= htmlspecialchars($item['name']) ?> 
+                                <span class="text-slate-400 dark:text-slate-500 font-semibold whitespace-nowrap ml-1">x<?= $item['qty'] ?></span>
+                            </span>
+                            <span class="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap font-mono mt-0.5">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -221,7 +255,6 @@ if (count($ids) > 0) {
                     <span class="text-slate-900 dark:text-white font-bold font-mono" id="summary-subtotal">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
                 </div>
                 
-                <!-- Discount Promo Widget -->
                 <div class="hidden justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-4" id="promo-discount-row">
                     <span>Diskon Promo (<span id="promo-code-applied"></span>)</span>
                     <span class="font-mono">-Rp <span id="promo-discount-value">0</span></span>
@@ -232,7 +265,6 @@ if (count($ids) > 0) {
                     <span class="text-primary text-xl font-extrabold font-mono" id="summary-total">Rp <?= number_format($total_price, 0, ',', '.') ?></span>
                 </div>
 
-                <!-- Promo Input Form Widget -->
                 <div class="border-t border-slate-100 dark:border-slate-800 pt-4 mb-4">
                     <label class="block text-slate-700 dark:text-slate-300 text-xs font-bold mb-2">Punya Kode Promo?</label>
                     <div class="flex space-x-2">
@@ -260,14 +292,12 @@ if (count($ids) > 0) {
         
     </main>
 
-    <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
         <div class="max-w-6xl mx-auto px-6 text-center text-xs">
             <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
@@ -319,7 +349,7 @@ if (count($ids) > 0) {
                     success: function(response) {
                         if (response.success) {
                             appliedPromoId = response.promo_id;
-                            $('#hidden_promo_id').value = response.promo_id; // Set target id
+                            $('#hidden_promo_id').value = response.promo_id; 
                             document.getElementById('hidden_promo_id').value = response.promo_id;
                             
                             statusMsg.text(response.message).removeClass().addClass('text-[10px] mt-1.5 font-semibold text-emerald-500').show();

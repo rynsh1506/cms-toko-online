@@ -53,32 +53,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Metode pembayaran yang dipilih tidak valid atau dinonaktifkan.");
         }
 
-        // 2. Query data produk dengan FOR UPDATE untuk mencegah race condition stok
-        $ids = array_keys($_SESSION['cart']);
-        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-        $stmt = $pdo->prepare("SELECT id, price, stock, name FROM products WHERE id IN ($placeholders) FOR UPDATE");
-        $stmt->execute($ids);
-        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        $product_data = [];
-        foreach ($products as $p) {
-            $product_data[$p['id']] = $p;
+        // 2. Ambil selected_cart_keys dari sesi
+        $checkout_keys = $_SESSION['selected_cart_keys'] ?? [];
+        if (empty($checkout_keys)) {
+            throw new Exception("Pilih minimal satu produk untuk di-checkout.");
         }
 
-        // 3. Validasi stok & kalkulasi total
+        $items_to_process = [];
         $total_pure = 0;
-        foreach ($_SESSION['cart'] as $p_id => $qty) {
-            if (!isset($product_data[$p_id])) {
-                throw new Exception("Ada produk yang tidak valid di keranjang Anda.");
+
+        foreach ($checkout_keys as $cart_key) {
+            if (!isset($_SESSION['cart'][$cart_key])) {
+                continue;
             }
             
-            $p_info = $product_data[$p_id];
-            
-            if ($qty > $p_info['stock']) {
-                throw new Exception("Stok untuk produk {$p_info['name']} tidak mencukupi (Sisa: {$p_info['stock']}).");
+            $qty = intval($_SESSION['cart'][$cart_key]);
+            if ($qty <= 0) continue;
+
+            $parts = explode('-', $cart_key);
+            $pId = intval($parts[0] ?? 0);
+            $vId = intval($parts[1] ?? 0);
+
+            if ($pId <= 0) {
+                throw new Exception("Format produk di keranjang tidak valid.");
             }
-            
-            $total_pure += ($p_info['price'] * $qty);
+
+            // Lock product row
+            $stmtProduct = $pdo->prepare("SELECT id, name, price, stock FROM products WHERE id = ? FOR UPDATE");
+            $stmtProduct->execute([$pId]);
+            $product = $stmtProduct->fetch(PDO::FETCH_ASSOC);
+
+            if (!$product) {
+                throw new Exception("Produk tidak ditemukan di database.");
+            }
+
+            $variant = null;
+            $effective_price = floatval($product['price']);
+            $effective_stock = intval($product['stock']);
+            $variant_info_str = null;
+
+            if ($vId > 0) {
+                // Lock variant row
+                $stmtVariant = $pdo->prepare("SELECT id, variant_name, variant_value, additional_price, stock FROM product_variants WHERE id = ? AND product_id = ? FOR UPDATE");
+                $stmtVariant->execute([$vId, $pId]);
+                $variant = $stmtVariant->fetch(PDO::FETCH_ASSOC);
+
+                if (!$variant) {
+                    throw new Exception("Varian untuk produk {$product['name']} tidak valid.");
+                }
+
+                $effective_price += floatval($variant['additional_price']);
+                $effective_stock = intval($variant['stock']);
+                $variant_info_str = $variant['variant_name'] . ': ' . $variant['variant_value'];
+            }
+
+            // Validasi stok
+            if ($qty > $effective_stock) {
+                $err_msg = "Stok untuk produk {$product['name']}";
+                if ($variant_info_str) {
+                    $err_msg .= " ($variant_info_str)";
+                }
+                $err_msg .= " tidak mencukupi (Sisa: $effective_stock).";
+                throw new Exception($err_msg);
+            }
+
+            $total_pure += ($effective_price * $qty);
+
+            $items_to_process[] = [
+                'cart_key' => $cart_key,
+                'product_id' => $pId,
+                'variant_id' => $vId > 0 ? $vId : null,
+                'variant_info' => $variant_info_str,
+                'quantity' => $qty,
+                'price' => $effective_price
+            ];
+        }
+
+        if (empty($items_to_process)) {
+            throw new Exception("Tidak ada item valid untuk diproses.");
         }
 
         // 4. Promo code validation inside transaction
@@ -143,25 +195,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $order_id = $pdo->lastInsertId();
 
-        // 5. Insert ke tabel order_items & kurangi stok
-        $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
-        $stmtUpdateStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+        // 6. Insert ke tabel order_items & kurangi stok
+        $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id, product_id, variant_id, variant_info, quantity, price) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmtUpdateProductStock = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+        $stmtUpdateVariantStock = $pdo->prepare("UPDATE product_variants SET stock = stock - ? WHERE id = ?");
         
-        foreach ($_SESSION['cart'] as $p_id => $qty) {
-            $price = $product_data[$p_id]['price'];
-            
-            // Insert item
-            $stmtItem->execute([$order_id, $p_id, $qty, $price]);
+        foreach ($items_to_process as $item) {
+            // Insert item ke database
+            $stmtItem->execute([
+                $order_id,
+                $item['product_id'],
+                $item['variant_id'],
+                $item['variant_info'],
+                $item['quantity'],
+                $item['price']
+            ]);
             
             // Kurangi stok
-            $stmtUpdateStock->execute([$qty, $p_id]);
+            if ($item['variant_id']) {
+                // Kurangi stok varian
+                $stmtUpdateVariantStock->execute([$item['quantity'], $item['variant_id']]);
+                // Kurangi juga stok utama produk (karena stok produk utama adalah jumlah stok variannya)
+                $stmtUpdateProductStock->execute([$item['quantity'], $item['product_id']]);
+            } else {
+                // Kurangi stok utama produk saja
+                $stmtUpdateProductStock->execute([$item['quantity'], $item['product_id']]);
+            }
         }
 
         // Commit transaksi jika semua berhasil
         $pdo->commit();
 
-        // Bersihkan keranjang belanja
-        unset($_SESSION['cart']);
+        // Bersihkan item yang berhasil dibeli dari keranjang belanja
+        foreach ($items_to_process as $item) {
+            unset($_SESSION['cart'][$item['cart_key']]);
+            unset($_SESSION['cart_meta'][$item['cart_key']]);
+        }
+        // Kosongkan list item yang dipilih untuk checkout
+        unset($_SESSION['selected_cart_keys']);
 
         // Set pesan sukses dengan instruksi pembayaran
         $_SESSION['success'] = "

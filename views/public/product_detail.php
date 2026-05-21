@@ -18,14 +18,25 @@ $stmt->execute([$product_id]);
 $product = $stmt->fetch();
 if (!$product) { redirect('index.php?page=home'); }
 
-// Fetch variants grouped by variant_name
+// Fetch variants
 $stmt = $pdo->prepare("SELECT * FROM product_variants WHERE product_id = ? ORDER BY variant_name ASC, id ASC");
 $stmt->execute([$product_id]);
 $variants_raw = $stmt->fetchAll();
+
+// Group variants and calculate total variant stock
 $variants_grouped = [];
-foreach ($variants_raw as $v) {
-    $variants_grouped[$v['variant_name']][] = $v;
+$total_variant_stock = 0;
+$has_variants = count($variants_raw) > 0;
+
+if ($has_variants) {
+    foreach ($variants_raw as $v) {
+        $variants_grouped[$v['variant_name']][] = $v;
+        $total_variant_stock += $v['stock'];
+    }
 }
+
+// Tentukan stok awal yang ditampilkan (jika punya varian, tampilkan total stok varian dulu)
+$initial_stock = $has_variants ? $total_variant_stock : $product['stock'];
 
 // Cart count
 $cart_count = 0;
@@ -59,7 +70,6 @@ if (isset($_SESSION['cart'])) {
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Navbar -->
     <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-100 dark:border-slate-800 transition-colors duration-300">
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex justify-between items-center h-20">
@@ -97,7 +107,6 @@ if (isset($_SESSION['cart'])) {
         </div>
     </nav>
 
-    <!-- Breadcrumb -->
     <div class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <div class="max-w-6xl mx-auto px-6 py-3">
             <nav class="flex items-center space-x-2 text-xs text-slate-400 dark:text-slate-500">
@@ -116,14 +125,13 @@ if (isset($_SESSION['cart'])) {
         <div class="max-w-6xl mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
 
-                <!-- Product Image -->
                 <div class="space-y-4">
                     <div class="relative rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm aspect-square">
                         <img id="main-product-img"
                              src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/600x600') ?>"
                              alt="<?= htmlspecialchars($product['name']) ?>"
                              class="h-full w-full object-cover">
-                        <?php if ($product['stock'] <= 0): ?>
+                        <?php if ($initial_stock <= 0): ?>
                             <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
                                 <span class="px-4 py-2 bg-rose-600 text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-lg">Stok Habis</span>
                             </div>
@@ -131,9 +139,7 @@ if (isset($_SESSION['cart'])) {
                     </div>
                 </div>
 
-                <!-- Product Info -->
                 <div class="flex flex-col space-y-6">
-                    <!-- Category & Name -->
                     <div>
                         <?php if ($product['category_name']): ?>
                             <span class="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-3"><?= htmlspecialchars($product['category_name']) ?></span>
@@ -141,29 +147,21 @@ if (isset($_SESSION['cart'])) {
                         <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white font-display leading-tight"><?= htmlspecialchars($product['name']) ?></h1>
                     </div>
 
-                    <!-- Price -->
                     <div class="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-5 border border-slate-100 dark:border-slate-700">
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Harga</span>
                         <div class="flex items-baseline space-x-2 mt-1">
                             <span id="display-price" class="text-3xl font-black text-slate-900 dark:text-white">Rp <?= number_format($product['price'], 0, ',', '.') ?></span>
                             <span id="price-note" class="text-xs text-slate-400 hidden">(termasuk biaya varian)</span>
                         </div>
-                        <!-- Stock -->
-                        <div class="flex items-center space-x-2 mt-3">
-                            <?php if ($product['stock'] > 5): ?>
-                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                                <span class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Stok: <?= $product['stock'] ?> pcs</span>
-                            <?php elseif ($product['stock'] > 0): ?>
-                                <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
-                                <span class="text-xs text-amber-600 dark:text-amber-400 font-semibold">Stok menipis: <?= $product['stock'] ?> pcs</span>
-                            <?php else: ?>
-                                <span class="w-2 h-2 bg-rose-500 rounded-full"></span>
-                                <span class="text-xs text-rose-600 dark:text-rose-400 font-semibold">Stok Habis</span>
-                            <?php endif; ?>
+                        
+                        <div class="flex items-center space-x-2 mt-3" id="stock-indicator-container">
+                            <span id="stock-dot" class="w-2 h-2 <?= $initial_stock > 5 ? 'bg-emerald-500' : ($initial_stock > 0 ? 'bg-amber-500' : 'bg-rose-500') ?> rounded-full"></span>
+                            <span id="stock-text" class="text-xs font-semibold <?= $initial_stock > 5 ? 'text-emerald-600 dark:text-emerald-400' : ($initial_stock > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400') ?>">
+                                <?= $initial_stock > 0 ? 'Tersedia: ' . $initial_stock . ' pcs' : 'Stok Habis' ?>
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Description -->
                     <?php if (!empty($product['description'])): ?>
                     <div>
                         <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Deskripsi Produk</h2>
@@ -171,87 +169,90 @@ if (isset($_SESSION['cart'])) {
                     </div>
                     <?php endif; ?>
 
-                    <!-- Variants -->
-                    <?php if (!empty($variants_grouped)): ?>
-                    <div class="space-y-4">
+                    <?php if ($has_variants): ?>
+                    <div class="space-y-3">
                         <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pilih Varian</h2>
-                        <?php foreach ($variants_grouped as $group_name => $group_variants): ?>
-                        <div class="space-y-2" data-variant-group="<?= htmlspecialchars($group_name) ?>">
-                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                                <?= htmlspecialchars($group_name) ?>:
-                                <span class="selected-label ml-1 text-primary font-bold"></span>
-                            </p>
-                            <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <!-- Normal Variant Button (Default Selected) -->
+                            <button type="button" id="btn-variant-normal"
+                                class="variant-btn px-3 py-1.5 rounded-xl border-2 text-xs font-semibold transition duration-150 active:scale-95 selected"
+                                style="background-color: <?= $primary_color ?>; color: white; border-color: transparent;"
+                                data-variant-id="0"
+                                data-variant-name="Varian"
+                                data-variant-value="Normal"
+                                data-additional-price="0"
+                                data-stock="<?= $product['stock'] ?>">
+                                Normal
+                            </button>
+
+                            <?php foreach ($variants_grouped as $group_name => $group_variants): ?>
                                 <?php foreach ($group_variants as $v): ?>
                                 <button type="button"
-                                    class="variant-btn px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition duration-150 active:scale-95"
+                                    class="variant-btn px-3 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition duration-150 active:scale-95 <?= $v['stock'] <= 0 ? 'opacity-40 cursor-not-allowed' : '' ?>"
+                                    <?= $v['stock'] <= 0 ? 'disabled' : '' ?>
                                     data-variant-id="<?= $v['id'] ?>"
                                     data-variant-name="<?= htmlspecialchars($group_name) ?>"
                                     data-variant-value="<?= htmlspecialchars($v['variant_value']) ?>"
                                     data-additional-price="<?= $v['additional_price'] ?>"
-                                    data-stock="<?= $v['stock'] ?>"
-                                    data-group="<?= htmlspecialchars($group_name) ?>">
-                                    <?= htmlspecialchars($v['variant_value']) ?>
-                                    <?php if ($v['additional_price'] > 0): ?>
-                                        <span class="text-xs font-normal text-slate-400 ml-0.5">+Rp <?= number_format($v['additional_price'], 0, ',', '.') ?></span>
-                                    <?php endif; ?>
+                                    data-stock="<?= $v['stock'] ?>">
+                                    <?= htmlspecialchars($group_name) ?>: <?= htmlspecialchars($v['variant_value']) ?>
                                 </button>
                                 <?php endforeach; ?>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
-                        <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Add to Cart Form -->
                     <div class="pt-2">
-                        <?php if ($product['stock'] > 0): ?>
                         <form id="add-to-cart-form" action="index.php?page=cart_process&action=add" method="POST">
                             <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                             <input type="hidden" name="variant_id" id="selected-variant-id" value="0">
                             <input type="hidden" name="variant_info" id="selected-variant-info" value="">
 
-                            <!-- Qty Selector -->
                             <div class="flex items-center space-x-3 mb-5">
                                 <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Jumlah:</span>
                                 <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                                    <button type="button" id="qty-minus" class="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-lg">−</button>
-                                    <input type="number" id="qty-input" name="quantity" value="1" min="1" max="<?= $product['stock'] ?>"
-                                           class="w-14 text-center py-2.5 bg-transparent text-sm font-bold text-slate-800 dark:text-white border-x border-slate-200 dark:border-slate-700 focus:outline-none">
-                                    <button type="button" id="qty-plus" class="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-lg">+</button>
+                                    <button type="button" id="qty-minus" class="px-3.5 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-lg">−</button>
+                                    
+                                    <input type="text" id="qty-input" name="quantity" value="1" readonly max="<?= $initial_stock ?>"
+                                           class="w-12 text-center py-2 bg-transparent text-sm font-bold text-slate-800 dark:text-white border-x border-slate-200 dark:border-slate-700 focus:outline-none">
+                                           
+                                    <button type="button" id="qty-plus" class="px-3.5 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-bold text-lg">+</button>
                                 </div>
                             </div>
 
-                            <div class="flex items-center space-x-3">
-                                <button type="submit"
-                                    class="flex-1 flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl transition duration-200 active:scale-[0.98] shadow-lg shadow-primary/25">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                    <span id="cart-btn-text">Tambah ke Keranjang</span>
+                            <div class="flex items-center space-x-2">
+                                <button type="submit" id="btn-add-cart"
+                                    class="flex-1 flex items-center justify-center space-x-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl transition duration-200 active:scale-[0.98] shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
+                                    <?= ($initial_stock <= 0) ? 'disabled' : '' ?>>
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    <span id="cart-btn-text"><?= $initial_stock <= 0 ? 'Stok Habis' : '+ Keranjang' ?></span>
                                 </button>
-                                <a href="index.php?page=home" class="p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                                
+                                <button type="button" id="btn-buy-now" onclick="buyNowBtnAction()" 
+                                    class="flex-1 flex items-center justify-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 active:scale-[0.98] shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
+                                    <?= ($initial_stock <= 0) ? 'disabled' : '' ?>>
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    <span id="buy-now-btn-text">Beli</span>
+                                </button>
+                                
+                                <a href="index.php?page=home" class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                                 </a>
                             </div>
                         </form>
-                        <?php else: ?>
-                        <button disabled class="w-full py-4 px-6 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold rounded-2xl cursor-not-allowed">
-                            Produk Tidak Tersedia
-                        </button>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
         <div class="max-w-6xl mx-auto px-6 text-center text-xs space-y-2">
             <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Toast Notification -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
 
     <script src="assets/js/jquery.min.js"></script>
@@ -272,64 +273,84 @@ if (isset($_SESSION['cart'])) {
             }
         });
 
-        // Base price
+        // Backend Constants
         const basePrice = <?= floatval($product['price']) ?>;
+        const hasVariants = <?= $has_variants ? 'true' : 'false' ?>;
 
-        // Track selected variants per group
-        const selectedVariants = {};
-
-        // Variant Selection (click to select, click again to unselect)
+        // Variant Selection Logic (Hanya bisa pilih SATU Varian yang mengontrol Stok)
         $(document).on('click', '.variant-btn', function () {
-            const group = $(this).data('group');
+            if ($(this).is(':disabled')) return;
+
             const variantId = $(this).data('variant-id');
+            
+            // Toggle unselect logic: if clicking already selected non-normal variant, revert to Normal
+            if ($(this).hasClass('selected') && variantId !== 0) {
+                $('#btn-variant-normal').click();
+                return;
+            }
+
             const variantName = $(this).data('variant-name');
             const variantValue = $(this).data('variant-value');
             const addPrice = parseFloat($(this).data('additional-price')) || 0;
-            const isSelected = $(this).hasClass('selected');
+            const stock = parseInt($(this).data('stock')) || 0;
+            
+            // Hapus seleksi semua tombol lain
+            $('.variant-btn').removeClass('selected').css({'background-color': '', 'color': '', 'border-color': ''});
+            
+            // Tandai yang diklik
+            $(this).addClass('selected').css({'background-color': '<?= $primary_color ?>', 'color': 'white', 'border-color': 'transparent'});
 
-            // Deselect all in same group
-            $(`.variant-btn[data-group="${group}"]`).removeClass('selected').css({'background-color': '', 'color': '', 'border-color': ''});
-            $(this).closest('[data-variant-group]').find('.selected-label').text('');
-
-            if (!isSelected) {
-                // Select this button
-                $(this).addClass('selected').css({'background-color': '<?= $primary_color ?>', 'color': 'white', 'border-color': 'transparent'});
-                selectedVariants[group] = { id: variantId, name: variantName, value: variantValue, addPrice: addPrice };
-                $(this).closest('[data-variant-group]').find('.selected-label').text(variantValue);
+            // Set Form Inputs
+            $('#selected-variant-id').val(variantId);
+            if (variantId === 0) {
+                $('#selected-variant-info').val('');
             } else {
-                // Unselect: remove from tracked selections
-                delete selectedVariants[group];
+                $('#selected-variant-info').val(variantName + ': ' + variantValue);
             }
 
-            updateVariantInputs();
-            updatePrice();
+            // Update Harga
+            const finalPrice = basePrice + addPrice;
+            $('#display-price').text('Rp ' + finalPrice.toLocaleString('id-ID'));
+            if (addPrice > 0) { $('#price-note').removeClass('hidden'); } else { $('#price-note').addClass('hidden'); }
+
+            // Update Stok Display & Kuantitas Input
+            $('#qty-input').attr('max', stock);
+            
+            // Kalau input qty saat ini lebih besar dari stok varian, turunkan otomatis
+            let currentQty = parseInt($('#qty-input').val()) || 1;
+            if (currentQty > stock) {
+                $('#qty-input').val(stock);
+            }
+
+            // Update Indikator Stok UI
+            $('#stock-dot').removeClass('bg-emerald-500 bg-amber-500 bg-rose-500');
+            $('#stock-text').removeClass('text-emerald-600 text-amber-600 text-rose-600 dark:text-emerald-400 dark:text-amber-400 dark:text-rose-400');
+            
+            if (stock > 5) {
+                $('#stock-dot').addClass('bg-emerald-500');
+                $('#stock-text').addClass('text-emerald-600 dark:text-emerald-400').text('Tersedia: ' + stock + ' pcs');
+                enableButtons();
+            } else if (stock > 0) {
+                $('#stock-dot').addClass('bg-amber-500');
+                $('#stock-text').addClass('text-amber-600 dark:text-amber-400').text('Sisa sedikit: ' + stock + ' pcs');
+                enableButtons();
+            } else {
+                $('#stock-dot').addClass('bg-rose-500');
+                $('#stock-text').addClass('text-rose-600 dark:text-rose-400').text('Stok varian habis');
+                disableButtons('Stok Habis');
+            }
         });
 
-        function updateVariantInputs() {
-            const groups = Object.keys(selectedVariants);
-            if (groups.length === 0) {
-                $('#selected-variant-id').val('0');
-                $('#selected-variant-info').val('');
-                return;
-            }
-            // If only one group, use that variant id. If multiple, use 0 and encode info as JSON.
-            if (groups.length === 1) {
-                const v = selectedVariants[groups[0]];
-                $('#selected-variant-id').val(v.id);
-            } else {
-                $('#selected-variant-id').val('0');
-            }
-            const infoArr = groups.map(g => selectedVariants[g].name + ': ' + selectedVariants[g].value);
-            $('#selected-variant-info').val(infoArr.join(', '));
+        function enableButtons() {
+            $('#btn-add-cart, #btn-buy-now').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+            $('#cart-btn-text').text('+ Keranjang');
+            $('#buy-now-btn-text').text('Beli');
         }
 
-        function updatePrice() {
-            let totalAdd = 0;
-            Object.values(selectedVariants).forEach(v => totalAdd += v.addPrice);
-            const finalPrice = basePrice + totalAdd;
-            const formatted = 'Rp ' + finalPrice.toLocaleString('id-ID');
-            $('#display-price').text(formatted);
-            if (totalAdd > 0) { $('#price-note').removeClass('hidden'); } else { $('#price-note').addClass('hidden'); }
+        function disableButtons(text) {
+            $('#btn-add-cart, #btn-buy-now').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+            $('#cart-btn-text').text(text);
+            $('#buy-now-btn-text').text('Beli');
         }
 
         // Qty controls
@@ -337,10 +358,16 @@ if (isset($_SESSION['cart'])) {
             let val = parseInt($('#qty-input').val()) || 1;
             if (val > 1) { $('#qty-input').val(val - 1); }
         });
+        
         $('#qty-plus').on('click', function () {
             let val = parseInt($('#qty-input').val()) || 1;
             const max = parseInt($('#qty-input').attr('max')) || 999;
-            if (val < max) { $('#qty-input').val(val + 1); }
+            
+            if (val < max) { 
+                $('#qty-input').val(val + 1); 
+            } else {
+                showToast('Maksimal jumlah stok tercapai.', 'error');
+            }
         });
 
         // Toast helper
@@ -355,6 +382,7 @@ if (isset($_SESSION['cart'])) {
         // AJAX Add to Cart
         $('#add-to-cart-form').on('submit', function (e) {
             e.preventDefault();
+            
             const btn = $(this).find('button[type="submit"]');
             btn.prop('disabled', true).addClass('opacity-70');
             $('#cart-btn-text').text('Memproses...');
@@ -373,13 +401,52 @@ if (isset($_SESSION['cart'])) {
                         showToast(data.message, 'error');
                     }
                 },
-                error: function () { showToast('Terjadi kesalahan. Coba lagi.', 'error'); },
+                error: function () { showToast('Terjadi kesalahan koneksi. Coba lagi.', 'error'); },
                 complete: function () {
                     btn.prop('disabled', false).removeClass('opacity-70');
-                    $('#cart-btn-text').text('Tambah ke Keranjang');
+                    $('#cart-btn-text').text('+ Keranjang');
                 }
             });
         });
+        
+        // Expose buyNowBtnAction ke global window
+        window.buyNowBtnAction = function() {
+            const pId = <?= intval($product['id']) ?>;
+            const vId = $('#selected-variant-id').val() || 0; 
+            const qty = $('#qty-input').val() || 1;
+            const vInfo = $('#selected-variant-info').val() || '';
+            
+            $('#btn-buy-now').prop('disabled', true).addClass('opacity-70');
+            $('#buy-now-btn-text').text('Memproses...');
+
+            $.ajax({
+                url: 'index.php?page=cart_process&action=direct_checkout',
+                type: 'POST',
+                data: {
+                    product_id: pId,
+                    variant_id: vId,
+                    quantity: qty,
+                    variant_info: vInfo,
+                    ajax: 1
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success' && response.redirect) {
+                        window.location.href = response.redirect;
+                    } else {
+                        showToast(response.message || 'Gagal memproses checkout.', 'error');
+                        $('#btn-buy-now').prop('disabled', false).removeClass('opacity-70');
+                        $('#buy-now-btn-text').text('Beli');
+                    }
+                },
+                error: function() {
+                    showToast('Terjadi kesalahan sistem.', 'error');
+                    $('#btn-buy-now').prop('disabled', false).removeClass('opacity-70');
+                    $('#buy-now-btn-text').text('Beli');
+                }
+            });
+        };
+
     });
     </script>
 </body>
