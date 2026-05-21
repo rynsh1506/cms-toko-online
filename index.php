@@ -22,6 +22,10 @@ switch ($page) {
         require __DIR__ . '/views/public/register.php';
         break;
 
+    case 'verify':
+        require __DIR__ . '/views/public/verify.php';
+        break;
+
     case 'auth_process':
         require __DIR__ . '/controllers/AuthController.php';
         break;
