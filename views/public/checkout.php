@@ -292,11 +292,7 @@ if (empty($cart_items)) {
         
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
-        <div class="max-w-6xl mx-auto px-6 text-center text-xs">
-            <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/components/footer.php'; ?>
 
     <script src="assets/js/jquery.min.js"></script>
     <script>

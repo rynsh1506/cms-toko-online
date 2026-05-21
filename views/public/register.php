@@ -103,6 +103,14 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
                 <input type="password" name="password" required placeholder="••••••••"
                     class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
             </div>
+            <div>
+                <label class="flex items-start space-x-2 cursor-pointer">
+                    <input type="checkbox" name="agree_tos" required class="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Saya menyetujui <a href="index.php?page=tos" target="_blank" class="text-primary hover:underline font-semibold">Syarat & Ketentuan</a> serta <a href="index.php?page=privacy" target="_blank" class="text-primary hover:underline font-semibold">Kebijakan Privasi</a> NusaBay.
+                    </span>
+                </label>
+            </div>
             
             <button type="submit" id="btn-register"
                 class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 active:scale-[0.98] transition shadow-lg shadow-primary/10 text-sm">

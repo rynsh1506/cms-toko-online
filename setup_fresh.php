@@ -302,7 +302,14 @@ try {
         ('hero_title', 'Marketplace Serba Ada Berkualitas', 'text'),
         ('hero_subtitle', 'Toko online terlengkap untuk kebutuhan gaya hidup, gadget, hobi, dan keperluan harian Anda.', 'text'),
         ('primary_color', '#6366f1', 'color'),
-        ('hero_image', '', 'image')
+        ('hero_image', '', 'image'),
+        ('footer_description', 'NusaBay adalah toko online tepercaya untuk segala kebutuhan Anda. Belanja aman, cepat, dan mudah.', 'text'),
+        ('footer_address', 'Jl. Merdeka No. 45, Jakarta Pusat, DKI Jakarta 10110', 'text'),
+        ('footer_email', 'support@nusabay.com', 'text'),
+        ('social_facebook', 'https://facebook.com/', 'text'),
+        ('social_instagram', 'https://instagram.com/', 'text'),
+        ('social_twitter', 'https://twitter.com/', 'text'),
+        ('social_whatsapp', 'https://wa.me/6281234567890', 'text')
     ");
     echo "- Seed landing configs berhasil.<br>";
 

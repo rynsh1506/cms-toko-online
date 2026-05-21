@@ -247,11 +247,7 @@ if (isset($_SESSION['cart'])) {
         </div>
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
-        <div class="max-w-6xl mx-auto px-6 text-center text-xs space-y-2">
-            <p>&copy; <?= date('Y') ?> NusaBay. All rights reserved.</p>
-        </div>
-    </footer>
+    <?php require __DIR__ . '/components/footer.php'; ?>
 
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
 
