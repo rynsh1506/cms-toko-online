@@ -21,7 +21,7 @@ class AuthService {
      */
     public function registerUser($name, $email, $password, $role = 'user') {
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-        $verification_token = sprintf("%06d", mt_rand(100000, 999999));
+        $verification_token = sprintf("%06d", random_int(100000, 999999));
         
         $stmt = $this->pdo->prepare("INSERT INTO users (name, email, password, role, verification_token) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$name, $email, $hashed_password, $role, $verification_token]);

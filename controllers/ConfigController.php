@@ -39,7 +39,7 @@ class ConfigController extends BaseController
                     $ext = ($mime === 'image/png') ? 'png' : 'jpg';
 
                     // Nama acak dengan timestamp
-                    $new_filename = 'hero_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                    $new_filename = 'hero_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
                     $upload_dir = __DIR__ . '/../uploads/';
 
                     if (!file_exists($upload_dir)) {

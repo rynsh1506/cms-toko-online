@@ -121,7 +121,7 @@ class ProductManagementService
         }
 
         $extension = $mime === 'image/png' ? 'png' : 'jpg';
-        $filename = 'prod_' . time() . '_' . rand(100, 999) . '.' . $extension;
+        $filename = 'prod_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
 
         if (!move_uploaded_file($file['tmp_name'], $this->uploadDir . $filename)) {
             return $this->error('Gagal memindahkan file upload.');
