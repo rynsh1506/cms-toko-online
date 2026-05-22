@@ -80,14 +80,14 @@ ob_start();
             $p_stock = intval($product['stock']) + intval($product['total_variant_stock'] ?? 0);
             ?>
             <div class="product-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800/80 hover:shadow-xl hover:-translate-y-1.5 transition duration-300 group"
-                 data-id="<?= $product['id'] ?>"
-                 data-category="<?= $product['category_id'] ?? '' ?>">
+                data-id="<?= $product['id'] ?>"
+                data-category="<?= $product['category_id'] ?? '' ?>">
                 <!-- Image Container -->
                 <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="relative block overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
                     <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>"
-                         alt="<?= htmlspecialchars($product['name']) ?>"
-                         loading="lazy"
-                         class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
+                        alt="<?= htmlspecialchars($product['name']) ?>"
+                        loading="lazy"
+                        class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
                     <?php if ($p_stock <= 0): ?>
                         <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
                             <span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg">Habis</span>
@@ -119,7 +119,7 @@ ob_start();
                                 <!-- Product has variants: redirect to detail page -->
                                 <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="flex items-center space-x-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold px-3 py-2.5 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-primary/20">
                                     <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2z" />
                                     </svg>
                                     <span>Pilih Varian</span>
                                 </a>
@@ -127,6 +127,7 @@ ob_start();
                                 <!-- No variants: show add to cart + quick checkout -->
                                 <div class="flex items-center space-x-1.5">
                                     <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
+                                        <?= csrf_field() ?>
                                         <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                                         <input type="hidden" name="variant_id" value="0">
                                         <input type="hidden" name="variant_info" value="">
@@ -218,10 +219,11 @@ if (isset($_GET['ajax'])) {
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NusaBay - Toko Serba Ada Modern</title>
+    <?= csrf_meta() ?> <title>NusaBay - Toko Serba Ada Modern</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS -->
@@ -252,22 +254,38 @@ if (isset($_GET['ajax'])) {
         body {
             font-family: 'Inter', sans-serif;
         }
-        h1, h2, h3, h4, .font-display {
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-display {
             font-family: 'Outfit', sans-serif;
         }
+
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(1deg); }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(1deg);
+            }
         }
+
         .animate-float {
             animation: float 6s ease-in-out infinite;
         }
+
         /* Custom Carousel Styles */
         .carousel-slide {
             transition: opacity 0.8s ease-in-out;
         }
     </style>
 </head>
+
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Navbar -->
@@ -277,15 +295,15 @@ if (isset($_GET['ajax'])) {
                 <!-- Logo -->
                 <a href="index.php?page=home" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:opacity-85 transition font-display flex items-center space-x-2">
                     <!-- Geometric NusaBay Logo -->
-                                        <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="h-9 w-9 rounded-xl shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-global)" />
                         <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
                         <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
                         <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
                         <defs>
                             <linearGradient id="logo-grad-nav-global" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#6366f1"/>
-                                <stop offset="1" stop-color="#a855f7"/>
+                                <stop stop-color="#6366f1" />
+                                <stop offset="1" stop-color="#a855f7" />
                             </linearGradient>
                         </defs>
                     </svg>
@@ -430,6 +448,7 @@ if (isset($_GET['ajax'])) {
 
             <!-- Search & Filter Form -->
             <form method="GET" action="index.php" class="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+                <?= csrf_field() ?>
                 <input type="hidden" name="page" value="home">
 
                 <!-- Custom Category Dropdown Container -->
@@ -506,6 +525,14 @@ if (isset($_GET['ajax'])) {
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script src="assets/js/pages/home.js"></script>
 </body>
+
 </html>

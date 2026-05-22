@@ -1,10 +1,13 @@
 <?php
+require_once __DIR__ . '/env.php';
 
-// Masukkan link utuh dari Aiven / Provider DB Anda di sini
-define('DB_URL', 'mysql://user:password@host:port/dbname?ssl-mode=REQUIRED');
+$db_url = $_ENV['DB_URL'] ?? getenv('DB_URL') ?? '';
+if (empty($db_url)) {
+    die("Kesalahan Konfigurasi: DB_URL belum diset di file .env");
+}
 
 // Parsing URL
-$db = parse_url(DB_URL);
+$db = parse_url($db_url);
 
 define('DB_HOST', $db['host']);
 define('DB_USER', $db['user']);
@@ -18,9 +21,14 @@ try {
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::ATTR_PERSISTENT         => true,
     ];
     
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 } catch (\PDOException $e) {
-    die("Koneksi Database Gagal: " . $e->getMessage());
+    if (($_ENV['APP_ENV'] ?? '') === 'development') {
+        die("Koneksi Database Gagal: " . $e->getMessage());
+    } else {
+        die("Koneksi Database Gagal. Silakan hubungi Administrator.");
+    }
 }

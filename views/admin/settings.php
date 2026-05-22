@@ -25,7 +25,7 @@ function getConfigValue($key, $configs) {
 
 <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 font-sans">
     <form id="settingsForm" action="index.php?page=config_process" method="POST" enctype="multipart/form-data" class="space-y-8">
-
+        <?= csrf_field() ?> 
         <!-- Hero Section -->
         <div>
             <h3 class="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 mb-5 font-display">Tampilan Beranda (Hero)</h3>

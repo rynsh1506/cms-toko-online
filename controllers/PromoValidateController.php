@@ -5,6 +5,7 @@ class PromoValidateController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         $pdo = $this->pdo;
         header('Content-Type: application/json');
         require_once __DIR__ . '/../config/db.php';
@@ -79,7 +80,6 @@ class PromoValidateController extends BaseController
                 'discount_value' => $promo['discount_value'],
                 'discount_amount' => $discount_amount
             ]);
-
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
         }

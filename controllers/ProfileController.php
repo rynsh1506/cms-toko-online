@@ -6,6 +6,7 @@ class ProfileController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         if (!isAuth() || $_SESSION['role'] !== 'admin') {
             $_SESSION['error'] = "Akses ditolak.";
             redirect('index.php?page=login');

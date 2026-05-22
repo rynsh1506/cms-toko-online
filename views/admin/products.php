@@ -130,6 +130,7 @@ $products = $stmt->fetchAll();
             </div>
 
             <form id="productForm" action="index.php?page=admin_product_process&action=add" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" id="prodId">
                 <div class="p-6 space-y-4">
                     <div>
@@ -214,6 +215,7 @@ $products = $stmt->fetchAll();
         <div class="p-6">
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Tambah Varian Baru</h4>
             <form id="add-variant-form" class="space-y-3">
+                <?= csrf_field() ?>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Nama Varian <span class="text-rose-500">*</span></label>

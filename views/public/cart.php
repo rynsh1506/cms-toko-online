@@ -87,6 +87,7 @@ if (!empty($_SESSION['cart'])) {
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -118,11 +119,17 @@ if (!empty($_SESSION['cart'])) {
         body {
             font-family: 'Inter', sans-serif;
         }
-        h1, h2, h3, h4, .font-display {
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-display {
             font-family: 'Outfit', sans-serif;
         }
     </style>
 </head>
+
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
     <nav class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
@@ -136,8 +143,8 @@ if (!empty($_SESSION['cart'])) {
                         <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
                         <defs>
                             <linearGradient id="logo-grad-nav-global" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#6366f1"/>
-                                <stop offset="1" stop-color="#a855f7"/>
+                                <stop stop-color="#6366f1" />
+                                <stop offset="1" stop-color="#a855f7" />
                             </linearGradient>
                         </defs>
                     </svg>
@@ -190,7 +197,9 @@ if (!empty($_SESSION['cart'])) {
             </svg>
             <p class="text-slate-500 dark:text-slate-400 font-semibold mb-6">Keranjang belanjamu masih kosong nih.</p>
             <a href="index.php?page=home" class="inline-flex items-center space-x-2 bg-primary text-white font-bold py-3.5 px-6 rounded-2xl hover:opacity-90 transition text-sm shadow-lg shadow-primary/25">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 <span>Cari Produk Sekarang</span>
             </a>
         </div>
@@ -206,7 +215,9 @@ if (!empty($_SESSION['cart'])) {
                             <label for="select-all-checkbox" class="text-sm font-bold text-slate-600 dark:text-slate-400 cursor-pointer select-none">Pilih Semua</label>
                         </div>
                         <button type="button" id="btn-clear-cart" class="text-xs font-bold text-rose-500 hover:text-rose-700 transition flex items-center">
-                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                             Hapus Semua
                         </button>
                     </div>
@@ -233,14 +244,20 @@ if (!empty($_SESSION['cart'])) {
 
                                 <div class="shrink-0 flex flex-col items-end justify-between h-20">
                                     <button type="button" class="btn-remove-item text-slate-400 hover:text-rose-500 transition p-1" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
                                     </button>
 
                                     <div class="flex flex-col items-center">
                                         <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 overflow-hidden shadow-sm scale-90 origin-right">
-                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg></button>
+                                            <button type="button" class="btn-qty-minus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                                                </svg></button>
                                             <input type="text" value="<?= $item['qty'] ?>" class="input-qty h-8 w-10 bg-transparent text-center font-bold text-xs text-slate-800 dark:text-white focus:outline-none" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-max="<?= $item['stock'] ?>" readonly>
-                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg></button>
+                                            <button type="button" class="btn-qty-plus h-8 w-8 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                                                </svg></button>
                                         </div>
                                         <span class="text-[10px] text-slate-400 mt-0.5">Stok: <?= $item['stock'] ?></span>
                                     </div>
@@ -268,7 +285,9 @@ if (!empty($_SESSION['cart'])) {
 
                         <button type="button" id="btn-checkout-action" class="flex items-center justify-center space-x-2 w-full bg-primary text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-primary/25 hover:opacity-90 active:scale-[0.98] transition text-sm">
                             <span>Beli (<span id="btn-checkout-count">0</span>)</span>
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -282,10 +301,18 @@ if (!empty($_SESSION['cart'])) {
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/sweetalert2.all.min.js"></script>
     <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
+    <script>
         window.NusaBayCart = {
             primaryColor: <?= json_encode($primary_color) ?>
         };
     </script>
     <script src="assets/js/pages/cart.js"></script>
 </body>
+
 </html>

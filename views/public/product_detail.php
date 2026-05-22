@@ -205,6 +205,7 @@ if (isset($_SESSION['cart'])) {
 
                     <div class="pt-2">
                         <form id="add-to-cart-form" action="index.php?page=cart_process&action=add" method="POST">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                             <input type="hidden" name="variant_id" id="selected-variant-id" value="0">
                             <input type="hidden" name="variant_info" id="selected-variant-info" value="">

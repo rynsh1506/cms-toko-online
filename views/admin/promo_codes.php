@@ -122,6 +122,7 @@ $promos = $stmt->fetchAll();
 
             <!-- Form -->
             <form id="promoForm" action="index.php?page=admin_promo_process&action=add" method="POST">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" id="promoId">
                 <div class="p-6 space-y-4">
                     <!-- Code -->

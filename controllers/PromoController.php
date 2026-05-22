@@ -6,6 +6,7 @@ class PromoController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         $pdo = $this->pdo;
         $orderService = new OrderService($pdo);
 

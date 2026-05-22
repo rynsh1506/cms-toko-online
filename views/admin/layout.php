@@ -21,10 +21,11 @@ $current_page = $_GET['page'] ?? 'admin';
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - NusaBay</title>
+    <?= csrf_meta() ?> <title>Admin Panel - NusaBay</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <!-- Tailwind CSS -->
@@ -55,11 +56,17 @@ $current_page = $_GET['page'] ?? 'admin';
         body {
             font-family: 'Inter', sans-serif;
         }
-        h1, h2, h3, h4, .font-display {
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-display {
             font-family: 'Outfit', sans-serif;
         }
     </style>
 </head>
+
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
 
     <div class="min-h-screen flex flex-col md:flex-row">
@@ -69,15 +76,15 @@ $current_page = $_GET['page'] ?? 'admin';
                 <!-- Brand Header -->
                 <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
                     <a href="index.php?page=admin" class="flex items-center space-x-2">
-                                                <svg class="h-8 w-8 rounded-lg shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-side)"/>
-                            <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff"/>
-                            <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff"/>
-                            <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)"/>
+                        <svg class="h-8 w-8 rounded-lg shadow-lg shadow-indigo-500/20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="48" rx="12" fill="url(#logo-grad-nav-side)" />
+                            <rect x="10" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                            <rect x="30" y="8" width="8" height="32" rx="2" fill="#ffffff" />
+                            <rect x="20" y="6" width="8" height="36" rx="2" fill="#ffffff" transform="rotate(-32 24 24)" />
                             <defs>
                                 <linearGradient id="logo-grad-nav-side" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                                    <stop stop-color="#6366f1"/>
-                                    <stop offset="1" stop-color="#a855f7"/>
+                                    <stop stop-color="#6366f1" />
+                                    <stop offset="1" stop-color="#a855f7" />
                                 </linearGradient>
                             </defs>
                         </svg>
@@ -213,7 +220,8 @@ $current_page = $_GET['page'] ?? 'admin';
                         </svg>
                         <div>
                             <p class="text-sm font-semibold">Berhasil!</p>
-                            <p class="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5"><?= $_SESSION['success']; unset($_SESSION['success']); ?></p>
+                            <p class="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5"><?= $_SESSION['success'];
+                                                                                                unset($_SESSION['success']); ?></p>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -225,7 +233,8 @@ $current_page = $_GET['page'] ?? 'admin';
                         </svg>
                         <div>
                             <p class="text-sm font-semibold">Error!</p>
-                            <p class="text-xs text-rose-700 dark:text-rose-300 mt-0.5"><?= $_SESSION['error']; unset($_SESSION['error']); ?></p>
+                            <p class="text-xs text-rose-700 dark:text-rose-300 mt-0.5"><?= $_SESSION['error'];
+                                                                                        unset($_SESSION['error']); ?></p>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -236,7 +245,18 @@ $current_page = $_GET['page'] ?? 'admin';
         </main>
     </div>
 
+
+
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
+
     <!-- Script to toggle mobile sidebar & theme switch -->
     <script src="assets/js/pages/admin-layout.js"></script>
 </body>
+
 </html>

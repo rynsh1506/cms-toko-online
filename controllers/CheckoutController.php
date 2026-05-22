@@ -6,6 +6,7 @@ class CheckoutController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 
         if (!isAuth()) {

@@ -10,6 +10,7 @@ class ProductController extends BaseController
     public function handle(): void
     {
         checkAdmin();
+        $this->verifyCsrfToken();
 
         $service = new ProductManagementService(
             new ProductService($this->pdo),
@@ -18,8 +19,8 @@ class ProductController extends BaseController
 
         $action = $_GET['action'] ?? '';
         $result = match ($action) {
-            'add' => $this->requirePost(fn () => $service->create($_POST, $_FILES)),
-            'edit' => $this->requirePost(fn () => $service->update($_POST, $_FILES)),
+            'add' => $this->requirePost(fn() => $service->create($_POST, $_FILES)),
+            'edit' => $this->requirePost(fn() => $service->update($_POST, $_FILES)),
             'delete' => $service->delete(intval($_GET['id'] ?? 0)),
             default => null,
         };
