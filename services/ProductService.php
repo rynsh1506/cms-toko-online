@@ -88,6 +88,76 @@ class ProductService {
     }
 
     /**
+     * Get products paginated with advanced filters for Admin.
+     */
+    public function getAdminProductsPaginated($filters, $page = 1, $perPage = 10) {
+        $where_clauses = [];
+        $query_params = [];
+        
+        if (!empty($filters['search'])) {
+            $where_clauses[] = "(p.name LIKE ? OR p.description LIKE ?)";
+            $query_params[] = "%{$filters['search']}%";
+            $query_params[] = "%{$filters['search']}%";
+        }
+        if (!empty($filters['category']) && $filters['category'] !== 'all') {
+            $where_clauses[] = "p.category_id = ?";
+            $query_params[] = $filters['category'];
+        }
+        if (!empty($filters['min_price'])) {
+            $where_clauses[] = "p.price >= ?";
+            $query_params[] = $filters['min_price'];
+        }
+        if (!empty($filters['max_price'])) {
+            $where_clauses[] = "p.price <= ?";
+            $query_params[] = $filters['max_price'];
+        }
+        if (!empty($filters['start_date'])) {
+            $where_clauses[] = "DATE(p.created_at) >= ?";
+            $query_params[] = $filters['start_date'];
+        }
+        if (!empty($filters['end_date'])) {
+            $where_clauses[] = "DATE(p.created_at) <= ?";
+            $query_params[] = $filters['end_date'];
+        }
+
+        $where_sql = '';
+        if (!empty($where_clauses)) {
+            $where_sql = "WHERE " . implode(" AND ", $where_clauses);
+        }
+
+        $offset = ($page - 1) * $perPage;
+
+        $query = "SELECT SQL_CALC_FOUND_ROWS p.*, c.name as category_name,
+            (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count,
+            (SELECT COALESCE(SUM(stock), 0) FROM product_variants pv WHERE pv.product_id = p.id) as total_variant_stock
+            FROM products p LEFT JOIN categories c ON p.category_id = c.id 
+            $where_sql 
+            ORDER BY p.id DESC LIMIT ? OFFSET ?";
+        
+        $stmt = $this->pdo->prepare($query);
+        
+        $paramIndex = 1;
+        foreach ($query_params as $param) {
+            $stmt->bindValue($paramIndex++, $param, is_int($param) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->bindValue($paramIndex++, (int)$perPage, PDO::PARAM_INT);
+        $stmt->bindValue($paramIndex, (int)$offset, PDO::PARAM_INT);
+        
+        $stmt->execute();
+        $data = $stmt->fetchAll();
+        
+        $total = $this->pdo->query("SELECT FOUND_ROWS()")->fetchColumn();
+        
+        return [
+            'data' => $data,
+            'total_items' => (int)$total,
+            'current_page' => (int)$page,
+            'per_page' => (int)$perPage,
+            'total_pages' => ceil($total / $perPage)
+        ];
+    }
+
+    /**
      * Get product detail by ID.
      */
     public function getProductById($id) {
