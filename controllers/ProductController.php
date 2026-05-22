@@ -22,6 +22,7 @@ class ProductController extends BaseController
             'add' => $this->requirePost(fn() => $service->create($_POST, $_FILES)),
             'edit' => $this->requirePost(fn() => $service->update($_POST, $_FILES)),
             'delete' => $service->delete(intval($_GET['id'] ?? 0)),
+            'fetch' => $this->fetchProducts(),
             default => null,
         };
 
@@ -30,6 +31,25 @@ class ProductController extends BaseController
         }
 
         $this->respondWithResult($result);
+    }
+
+    private function fetchProducts(): ?array
+    {
+        $productService = new ProductService($this->pdo);
+        $filters = [
+            'search' => $_GET['search'] ?? '',
+            'category' => $_GET['category'] ?? 'all',
+            'min_price' => $_GET['min_price'] ?? '',
+            'max_price' => $_GET['max_price'] ?? '',
+            'start_date' => $_GET['start_date'] ?? '',
+            'end_date' => $_GET['end_date'] ?? '',
+        ];
+        $page = intval($_GET['p'] ?? 1);
+        $perPage = intval($_GET['per_page'] ?? 10);
+        
+        $result = $productService->getAdminProductsPaginated($filters, $page, $perPage);
+        $this->json(['success' => true, 'data' => $result['data'], 'meta' => $result]);
+        return null;
     }
 
     private function requirePost(callable $handler): ?array
