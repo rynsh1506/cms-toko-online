@@ -128,7 +128,7 @@ class LandingService
         if (!in_array($mime, ['image/jpeg', 'image/png'])) throw new \Exception("Format gambar banner tidak didukung. Gunakan JPG atau PNG.");
 
         $ext = ($mime === 'image/png') ? 'png' : 'jpg';
-        $new_filename = 'banner_' . time() . '_' . rand(100, 999) . '.' . $ext;
+        $new_filename = 'banner_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
         $upload_dir = __DIR__ . '/../uploads/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
@@ -156,7 +156,7 @@ class LandingService
             if (!in_array($mime, ['image/jpeg', 'image/png'])) throw new \Exception("Format gambar banner tidak didukung.");
 
             $ext = ($mime === 'image/png') ? 'png' : 'jpg';
-            $new_filename = 'banner_' . time() . '_' . rand(100, 999) . '.' . $ext;
+            $new_filename = 'banner_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
             $upload_dir = __DIR__ . '/../uploads/';
             if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
