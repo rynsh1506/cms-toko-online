@@ -70,6 +70,7 @@ $admin = $stmt->fetch();
                 </h2>
 
                 <form id="profile-info-form" action="index.php?page=admin_profile_process&action=update_profile" method="POST" enctype="multipart/form-data" class="space-y-5">
+                    <?= csrf_field() ?>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Nama Lengkap</label>
@@ -113,6 +114,7 @@ $admin = $stmt->fetch();
                 </h2>
 
                 <form id="profile-password-form" action="index.php?page=admin_profile_process&action=change_password" method="POST" class="space-y-5">
+                    <?= csrf_field() ?>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Password Lama</label>
                         <input type="password" name="old_password" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 transition">

@@ -10,6 +10,7 @@ class BankController extends BaseController
     {
         // Proteksi: Hanya Admin
         checkAdmin();
+        $this->verifyCsrfToken();
 
         $action = $_GET['action'] ?? '';
         $orderService = new OrderService($this->pdo);
@@ -38,7 +39,7 @@ class BankController extends BaseController
         if ($orderService->addBankAccount($bank_name, $account_number, $account_name)) {
             return ['success' => true, 'message' => 'Rekening Bank berhasil ditambahkan!'];
         }
-        
+
         return ['success' => false, 'message' => 'Gagal menyimpan rekening bank.'];
     }
 
@@ -54,8 +55,8 @@ class BankController extends BaseController
         $new_status = $bank['is_active'] ? 0 : 1;
         if ($orderService->toggleBankAccountStatus($id, $new_status)) {
             return [
-                'success' => true, 
-                'message' => 'Status rekening bank berhasil diubah!', 
+                'success' => true,
+                'message' => 'Status rekening bank berhasil diubah!',
                 'is_active' => $new_status
             ];
         }
@@ -66,11 +67,11 @@ class BankController extends BaseController
     private function deleteBank(OrderService $orderService): array
     {
         $id = intval($_GET['id'] ?? 0);
-        
+
         if ($orderService->deleteBankAccount($id)) {
             return ['success' => true, 'message' => 'Rekening bank berhasil dihapus!'];
         }
-        
+
         return ['success' => false, 'message' => 'Gagal menghapus rekening bank.'];
     }
 

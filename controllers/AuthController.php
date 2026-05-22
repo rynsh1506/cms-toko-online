@@ -7,6 +7,7 @@ class AuthController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         $action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
 
         if ($action === 'logout') {

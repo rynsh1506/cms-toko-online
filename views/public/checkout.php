@@ -90,6 +90,7 @@
                 <div id="checkout-alert"></div>
 
                 <form id="checkout-form" action="index.php?page=checkout_process" method="POST" class="space-y-6">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="promo_code_id" id="hidden_promo_id" value="">
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nama Penerima</label>

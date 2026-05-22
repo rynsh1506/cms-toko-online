@@ -6,6 +6,8 @@ class BannerController extends BaseController
 {
     public function handle(): void
     {
+        checkAdmin();
+        $this->verifyCsrfToken();
         $landingService = new LandingService($this->pdo);
         $action = sanitize_input($_GET['action'] ?? '');
         $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);

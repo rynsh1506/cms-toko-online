@@ -95,6 +95,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
         </div>
 
         <form id="verify-form" action="index.php?page=verify_email" method="POST" class="space-y-6">
+            <?= csrf_field() ?>
             <div>
                 <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Alamat Email</label>
                 <input type="email" name="email" id="email-field" required value="<?= htmlspecialchars($email) ?>" placeholder="nama@email.com"

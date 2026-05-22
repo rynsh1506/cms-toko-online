@@ -7,6 +7,7 @@ class CartController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         $service = new CartService(new ProductService($this->pdo));
         $action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
 

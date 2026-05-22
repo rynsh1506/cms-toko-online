@@ -103,6 +103,7 @@ $banners = $stmt->fetchAll();
 
             <!-- Form -->
             <form id="bannerForm" action="index.php?page=admin_banner_process&action=add" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
                 <input type="hidden" name="id" id="bannerId">
                 <div class="p-6 space-y-4 font-sans">
                     <!-- Title -->

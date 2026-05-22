@@ -6,6 +6,7 @@ class OrderCancelController extends BaseController
 {
     public function handle(): void
     {
+        $this->verifyCsrfToken();
         $pdo = $this->pdo;
         $orderService = new OrderService($pdo);
 
@@ -66,7 +67,6 @@ class OrderCancelController extends BaseController
                     'message' => 'Pesanan Anda berhasil dibatalkan dan stok dikembalikan.'
                 ]);
                 exit;
-
             } catch (\Exception $e) {
                 if ($pdo->inTransaction()) {
                     $pdo->rollBack();

@@ -17,6 +17,7 @@ $categories = $stmt->fetchAll();
     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit transition-colors duration-300">
         <h3 id="form-title" class="text-lg font-bold mb-4 text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 font-display">Tambah Kategori</h3>
         <form id="category-form" action="index.php?page=admin_category_process&action=add" method="POST" class="space-y-4">
+            <?= csrf_field() ?>
             <input type="hidden" name="id" id="category-id" value="">
 
             <div>

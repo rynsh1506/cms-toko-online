@@ -37,4 +37,29 @@ abstract class BaseController
         extract($data, EXTR_SKIP);
         require $path;
     }
+
+    // --- FITUR BARU: Menghilangkan Redundansi ---
+    protected function respond(array $result, string $redirectUrl): void
+    {
+        if ($this->isAjax()) {
+            $this->json($result);
+        }
+
+        $_SESSION[$result['success'] ? 'success' : 'error'] = $result['message'];
+        $this->redirectTo($redirectUrl);
+    }
+
+    protected function verifyCsrfToken(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+
+            if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+                $this->respond([
+                    'success' => false,
+                    'message' => 'Validasi keamanan (CSRF Token) gagal. Silakan muat ulang halaman dan coba lagi.'
+                ], 'index.php?page=home');
+            }
+        }
+    }
 }

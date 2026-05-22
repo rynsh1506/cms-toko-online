@@ -17,6 +17,7 @@ $banks = $stmt->fetchAll();
     <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit transition-colors duration-300">
         <h3 class="text-lg font-bold mb-4 text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 font-display">Tambah Rekening</h3>
         <form id="add-bank-form" action="index.php?page=admin_bank_process&action=add" method="POST" class="space-y-4">
+            <?= csrf_field() ?>
             <div>
                 <label class="block text-slate-700 dark:text-slate-300 text-xs font-bold mb-1.5">Nama Bank (misal: BCA, Mandiri)</label>
                 <input type="text" name="bank_name" id="bank_name" required placeholder="BCA"

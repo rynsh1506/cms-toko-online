@@ -10,13 +10,14 @@ class CategoryController extends BaseController
     public function handle(): void
     {
         checkAdmin();
+        $this->verifyCsrfToken();
 
         $service = new CategoryService(new ProductService($this->pdo));
         $action = $_GET['action'] ?? '';
 
         $result = match ($action) {
-            'add' => $this->requirePost(fn () => $service->create($_POST)),
-            'edit' => $this->requirePost(fn () => $service->update($_POST)),
+            'add' => $this->requirePost(fn() => $service->create($_POST)),
+            'edit' => $this->requirePost(fn() => $service->update($_POST)),
             'delete' => $service->delete(intval($_GET['id'] ?? 0)),
             default => null,
         };

@@ -11,6 +11,7 @@ class ConfigController extends BaseController
 
         // Proteksi: Hanya Admin
         checkAdmin();
+        $this->verifyCsrfToken();
 
         $is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || isset($_POST['ajax']) || isset($_GET['ajax']);
 
