@@ -18,6 +18,14 @@ function e($value)
 }
 
 /**
+ * Escapes HTML for output encoding (alias of e).
+ */
+function esc($value)
+{
+    return e($value);
+}
+
+/**
  * Redirect ke halaman tertentu
  */
 function redirect($url)

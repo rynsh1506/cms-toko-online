@@ -3,6 +3,73 @@ session_start();
 
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/config/Logger.php';
+
+spl_autoload_register(function ($className) {
+    // Check in controllers
+    $controllerPath = __DIR__ . '/controllers/' . $className . '.php';
+    if (file_exists($controllerPath)) {
+        require_once $controllerPath;
+        return;
+    }
+
+    // Check in services
+    $servicePath = __DIR__ . '/services/' . $className . '.php';
+    if (file_exists($servicePath)) {
+        require_once $servicePath;
+        return;
+    }
+
+    // Check in config
+    $configPath = __DIR__ . '/config/' . $className . '.php';
+    if (file_exists($configPath)) {
+        require_once $configPath;
+        return;
+    }
+});
+
+set_exception_handler(function (Throwable $exception) {
+    Logger::error($exception->getMessage(), [
+        'file' => $exception->getFile(),
+        'line' => $exception->getLine(),
+        'trace' => $exception->getTraceAsString(),
+    ]);
+
+    http_response_code(500);
+    if (
+        (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
+        isset($_POST['ajax']) || isset($_GET['ajax'])
+    ) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan sistem internal. Silakan coba lagi nanti.']);
+    } else {
+        echo '<h1>500 - Kesalahan Sistem Internal</h1><p>Terjadi kesalahan yang tidak terduga pada server. Harap hubungi Administrator atau coba lagi beberapa saat lagi.</p>';
+    }
+    exit;
+});
+
+set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) {
+    if (!(error_reporting() & $errno)) {
+        return false;
+    }
+
+    $message = "PHP Error [{$errno}]: {$errstr}";
+    $context = [
+        'file' => $errfile,
+        'line' => $errline,
+    ];
+
+    if ($errno === E_USER_ERROR || $errno === E_RECOVERABLE_ERROR || $errno === E_COMPILE_ERROR || $errno === E_CORE_ERROR || $errno === E_ERROR) {
+        Logger::error($message, $context);
+        http_response_code(500);
+        echo '<h1>500 - Kesalahan Sistem Internal</h1><p>Terjadi kesalahan sistem fatal.</p>';
+        exit;
+    } else {
+        Logger::warning($message, $context);
+    }
+
+    return true;
+});
 
 $page = isset($_GET['page']) ? sanitize_input($_GET['page']) : 'home';
 
@@ -70,21 +137,18 @@ if (isset($controllerRoutes[$page])) {
     }
 
     [$className] = $controllerRoutes[$page];
-    require_once __DIR__ . '/controllers/' . $className . '.php';
     $controller = new $className($pdo);
     $controller->handle();
     exit;
 }
 
 if (isset($publicPageRoutes[$page])) {
-    require_once __DIR__ . '/controllers/PublicPageController.php';
     $controller = new PublicPageController($pdo, $publicPageRoutes[$page]);
     $controller->handle();
     exit;
 }
 
 if (isset($adminPageRoutes[$page])) {
-    require_once __DIR__ . '/controllers/AdminPageController.php';
     $controller = new AdminPageController($pdo, $adminPageRoutes[$page]);
     $controller->handle();
     exit;

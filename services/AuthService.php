@@ -82,11 +82,20 @@ class AuthService {
         return $stmt->execute([$userId]);
     }
 
-    /**
-     * Update/Regenerate the verification token/OTP.
-     */
     public function updateVerificationToken($userId, $newToken) {
         $stmt = $this->pdo->prepare("UPDATE users SET verification_token = ? WHERE id = ?");
         return $stmt->execute([$newToken, $userId]);
+    }
+
+    /**
+     * Get user details by ID.
+     * 
+     * @param int $id User ID.
+     * @return array|false
+     */
+    public function getUserById(int $id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
     }
 }

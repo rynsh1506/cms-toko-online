@@ -1,9 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch all banners
-$stmt = $pdo->query("SELECT * FROM banners ORDER BY sort_order ASC, id DESC");
-$banners = $stmt->fetchAll();
+// Banners are fetched via controller
 ?>
 
 <!-- Title Header -->

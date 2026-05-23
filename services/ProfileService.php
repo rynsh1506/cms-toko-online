@@ -28,7 +28,10 @@ class ProfileService
             $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
             $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif'];
             $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $mime = mime_content_type($file['tmp_name']);
+            
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
 
             if (!in_array($file_ext, $allowed_exts) || !in_array($mime, $allowed_mimes)) {
                 throw new \Exception("Format file tidak valid. Harap gunakan format JPG, JPEG, PNG, atau GIF.");
@@ -38,7 +41,7 @@ class ProfileService
             $upload_dir = __DIR__ . '/../uploads/avatars';
             if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
-            $new_filename = 'avatar_' . $user_id . '_' . time() . '.' . $file_ext;
+            $new_filename = 'avatar_' . $user_id . '_' . bin2hex(random_bytes(8)) . '.' . $file_ext;
             $upload_path = $upload_dir . '/' . $new_filename;
 
             if (!move_uploaded_file($file['tmp_name'], $upload_path)) {

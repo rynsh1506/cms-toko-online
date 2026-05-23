@@ -1,27 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch all orders
-$stmt = $pdo->query("
-    SELECT o.*, u.name as buyer_name, b.bank_name, b.account_number, b.account_name
-    FROM orders o
-    JOIN users u ON o.user_id = u.id
-    LEFT JOIN bank_accounts b ON o.bank_account_id = b.id
-    ORDER BY o.id DESC
-");
-$orders = $stmt->fetchAll();
-
-// Fetch all order items mapped by order_id
-$items_stmt = $pdo->query("
-    SELECT oi.*, p.name as product_name
-    FROM order_items oi
-    JOIN products p ON oi.product_id = p.id
-");
-$all_items = $items_stmt->fetchAll();
-$order_items = [];
-foreach ($all_items as $item) {
-    $order_items[$item['order_id']][] = $item;
-}
+// Orders and items are fetched via controller
 ?>
 
 <!-- Title -->
