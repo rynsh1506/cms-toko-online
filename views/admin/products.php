@@ -103,6 +103,7 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAl
             </div>
 
             <form id="productForm" action="index.php?page=admin_product_process&action=add" method="POST" enctype="multipart/form-data">
+
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" id="prodId">
                 <div class="p-6 space-y-4">
@@ -164,6 +165,13 @@ $categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAl
 </div>
 
 <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
 
 <div id="variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">

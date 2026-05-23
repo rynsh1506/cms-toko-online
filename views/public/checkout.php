@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - NusaBay</title>
@@ -90,6 +91,7 @@
                 <div id="checkout-alert"></div>
 
                 <form id="checkout-form" action="index.php?page=checkout_process" method="POST" class="space-y-6">
+
                     <?= csrf_field() ?>
                     <input type="hidden" name="promo_code_id" id="hidden_promo_id" value="">
                     <div>
@@ -205,6 +207,13 @@
     <?php require __DIR__ . '/components/footer.php'; ?>
 
     <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script>
         window.NusaBayCheckout = {
             subtotal: <?= json_encode((float) $total_price) ?>

@@ -47,6 +47,7 @@ if (isset($_SESSION['cart'])) {
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($product['name']) ?> - NusaBay</title>
@@ -205,6 +206,7 @@ if (isset($_SESSION['cart'])) {
 
                     <div class="pt-2">
                         <form id="add-to-cart-form" action="index.php?page=cart_process&action=add" method="POST">
+
                             <?= csrf_field() ?>
                             <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                             <input type="hidden" name="variant_id" id="selected-variant-id" value="0">
@@ -253,6 +255,13 @@ if (isset($_SESSION['cart'])) {
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
 
     <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script>
         window.NusaBayProductDetail = {
             basePrice: <?= json_encode((float) $product['price']) ?>,

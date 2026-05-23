@@ -25,6 +25,7 @@ function getConfigValue($key, $configs) {
 
 <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-8 font-sans">
     <form id="settingsForm" action="index.php?page=config_process" method="POST" enctype="multipart/form-data" class="space-y-8">
+
         <?= csrf_field() ?> 
         <!-- Hero Section -->
         <div>
@@ -107,5 +108,12 @@ function getConfigValue($key, $configs) {
 </div>
 
 <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
 <script src="assets/js/pages/admin-settings.js"></script>

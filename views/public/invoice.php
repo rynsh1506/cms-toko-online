@@ -5,6 +5,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice #<?= $order['id'] ?> - NusaBay</title>
@@ -237,6 +238,13 @@
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script src="assets/js/pages/invoice.js"></script>
 </body>
 </html>

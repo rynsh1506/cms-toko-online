@@ -9,6 +9,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar - NusaBay</title>
@@ -86,6 +87,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
         </div>
 
         <form id="register-form" action="index.php?page=auth_process&action=register" method="POST" class="space-y-4">
+
             <?= csrf_field() ?>
             <div>
                 <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nama Lengkap</label>
@@ -126,6 +128,13 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script src="assets/js/pages/register.js"></script>
 
 </body>

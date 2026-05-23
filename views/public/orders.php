@@ -27,6 +27,7 @@ $orders = $stmt->fetchAll();
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Saya - NusaBay</title>
@@ -175,6 +176,13 @@ $orders = $stmt->fetchAll();
 
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script src="assets/js/sweetalert2.all.min.js"></script>
     <script>
         window.NusaBayOrders = {

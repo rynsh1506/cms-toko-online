@@ -127,6 +127,7 @@ ob_start();
                                 <!-- No variants: show add to cart + quick checkout -->
                                 <div class="flex items-center space-x-1.5">
                                     <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
+
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                                         <input type="hidden" name="variant_id" value="0">
@@ -221,6 +222,7 @@ if (isset($_GET['ajax'])) {
 <html lang="id">
 
 <head>
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?= csrf_meta() ?> <title>NusaBay - Toko Serba Ada Modern</title>
