@@ -172,4 +172,11 @@
 </div>
 
 <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 <script src="assets/js/pages/admin-dashboard.js"></script>

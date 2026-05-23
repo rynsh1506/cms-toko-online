@@ -186,6 +186,7 @@ foreach ($all_items as $item) {
                         </div>
                     </div>
                     <form id="statusForm" action="index.php?page=admin_order_process&action=update_status" method="POST" class="flex items-center space-x-2">
+
                         <?= csrf_field() ?>
                         <input type="hidden" name="order_id" id="statusOrderId">
                         <select name="status" id="statusSelect" class="text-xs px-3.5 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 transition">
@@ -211,5 +212,12 @@ foreach ($all_items as $item) {
 </div>
 
 <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
 <script src="assets/js/pages/admin-orders.js"></script>

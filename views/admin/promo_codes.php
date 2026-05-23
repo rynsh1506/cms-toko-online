@@ -122,6 +122,7 @@ $promos = $stmt->fetchAll();
 
             <!-- Form -->
             <form id="promoForm" action="index.php?page=admin_promo_process&action=add" method="POST">
+
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" id="promoId">
                 <div class="p-6 space-y-4">
@@ -198,5 +199,12 @@ $promos = $stmt->fetchAll();
 </div>
 
 <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
 <script src="assets/js/pages/admin-promo-codes.js"></script>

@@ -51,14 +51,14 @@ abstract class BaseController
 
     protected function verifyCsrfToken(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'PATCH', 'DELETE'])) {
             $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
 
             if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
                 $this->respond([
                     'success' => false,
                     'message' => 'Validasi keamanan (CSRF Token) gagal. Silakan muat ulang halaman dan coba lagi.'
-                ], 'index.php?page=home');
+                ], $_SERVER['HTTP_REFERER'] ?? 'index.php?page=home');
             }
         }
     }

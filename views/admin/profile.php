@@ -70,6 +70,7 @@ $admin = $stmt->fetch();
                 </h2>
 
                 <form id="profile-info-form" action="index.php?page=admin_profile_process&action=update_profile" method="POST" enctype="multipart/form-data" class="space-y-5">
+
                     <?= csrf_field() ?>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -114,6 +115,7 @@ $admin = $stmt->fetch();
                 </h2>
 
                 <form id="profile-password-form" action="index.php?page=admin_profile_process&action=change_password" method="POST" class="space-y-5">
+
                     <?= csrf_field() ?>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Password Lama</label>
@@ -143,5 +145,12 @@ $admin = $stmt->fetch();
 </div>
 
 <script src="assets/js/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
 <script src="assets/js/pages/admin-profile.js"></script>
