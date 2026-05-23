@@ -106,7 +106,7 @@ ob_start();
                         </p>
                     </div>
 
-                    <div class="mt-6 flex items-center justify-between">
+                    <div class="mt-6 space-y-4">
                         <div class="flex flex-col">
                             <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Harga</span>
                             <span class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -114,40 +114,41 @@ ob_start();
                             </span>
                         </div>
 
-                        <?php if ($p_stock > 0): ?>
-                            <?php if ($product['variant_count'] > 0): ?>
-                                <!-- Product has variants: redirect to detail page -->
-                                <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="flex items-center space-x-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold px-3 py-2.5 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-primary/20">
-                                    <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2z" />
-                                    </svg>
-                                    <span>Pilih Varian</span>
-                                </a>
-                            <?php else: ?>
-                                <!-- No variants: show add to cart + quick checkout -->
-                                <div class="flex items-center space-x-1.5">
-                                    <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
+                        <div class="flex items-center justify-end">
+                            <?php if ($p_stock > 0): ?>
+                                <?php if ($product['variant_count'] > 0): ?>
+                                    <!-- Product has variants: redirect to detail page -->
+                                    <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="flex items-center justify-center bg-primary hover:bg-primary/90 text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-primary/20 cursor-pointer" title="Pilih Varian">
+                                        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2z" />
+                                        </svg>
+                                    </a>
+                                <?php else: ?>
+                                    <!-- No variants: show add to cart + quick checkout -->
+                                    <div class="flex items-center space-x-1.5">
+                                        <form action="index.php?page=cart_process&action=add" method="POST" class="add-to-cart-form">
 
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                        <input type="hidden" name="variant_id" value="0">
-                                        <input type="hidden" name="variant_info" value="">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm cursor-pointer" title="Tambah ke Keranjang">
-                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </div>
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                                            <input type="hidden" name="variant_id" value="0">
+                                            <input type="hidden" name="variant_info" value="">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="bg-slate-100 hover:bg-primary dark:bg-slate-800/80 dark:hover:bg-primary text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-white p-3 rounded-2xl transition duration-200 active:scale-95 shadow-sm cursor-pointer" title="Tambah ke Keranjang">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <button disabled class="bg-slate-50 dark:bg-slate-800/40 text-slate-350 dark:text-slate-650 p-3 rounded-2xl cursor-not-allowed">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                </button>
                             <?php endif; ?>
-                        <?php else: ?>
-                            <button disabled class="bg-slate-50 dark:bg-slate-800/40 text-slate-350 dark:text-slate-650 p-3 rounded-2xl cursor-not-allowed">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                </svg>
-                            </button>
-                        <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
