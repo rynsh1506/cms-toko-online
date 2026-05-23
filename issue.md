@@ -1,64 +1,38 @@
-# Perencanaan Audit & Refactoring Keseluruhan (Code Standard, Security, & Logging)
+# Issue: Perbaikan Tampilan Card Produk (Pemisahan Baris Harga dan Tombol Aksi)
 
 ## Deskripsi Masalah
-Aplikasi saat ini telah memiliki fungsionalitas yang sangat baik. Namun, seiring bertambahnya kompleksitas fitur, kita perlu memastikan bahwa seluruh *codebase* mudah dibaca oleh programmer pemula, aman dari ancaman siber berskala internasional (panduan keamanan global), memiliki sistem *Logging* terpadu agar *error* mudah dilacak (Traceable), dan memiliki pondasi yang kuat agar mudah dikembangkan (Scalable) di masa depan.
+Pada kartu produk di halaman utama, informasi **Harga** dan **Tombol Aksi** (seperti tombol "Tambah ke Keranjang" atau link "Pilih Varian") saat ini diletakkan dalam satu baris horizontal (`flex items-center justify-between`).
 
-## Tujuan Utama
-1. **Keamanan Internasional (Security Standard):** Mematuhi panduan dasar OWASP Top 10 (Pencegahan SQL Injection, XSS, pengamanan Session, dan mitigasi bahaya file upload).
-2. **Keterbacaan (Readability):** Menjadikan kode sangat mudah dimengerti dengan penamaan variabel logis, struktur komentar (DocBlocks) yang jelas, dan gaya kode terstandarisasi.
-3. **Skalabilitas (Scalability):** Memastikan pola arsitektur *Service Layer* / MVC ditaati 100% sehingga penambahan fungsionalitas baru tidak akan merusak sistem yang sudah ada.
-4. **Sistem Pelacakan Error (Centralized Logger):** Membuat sistem penulisan *log* terpusat untuk mempermudah investigasi (tracing) jika terjadi kejanggalan atau *error* tersembunyi.
+Hal ini menimbulkan masalah visual jika harga produk memiliki nominal yang sangat tinggi (panjang karakter banyak), sehingga teks harga saling bertabrakan (nabrak) dengan tombol aksi di sebelahnya. Selain itu, tombol "Pilih Varian" saat ini memiliki teks "Pilih Varian" di samping ikonnya, sedangkan tombol "Tambah ke Keranjang" hanya berupa ikon (tidak konsisten).
 
 ---
 
-## Tahapan Implementasi (Instruksi Detail untuk Junior Programmer / AI)
+## Langkah-langkah Implementasi (Panduan untuk Programmer/AI)
 
-### Tahap 1: Implementasi Centralized Logger (Sistem Pelacakan)
-1. **Buat Class/Helper Logger:**
-   - **Tugas:** Buat satu file khusus (misal `config/Logger.php` atau tambahkan fungsi `app_log()` di `config/helpers.php`).
-   - **Aksi:** Fungsi/Class ini bertugas menangkap pesan *error*, nama file asal error, baris kode (line number), dan waktu kejadian (timestamp), lalu menyimpannya ke dalam file lokal (misal: `logs/app-YYYY-MM-DD.log`).
-2. **Injeksi Try-Catch Global:**
-   - **Tugas:** Di dalam seluruh *Service* dan *Controller*.
-   - **Aksi:** Bungkus logika krusial (terutama eksekusi database `execute()`) dengan blok `try { ... } catch (Exception $e) { ... }`.
-   - **Solusi:** Di dalam blok `catch`, panggil `Logger::error($e->getMessage())` sebelum melempar kembali error atau menampilkan pesan aman ke sisi User (agar detail error teknis tidak bocor ke publik, namun tercatat di *backend*).
+### Tahap 1: Restrukturisasi HTML di View Utama
+1. Buka file [home.php](file:///home/xamnes/Projects/cms-toko-online/views/public/home.php).
+2. Cari baris kontainer harga dan tombol aksi (sekitar baris 109 hingga 150):
+   ```html
+   <div class="mt-6 flex items-center justify-between">
+       ...
+   </div>
+   ```
+3. Ubah pembungkus terluar tersebut agar tidak menggunakan `flex justify-between`, melainkan menggunakan struktur bertumpuk ke bawah (vertikal) dengan jarak/gap yang sesuai, misalnya menggunakan kelas Tailwind CSS `mt-6 space-y-3` atau sejenisnya.
+4. Buat blok **Harga** berada pada satu baris penuh tersendiri.
+5. Buat baris baru di bawahnya untuk membungkus **Tombol Aksi** dan atur posisinya agar rapi (misalnya disejajarkan ke kanan dengan `flex justify-end` atau selebar penuh).
 
-### Tahap 2: Audit Keamanan (Security Hardening)
-1. **Pencegahan XSS (Cross-Site Scripting) pada View:**
-   - **Tugas:** Sisir seluruh file berekstensi `.php` di dalam folder `views/`.
-   - **Aksi:** Cari setiap tag `<?= $variable ?>` yang berisi data dari database atau *input* pengguna. Bungkus semuanya dengan fungsi sanitasi.
-   - **Solusi:** Buat helper global `esc($string)` di `config/helpers.php` (berisi `htmlspecialchars($string, ENT_QUOTES, 'UTF-8')`). Lalu ubah output menjadi `<?= esc($variable) ?>`.
-2. **Keamanan Ekstrem File Upload:**
-   - **Tugas:** Periksa fungsi penanganan *file upload* pada layanan seperti `ProductManagementService.php` atau profil pengguna.
-   - **Aksi:** Jangan hanya percaya pada ekstensi file yang diunggah. Pastikan validasi mendeteksi tipe MIME yang sebenarnya melalui fungsi backend (contoh: `finfo_file`). Ganti (rename) nama file menjadi nama acak (misal: `uniqid()`) sebelum disimpan untuk menghindari serangan injeksi nama file.
-3. **Sapu Bersih SQL Injection:**
-   - **Tugas:** Periksa keseluruhan sintaks eksekusi database di folder `services/`.
-   - **Aksi:** Pastikan **TIDAK ADA** kueri yang menggabungkan (*concatenate*) string SQL dengan variabel secara langsung (misal: `"SELECT * FROM users WHERE id = " . $id`). Segala macam input dinamis harus menggunakan **Prepared Statements** PDO (`$stmt->prepare()` dan di-bind dengan parameter sesungguhnya).
+### Tahap 2: Penyederhanaan Tombol Aksi (Hanya Ikon)
+1. Pada bagian tombol "Pilih Varian" (`<a>` tag):
+   ```html
+   <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="flex items-center space-x-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold px-3 py-2.5 rounded-2xl transition duration-200 active:scale-95 shadow-sm shadow-primary/20">
+       <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">...</svg>
+       <span>Pilih Varian</span>
+   </a>
+   ```
+2. Hapus tag `<span>Pilih Varian</span>` beserta teks di dalamnya.
+3. Sesuaikan kelas styling tombol tersebut agar memiliki padding dan bentuk persegi yang sama persis dengan tombol "Tambah ke Keranjang" (contoh: gunakan padding `p-3` dan `rounded-2xl`).
 
-### Tahap 3: Pembersihan Kode (Clean Code & Readability)
-1. **Standardisasi Penamaan:**
-   - Variabel biasa gunakan gaya yang konsisten, disarankan `camelCase` (misal: `$totalPrice` atau `$productImage`).
-   - Fungsi dan Method harus berbentuk `camelCase` dan diawali dengan kata kerja jelas (contoh: `getUserById()`, bukan sekadar `user()`).
-2. **Penambahan Dokumentasi (DocBlocks):**
-   - Semua kelas (*class*) di `controllers/` dan `services/` **wajib** diberi komentar penjelasan.
-   - Tambahkan blok komentar di atas deklarasi fungsi untuk menjelaskan apa kegunaan fungsi tersebut, parameter apa yang dibutuhkan (`@param`), dan tipe data apa yang dikembalikan (`@return`). Hal ini sangat menolong *programmer pemula*.
-3. **Penghapusan Baris "Sampah":**
-   - Cari dan hapus seluruh sintaks *debugging* yang tertinggal (`var_dump`, `print_r`, atau `console.log`).
-   - Bersihkan baris-baris kode tak terpakai yang dikomentari (*dead code/commented-out blocks*).
-
-### Tahap 4: Restrukturisasi Skalabilitas (Arsitektur)
-1. **Pemurnian Controller:**
-   - Buka seluruh file di direktori `controllers/`.
-   - Jika masih ditemukan adanya eksekusi logika database (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) di dalam controller, segera pindahkan logika tersebut ke dalam sebuah *Class* di dalam folder `services/`. Controller hanya boleh bertugas menangkap *Request* dan merespon dengan *View* atau *JSON*.
-2. **Pembersihan Logika dari View:**
-   - Buka seluruh file HTML/PHP di `views/`.
-   - Pastikan tidak ada satupun *query database* atau perhitungan bisnis berat di dalam layer tampilan. View murni untuk menyajikan elemen Visual (*looping* daftar produk dan *if-else* kondisional ringan).
-3. **Implementasi Autoloader Sederhana:**
-   - Agar tidak terus menerus memanggil `require_once` di puluhan file, pastikan di dalam `index.php` telah terpasang fungsi `spl_autoload_register()` yang cerdas melacak kelas di folder `controllers/` maupun `services/` secara dinamis.
-
-### Tahap 5: Quality Control & Validation
-- Nyalakan pelaporan error (`error_reporting(E_ALL); ini_set('display_errors', 1);`) selama inspeksi di localhost. Cek ke tab konsol pada *Browser Inspect Element*.
-- Jika seluruh proses selesai, tidak boleh ada satupun `Notice`, `Warning`, atau *Console Error* yang muncul di layar, apalagi layar kosong (Fatal Error). Pastikan log file (`logs/...`) terisi otomatis setiap ada tangkapan error dari Catch-block.
-
----
-**Catatan Penting untuk Implementator:** 
-Jangan terburu-buru. Kerjakan ini bertahap per modul/tahapan. **Ingat:** Pekerjaan Anda di tahap ini bukanlah membuat fungsionalitas baru, melainkan *merapikan dan mengamankan* apa yang sudah ada. Keamanan tingkat internasional berarti tidak menoleransi satu celah XSS pun pada formulir pengguna.
+### Tahap 3: Validasi Kerapian Desain
+- Muat ulang halaman utama toko (`http://localhost:8000`).
+- Pastikan harga produk dan tombol aksi tidak lagi berada dalam satu baris horizontal.
+- Pastikan kedua tombol aksi (Tambah ke Keranjang & Pilih Varian) memiliki ukuran, bentuk, dan konsistensi visual yang sama (hanya menampilkan ikon tanpa teks).
