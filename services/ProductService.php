@@ -210,6 +210,17 @@ class ProductService {
     }
 
     /**
+     * Get all categories ordered by ID descending.
+     * 
+     * @return array
+     */
+    public function getAllCategoriesDesc(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM categories ORDER BY id DESC");
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Get all variants of a product.
      */
     public function getVariantsByProductId($productId) {

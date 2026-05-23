@@ -24,6 +24,17 @@ class LandingService
     }
 
     /**
+     * Get all raw configurations.
+     * 
+     * @return array
+     */
+    public function getAllConfigsRaw(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM landing_configs");
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Get a specific configuration value.
      */
     public function getConfigValueByKey($key)

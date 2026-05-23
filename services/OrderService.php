@@ -199,6 +199,28 @@ class OrderService
     }
 
     /**
+     * Get all active bank accounts.
+     * 
+     * @return array
+     */
+    public function getActiveBankAccounts(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1");
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get all bank accounts ordered by ID descending.
+     * 
+     * @return array
+     */
+    public function getAllBankAccounts(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM bank_accounts ORDER BY id DESC");
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Check if a promo code exists.
      */
     public function checkPromoCodeExists($code)
@@ -440,5 +462,48 @@ class OrderService
             if ($this->pdo->inTransaction()) $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Get all promo codes ordered by ID descending.
+     * 
+     * @return array
+     */
+    public function getAllPromoCodes(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM promo_codes ORDER BY id DESC");
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get all orders for admin view.
+     * 
+     * @return array
+     */
+    public function getAllOrdersForAdmin(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT o.*, u.name as buyer_name, b.bank_name, b.account_number, b.account_name
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            LEFT JOIN bank_accounts b ON o.bank_account_id = b.id
+            ORDER BY o.id DESC
+        ");
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get all order items mapped with product info.
+     * 
+     * @return array
+     */
+    public function getAllOrderItemsForAdmin(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT oi.*, p.name as product_name
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+        ");
+        return $stmt->fetchAll();
     }
 }

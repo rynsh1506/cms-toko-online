@@ -1,9 +1,5 @@
 <?php
-// Query details admin terbaru
-require_once __DIR__ . '/../../config/db.php';
-$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-$stmt->execute([$_SESSION['user_id']]);
-$admin = $stmt->fetch();
+// Admin user details are fetched via controller
 ?>
 <div class="max-w-5xl mx-auto space-y-8 font-sans">
 

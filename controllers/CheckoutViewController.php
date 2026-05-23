@@ -36,11 +36,7 @@ class CheckoutViewController extends BaseController
         $primary_color = $configs['primary_color'] ?? '#6366f1';
 
         // Fetch Active Bank Accounts
-        $active_banks = [];
-        $banks = $pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1")->fetchAll();
-        foreach ($banks as $bank) {
-            $active_banks[] = $bank;
-        }
+        $active_banks = $orderService->getActiveBankAccounts();
 
         // Hitung ringkasan HANYA untuk item yang dipilih (dicentang)
         $cart_items = [];

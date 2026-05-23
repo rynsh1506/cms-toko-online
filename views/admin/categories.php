@@ -1,9 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch all categories
-$stmt = $pdo->query("SELECT * FROM categories ORDER BY id DESC");
-$categories = $stmt->fetchAll();
+// Categories are fetched via controller
 ?>
 
 <!-- Title -->

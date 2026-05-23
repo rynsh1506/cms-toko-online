@@ -1,17 +1,9 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch all landing configs
-$stmt = $pdo->query("SELECT * FROM landing_configs");
-$configs_raw = $stmt->fetchAll();
-$configs = [];
-foreach ($configs_raw as $c) {
-    $configs[$c['section_key']] = $c;
-}
-
 // Helper to get value
-function getConfigValue($key, $configs) {
-    return isset($configs[$key]) ? htmlspecialchars($configs[$key]['content_value']) : '';
+if (!function_exists('getConfigValue')) {
+    function getConfigValue($key, $configs) {
+        return isset($configs[$key]) ? htmlspecialchars($configs[$key]['content_value']) : '';
+    }
 }
 ?>
 

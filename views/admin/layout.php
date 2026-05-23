@@ -159,15 +159,15 @@ $current_page = $_GET['page'] ?? 'admin';
                 <div class="flex items-center justify-between mb-4">
                     <a href="index.php?page=admin_profile" class="flex items-center space-x-3 hover:opacity-85 transition">
                         <?php if ($admin_avatar): ?>
-                            <img class="h-9 w-9 rounded-full object-cover border border-slate-300 dark:border-slate-700" src="<?= $admin_avatar ?>" alt="Avatar">
+                            <img class="h-9 w-9 rounded-full object-cover border border-slate-300 dark:border-slate-700" src="<?= esc($admin_avatar) ?>" alt="Avatar">
                         <?php else: ?>
                             <div class="h-9 w-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-sm">
-                                <?= strtoupper(substr($admin_name, 0, 1)) ?>
+                                <?= esc(strtoupper(substr($admin_name, 0, 1))) ?>
                             </div>
                         <?php endif; ?>
                         <div class="overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-800 dark:text-white leading-none truncate"><?= $admin_name ?></p>
-                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 truncate"><?= $admin_email ?></p>
+                            <p class="text-xs font-semibold text-slate-800 dark:text-white leading-none truncate"><?= esc($admin_name) ?></p>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 truncate"><?= esc($admin_email) ?></p>
                         </div>
                     </a>
                 </div>

@@ -110,7 +110,9 @@ class ProductManagementService
         }
 
         $allowedMimes = ['image/jpeg', 'image/png'];
-        $mime = mime_content_type($file['tmp_name']);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
 
         if (!in_array($mime, $allowedMimes, true)) {
             return $this->error('Format file tidak didukung. Harap gunakan JPG atau PNG.');

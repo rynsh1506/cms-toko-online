@@ -1,9 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch all promo codes
-$stmt = $pdo->query("SELECT * FROM promo_codes ORDER BY id DESC");
-$promos = $stmt->fetchAll();
+// Promo codes are fetched via controller
 ?>
 
 <!-- Title Header -->

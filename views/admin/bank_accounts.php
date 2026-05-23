@@ -1,9 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
-
-// Fetch all bank accounts
-$stmt = $pdo->query("SELECT * FROM bank_accounts ORDER BY id DESC");
-$banks = $stmt->fetchAll();
+// Bank accounts are fetched via controller
 ?>
 
 <!-- Title -->
