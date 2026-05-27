@@ -220,4 +220,49 @@
     </div>
 </div>
 
+<!-- Modal Edit Variant -->
+<div id="edit-variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md font-sans">
+        <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+            <h3 class="text-lg font-extrabold text-slate-800 dark:text-white font-display">Edit Varian</h3>
+            <button onclick="closeEditVariantModal()" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <form id="edit-variant-form" class="p-6 space-y-4">
+            <input type="hidden" id="edit-variant-id">
+            
+            <div>
+                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Nama Varian <span class="text-rose-500">*</span></label>
+                <input type="text" id="edit-variant-name" placeholder="contoh: Ukuran" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Nilai <span class="text-rose-500">*</span></label>
+                <input type="text" id="edit-variant-value" placeholder="contoh: XL" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Harga Tambahan (Rp)</label>
+                <input type="number" id="edit-variant-price" value="0" min="0" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block">Stok</label>
+                <input type="number" id="edit-variant-stock" value="0" min="0" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeEditVariantModal()" class="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-sm font-bold rounded-xl transition active:scale-[0.98]">
+                    Batal
+                </button>
+                <button type="submit" id="btn-submit-edit-variant" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition active:scale-[0.98]">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="assets/js/pages/admin-products.js"></script>
