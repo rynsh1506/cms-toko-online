@@ -47,4 +47,21 @@ $(document).ready(function() {
                     }
                 });
             });
+
+            // Toggle Show/Hide Password
+            $('#toggle-password').on('click', function () {
+                const passwordInput = $('#password-input');
+                const eyeIconShow = $('#eye-icon-show');
+                const eyeIconHide = $('#eye-icon-hide');
+
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    eyeIconShow.addClass('hidden');
+                    eyeIconHide.removeClass('hidden');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    eyeIconShow.removeClass('hidden');
+                    eyeIconHide.addClass('hidden');
+                }
+            });
         });
