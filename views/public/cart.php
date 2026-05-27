@@ -231,7 +231,7 @@ if (!empty($_SESSION['cart'])) {
                                 <input type="checkbox" class="item-checkbox rounded border-slate-300 text-primary focus:ring-primary h-5 w-5 accent-indigo-600 cursor-pointer" data-cart-key="<?= htmlspecialchars($item['cart_key']) ?>" data-price="<?= $item['price'] ?>" checked>
 
                                 <a href="index.php?page=product_detail&id=<?= $item['product_id'] ?>" class="shrink-0 block ml-1">
-                                    <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-20 w-20 object-cover rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                    <img src="<?= htmlspecialchars($item['image_url'] ?? 'assets/images/placeholder/default-product.png') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-20 w-20 object-cover rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm" onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.png';">
                                 </a>
 
                                 <div class="flex-1 min-w-0">

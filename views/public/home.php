@@ -84,9 +84,10 @@ ob_start();
                 data-category="<?= $product['category_id'] ?? '' ?>">
                 <!-- Image Container -->
                 <a href="index.php?page=product_detail&id=<?= $product['id'] ?>" class="relative block overflow-hidden aspect-[4/3] bg-slate-50 dark:bg-slate-950">
-                    <img src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/400x300') ?>"
+                    <img src="<?= htmlspecialchars($product['image_url'] ?? 'assets/images/placeholder/default-product.png') ?>"
                         alt="<?= htmlspecialchars($product['name']) ?>"
                         loading="lazy"
+                        onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.png';"
                         class="h-full w-full object-cover group-hover:scale-105 transition duration-500">
                     <?php if ($p_stock <= 0): ?>
                         <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
@@ -359,7 +360,7 @@ if (isset($_GET['ajax'])) {
             <div id="carousel-container" class="relative w-full h-full">
                 <?php foreach ($banners as $index => $banner): ?>
                     <div class="carousel-slide absolute inset-0 w-full h-full transition-opacity duration-700 <?= $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' ?>">
-                        <img src="<?= htmlspecialchars($banner['image_url']) ?>" alt="Banner Image" class="w-full h-full object-cover">
+                        <img src="<?= htmlspecialchars($banner['image_url']) ?>" alt="Banner Image" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.png';">
                         <!-- Glassmorphic Banner Info overlay -->
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex items-end">
                             <div class="max-w-6xl mx-auto px-8 pb-10 w-full">
@@ -432,7 +433,7 @@ if (isset($_GET['ajax'])) {
                         <?php if (!empty($hero_image)): ?>
                             <img src="uploads/<?= htmlspecialchars($hero_image) ?>" alt="Hero Banner" class="max-w-sm sm:max-w-md w-full object-cover rounded-3xl shadow-2xl border-4 border-white dark:border-slate-800">
                         <?php else: ?>
-                            <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=600&auto=format&fit=crop&q=60" alt="Default Banner" class="max-w-sm sm:max-w-md w-full object-cover rounded-3xl shadow-2xl border-4 border-white dark:border-slate-800">
+                            <img src="assets/images/seed/hero-default-banner.jpg" alt="Default Banner" class="max-w-sm sm:max-w-md w-full object-cover rounded-3xl shadow-2xl border-4 border-white dark:border-slate-800" onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.png';">
                         <?php endif; ?>
                     </div>
                 </div>

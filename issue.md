@@ -1,123 +1,95 @@
-# Implementasi Fitur Show Password & Validasi Keamanan Password
+# Perencanaan Fitur: Penjaminan Ketersediaan Gambar Dummy (Seed Images)
 
 **Target Audiens:** Junior Programmer / AI Assistant
-**Tujuan:**
-1. Menambahkan tombol "Show/Hide Password" pada halaman Login dan Register.
-2. Menambahkan validasi keamanan password pada halaman Register (minimal 8 karakter, wajib mengandung huruf besar, huruf kecil, angka, dan simbol).
+**Tujuan:** Memastikan semua gambar yang di-generate oleh `setup_fresh.php` (saat ini menggunakan link Unsplash) selalu dapat dimuat dan tidak ada link mati (broken link). Gambar yang bagus adalah kunci utama untuk menarik visitor, sehingga keandalan gambar demo sangat krusial.
 
 ---
 
-## 🛠️ Tugas 1: Fitur Show/Hide Password
-
-Anda perlu memodifikasi file HTML/PHP view dan file JavaScript (frontend) untuk halaman Login dan Register.
-
-### Langkah 1: Modifikasi View Login (`views/public/login.php`)
-Buka file `views/public/login.php` dan cari bagian `<input type="password" ...>`. Ubah struktur HTML pembungkusnya menjadi seperti ini:
-
-```html
-<div>
-    <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Password</label>
-    <div class="relative">
-        <input type="password" name="password" id="password-input" required placeholder="••••••••"
-            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
-        
-        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none cursor-pointer">
-            <!-- Icon Mata Terbuka (Show) -->
-            <svg id="eye-icon-show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            <!-- Icon Mata Tertutup (Hide) - Default disembunyikan -->
-            <svg id="eye-icon-hide" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-            </svg>
-        </button>
-    </div>
-</div>
-```
-
-### Langkah 2: Modifikasi View Register (`views/public/register.php`)
-Lakukan perubahan HTML yang persis sama pada `views/public/register.php` di bagian input password. 
-*Catatan Penting: Pastikan class CSS input memiliki `pr-12` (padding-right) agar teks yang diketik panjang tidak bertumpuk di bawah ikon mata.*
-
-### Langkah 3: Tambahkan Logika JavaScript (Frontend)
-Tambahkan kode JavaScript berikut ke bagian paling bawah di dalam fungsi `$(document).ready(...)` pada **kedua file berikut**: 
-1. `assets/js/pages/login.js`
-2. `assets/js/pages/register.js`
-
-```javascript
-// Fitur Toggle Show/Hide Password
-$('#toggle-password').on('click', function () {
-    const passwordInput = $('#password-input');
-    const eyeIconShow = $('#eye-icon-show');
-    const eyeIconHide = $('#eye-icon-hide');
-    
-    if (passwordInput.attr('type') === 'password') {
-        passwordInput.attr('type', 'text');
-        eyeIconShow.addClass('hidden');
-        eyeIconHide.removeClass('hidden');
-    } else {
-        passwordInput.attr('type', 'password');
-        eyeIconShow.removeClass('hidden');
-        eyeIconHide.addClass('hidden');
-    }
-});
-```
+## 🛑 Masalah Saat Ini
+File `setup_fresh.php` menggunakan direct link ke Unsplash (`https://images.unsplash.com/photo-...`). 
+Link eksternal ini sangat berisiko:
+1. **Author menghapus foto:** Jika fotografer menghapus foto tersebut dari Unsplash, link akan mengembalikan error 404 (Not Found).
+2. **Perubahan parameter URL:** Unsplash terkadang mengubah arsitektur URL atau parameter resize mereka.
+3. **Koneksi / Rate Limiting:** Server pengguna mungkin mengalami kendala koneksi ke server Unsplash saat demo dijalankan.
 
 ---
 
-## 🛠️ Tugas 2: Validasi Kekuatan Password (Pendaftaran)
+## 🛠️ Solusi & Tahapan Implementasi
 
-Sistem harus menolak pendaftaran jika password tidak memenuhi syarat: 
-- Minimal 8 karakter
-- Minimal 1 huruf besar (A-Z)
-- Minimal 1 huruf kecil (a-z)
-- Minimal 1 angka (0-9)
-- Minimal 1 simbol/karakter unik (!@#$% dsb.)
+Solusi terbaik dan paling permanen untuk mengatasi masalah ini adalah **mengunduh (download) semua gambar tersebut dan menyimpannya secara lokal di dalam repositori proyek**, lalu mengubah path di database agar mengarah ke file lokal tersebut. 
 
-### Langkah 1: Validasi Backend (PHP)
-Buka file `services/AuthFlowService.php`. Cari metode `register(array $data)`.
-Tambahkan validasi keamanan ini sebelum fungsi pengecekan persetujuan `agree_tos`.
+Sebagai lapisan keamanan tambahan (fallback), kita juga akan menambahkan mekanisme gambar *placeholder* bawaan.
 
+Berikut adalah langkah-langkah detail yang harus Anda implementasikan:
+
+### Tahap 1: Persiapan Direktori & Pengunduhan Gambar (Local Assets)
+
+1. **Buat Direktori Khusus:**
+   Buat sebuah folder baru di dalam direktori `assets` untuk menyimpan gambar-gambar dummy (seed data).
+   - Buat folder: `assets/images/seed/`
+   - Buat juga folder untuk gambar cadangan mutlak: `assets/images/placeholder/`
+
+2. **Unduh Semua Gambar dari `setup_fresh.php`:**
+   Buka file `setup_fresh.php` dan temukan semua URL `https://images.unsplash.com/...` (berada di bagian kueri `INSERT` untuk produk dan banner).
+   - Unduh setiap gambar tersebut satu per satu.
+   - Simpan ke dalam folder `assets/images/seed/`.
+   - **PENTING:** Beri nama file yang deskriptif dan seragam agar rapi. 
+     Contoh: `product-fashion-1.jpg`, `product-elektronik-1.jpg`, `banner-promo-1.jpg`.
+
+3. **Siapkan Gambar Fallback (Placeholder):**
+   Siapkan satu gambar default yang bagus (bisa berupa logo NusaBay dengan latar belakang elegan atau ilustrasi "Image Not Found" yang estetik).
+   - Simpan di `assets/images/placeholder/default-product.jpg`.
+
+### Tahap 2: Modifikasi `setup_fresh.php`
+
+Ubah semua data URL gambar pada sintaks `INSERT INTO` di file `setup_fresh.php`.
+
+**Sebelum:**
 ```php
-// Cek kompleksitas password
-if (
-    strlen($password) < 8 ||
-    !preg_match('/[A-Z]/', $password) ||
-    !preg_match('/[a-z]/', $password) ||
-    !preg_match('/[0-9]/', $password) ||
-    !preg_match('/[^a-zA-Z0-9]/', $password)
-) {
-    return $this->error(
-        'Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, serta simbol.', 
-        'index.php?page=register'
-    );
-}
+$stmtProd->execute([$cat_ids['fashion'], 'Kemeja Flannel Klasik Indigo', 'Deskripsi...', 189000.00, 15, 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500&auto=format&fit=crop&q=60']);
 ```
 
-### Langkah 2: Validasi Frontend (JavaScript)
-Meskipun ada validasi backend, kita juga perlu mencegah form disubmit dari awal jika password lemah. Buka `assets/js/pages/register.js` dan tambahkan validasi ini di dalam fungsi `$('#register-form').on('submit', function(e) { ... })` tepat **setelah `e.preventDefault();`**.
-
-```javascript
-const password = $('input[name="password"]').val();
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;
-
-if (!passwordRegex.test(password)) {
-    $('#alert-container').html(`
-        <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-            Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, serta simbol.
-        </div>
-    `);
-    return false; // Berhenti di sini, batalkan proses ajax
-}
+**Sesudah:**
+```php
+$stmtProd->execute([$cat_ids['fashion'], 'Kemeja Flannel Klasik Indigo', 'Deskripsi...', 189000.00, 15, 'assets/images/seed/product-fashion-1.jpg']);
 ```
+
+*Lakukan hal ini untuk **semua** produk dan banner yang ada di `setup_fresh.php`.*
+
+### Tahap 3: Implementasi Fallback Handler di Frontend (Jaring Pengaman)
+
+Meskipun gambar sudah lokal, file bisa saja tidak sengaja terhapus. Untuk memastikan UI tetap terlihat profesional dan tidak menampilkan ikon gambar pecah (broken image icon), tambahkan atribut `onerror` pada tag `<img />` di halaman publik.
+
+1. **Buka file view publik yang menampilkan produk/banner:**
+   - `views/public/home.php`
+   - `views/public/product_detail.php`
+   - `views/public/cart.php`
+   - (dan file lain yang menampilkan gambar dari database)
+
+2. **Modifikasi Tag Image (`<img>`):**
+   Ubah tag image dengan menambahkan penanganan error JavaScript sebaris.
+
+   **Contoh Implementasi:**
+   ```html
+   <img 
+       src="<?= htmlspecialchars($product['image_url'] ?? 'assets/images/placeholder/default-product.jpg') ?>" 
+       alt="<?= htmlspecialchars($product['name']) ?>"
+       onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.jpg';"
+       class="w-full h-full object-cover ..."
+   >
+   ```
+   *Penjelasan: `this.onerror=null` mencegah infinite loop jika gambar placeholder ternyata juga hilang.*
+
+### Tahap 4: Script Verifikasi (Opsional untuk CI/CD atau Pengecekan Mandiri)
+
+Buat sebuah script PHP sederhana bernama `check_seed_images.php` di root direktori (atau folder `scripts/`) yang membaca `setup_fresh.php`, mengekstrak semua path gambar (`assets/images/seed/...`), dan mengecek apakah file tersebut benar-benar ada secara fisik (`file_exists()`). Script ini berguna untuk QA memastikan tidak ada gambar yang lupa di-commit.
 
 ---
 
-## ✅ Daftar Periksa (Checklist) QA
-1. **[ ]** Buka halaman Login. Ketik password, klik ikon mata. Teks password harus terlihat. Klik lagi, harus kembali tersembunyi.
-2. **[ ]** Lakukan hal yang sama (poin 1) di halaman Register.
-3. **[ ]** Coba mendaftar akun baru dengan password `12345` (kurang dari 8 char). Pastikan muncul pesan error.
-4. **[ ]** Coba daftar dengan `passwordkecil` (hanya huruf kecil). Pastikan muncul pesan error.
-5. **[ ]** Coba daftar dengan `PasswordBesarKecil1` (tanpa simbol). Pastikan muncul pesan error.
-6. **[ ]** Coba daftar dengan password kuat `P@ssword123`. Pastikan pendaftaran lolos validasi keamanan dan diarahkan ke halaman verifikasi email.
+## ✅ Daftar Periksa (Checklist) QA / Validasi
+
+1. **[ ]** Folder `assets/images/seed/` beserta isinya telah terbuat dan di-commit ke Git.
+2. **[ ]** File `setup_fresh.php` tidak lagi mengandung domain `images.unsplash.com`, melainkan path lokal.
+3. **[ ]** Eksekusi ulang `php setup_fresh.php` pada database percobaan, pastikan berjalan lancar.
+4. **[ ]** Buka halaman Beranda (`home.php`). Pastikan semua gambar produk dan banner muncul dengan sempurna tanpa koneksi internet yang kencang (karena sudah di-host lokal).
+5. **[ ]** Tes fitur Fallback: Coba ubah nama salah satu file gambar di `assets/images/seed/` untuk mensimulasikan gambar hilang. Refresh halaman web, pastikan yang muncul adalah gambar placeholder (tidak ada icon image pecah).

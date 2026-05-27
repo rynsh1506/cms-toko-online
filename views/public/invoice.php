@@ -170,7 +170,7 @@
                     <?php foreach ($items as $item): ?>
                         <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                             <div class="flex items-center space-x-4">
-                                <img src="<?= htmlspecialchars($item['image_url'] ?? 'https://placehold.co/100') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-12 w-12 object-cover rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                <img src="<?= htmlspecialchars($item['image_url'] ?? 'assets/images/placeholder/default-product.png') ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="h-12 w-12 object-cover rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm" onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.png';">
                                 <div>
                                     <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs"><?= htmlspecialchars($item['name']) ?></h4>
                                     <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">Rp <?= number_format($item['price'], 0, ',', '.') ?> x <?= $item['quantity'] ?></p>

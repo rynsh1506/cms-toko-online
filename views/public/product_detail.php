@@ -130,8 +130,9 @@ if (isset($_SESSION['cart'])) {
                 <div class="space-y-4">
                     <div class="relative rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm aspect-square">
                         <img id="main-product-img"
-                             src="<?= htmlspecialchars($product['image_url'] ?? 'https://placehold.co/600x600') ?>"
+                             src="<?= htmlspecialchars($product['image_url'] ?? 'assets/images/placeholder/default-product.png') ?>"
                              alt="<?= htmlspecialchars($product['name']) ?>"
+                             onerror="this.onerror=null;this.src='assets/images/placeholder/default-product.png';"
                              class="h-full w-full object-cover">
                         <?php if ($initial_stock <= 0): ?>
                             <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center">
