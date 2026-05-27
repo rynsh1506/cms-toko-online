@@ -171,7 +171,7 @@
     </script>
 <script src="assets/js/sweetalert2.all.min.js"></script>
 
-<div id="variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+<div id="variant-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto font-sans">
         <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
             <div>
@@ -221,7 +221,7 @@
 </div>
 
 <!-- Modal Edit Variant -->
-<div id="edit-variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+<div id="edit-variant-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md font-sans">
         <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
             <h3 class="text-lg font-extrabold text-slate-800 dark:text-white font-display">Edit Varian</h3>
