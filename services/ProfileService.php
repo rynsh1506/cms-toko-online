@@ -13,6 +13,7 @@ class ProfileService
         $name = sanitize_input($data['name'] ?? '');
         $email = sanitize_input($data['email'] ?? '');
         $phone = sanitize_input($data['phone'] ?? '');
+        $address = sanitize_input($data['address'] ?? '');
         $bio = sanitize_input($data['bio'] ?? '');
 
         if (empty($name) || empty($email)) throw new \Exception('Nama dan Email wajib diisi.');
@@ -56,11 +57,11 @@ class ProfileService
         }
 
         if ($avatar_url) {
-            $stmt = $this->pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ?, bio = ?, avatar_url = ? WHERE id = ?");
-            $stmt->execute([$name, $email, $phone, $bio, $avatar_url, $user_id]);
+            $stmt = $this->pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ?, address = ?, bio = ?, avatar_url = ? WHERE id = ?");
+            $stmt->execute([$name, $email, $phone, $address, $bio, $avatar_url, $user_id]);
         } else {
-            $stmt = $this->pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ?, bio = ? WHERE id = ?");
-            $stmt->execute([$name, $email, $phone, $bio, $user_id]);
+            $stmt = $this->pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ?, address = ?, bio = ? WHERE id = ?");
+            $stmt->execute([$name, $email, $phone, $address, $bio, $user_id]);
         }
     }
 

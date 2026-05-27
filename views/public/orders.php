@@ -91,6 +91,8 @@ $orders = $stmt->fetchAll();
                 <div class="flex items-center space-x-6">
                     <a href="index.php?page=home" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Beranda</a>
                     <a href="index.php?page=cart" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Keranjang</a>
+                    <a href="index.php?page=profile" class="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Profil Saya</a>
+                    <a href="index.php?page=auth_process&action=logout" class="text-sm font-bold text-red-500 hover:text-red-700 transition">Logout</a>
 
                     <!-- Dark mode toggle -->
                     <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition">

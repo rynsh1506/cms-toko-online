@@ -3,6 +3,7 @@ require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../services/LandingService.php';
 require_once __DIR__ . '/../services/OrderService.php';
 require_once __DIR__ . '/../services/ProductService.php';
+require_once __DIR__ . '/../services/AuthService.php';
 
 class CheckoutViewController extends BaseController
 {
@@ -93,6 +94,10 @@ class CheckoutViewController extends BaseController
             $_SESSION['error'] = "Pesanan tidak valid, silakan ulangi.";
             redirect('index.php?page=cart');
         }
+
+        // Ambil data profil user untuk auto-fill di checkout
+        $authService = new AuthService($pdo);
+        $user = $authService->getUserById($_SESSION['user_id']);
 
         require __DIR__ . '/../views/public/checkout.php';
     }

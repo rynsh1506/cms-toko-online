@@ -170,6 +170,7 @@ if (!empty($_SESSION['cart'])) {
 
                     <?php if (isAuth()): ?>
                         <a href="index.php?page=orders" class="hidden sm:inline text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Pesanan Saya</a>
+                        <a href="index.php?page=profile" class="hidden sm:inline text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Profil Saya</a>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
                             <a href="index.php?page=admin" class="hidden md:inline text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-xl transition">Admin Panel</a>
                         <?php endif; ?>

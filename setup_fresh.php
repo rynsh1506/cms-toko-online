@@ -28,6 +28,7 @@ try {
         email_verified_at DATETIME DEFAULT NULL,
         verification_token VARCHAR(100) DEFAULT NULL,
         phone VARCHAR(50) DEFAULT NULL,
+        address TEXT DEFAULT NULL,
         bio TEXT DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

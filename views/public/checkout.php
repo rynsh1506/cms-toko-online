@@ -102,7 +102,7 @@
 
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Nomor WhatsApp / HP</label>
-                        <input type="text" name="customer_phone" required placeholder="081234567890"
+                        <input type="text" name="customer_phone" required value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="081234567890"
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
                         <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Harap gunakan nomor aktif untuk konfirmasi pesanan via WhatsApp.</p>
                     </div>
@@ -110,7 +110,7 @@
                     <div>
                         <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5">Alamat Lengkap</label>
                         <textarea name="customer_address" required rows="3" placeholder="Jalan, RT/RW, Kecamatan, Kota, Kode Pos"
-                            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm"></textarea>
+                            class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm"><?= htmlspecialchars($user['address'] ?? '') ?></textarea>
                     </div>
 
                     <div>
