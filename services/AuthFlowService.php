@@ -21,6 +21,20 @@ class AuthFlowService
             return $this->error('Semua field harus diisi!', 'index.php?page=register');
         }
 
+        // Backend password complexity check
+        if (
+            strlen($password) < 8 ||
+            !preg_match('/[A-Z]/', $password) ||
+            !preg_match('/[a-z]/', $password) ||
+            !preg_match('/[0-9]/', $password) ||
+            !preg_match('/[^a-zA-Z0-9]/', $password)
+        ) {
+            return $this->error(
+                'Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, serta simbol.',
+                'index.php?page=register'
+            );
+        }
+
         if (!$agreeTos) {
             return $this->error('Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi.', 'index.php?page=register');
         }
