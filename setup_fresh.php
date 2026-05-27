@@ -219,35 +219,35 @@ try {
         VALUES (?, ?, ?, ?, ?, ?)
     ");
 
-    $stmtProd->execute([$cat_ids['fashion'], 'Kemeja Flannel Klasik Indigo', 'Kemeja flannel lengan panjang dengan bahan katun premium lembut dan nyaman dipakai sehari-hari.', 189000.00, 15, 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Sepatu Sneakers Casual Leather', 'Sneakers kasual unisex dengan kulit sintetis premium. Ringan, empuk, dan tangguh.', 349000.00, 8, 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Tas Ransel Rolltop Minimalist', 'Tas ransel tahan air berkapasitas besar dengan slot laptop 15.6 inch. Ergonomis dan modern.', 275000.00, 5, 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Kaos Polos Cotton Combed 30s Heavy Black', 'Kaos polos adem menyerap keringat dengan pilihan jahitan rapi standard distro modern.', 59000.00, 50, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Jaket Bomber Premium Windbreaker', 'Jaket bomber kasual dengan bahan parasut berkualitas tinggi, tahan angin dan cipratan air.', 299000.00, 10, 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Celana Chino Slim Fit Khaki', 'Celana chino katun strech yang elastis dan pas di kaki. Cocok untuk acara formal maupun santai.', 175000.00, 20, 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Topi Baseball Corduroy Retro', 'Topi baseball retro berbahan korduroi premium dengan ukuran yang mudah disesuaikan.', 65000.00, 30, 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['fashion'], 'Kacamata Hitam Polarized Classic', 'Kacamata hitam polarized klasik dengan pelindung UV400, nyaman untuk aktivitas luar ruangan.', 125000.00, 15, 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&auto=format&fit=crop&q=60']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Kemeja Flannel Klasik Indigo', 'Kemeja flannel lengan panjang dengan bahan katun premium lembut dan nyaman dipakai sehari-hari.', 189000.00, 15, 'assets/images/seed/product-fashion-1-kemeja-flannel.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Sepatu Sneakers Casual Leather', 'Sneakers kasual unisex dengan kulit sintetis premium. Ringan, empuk, dan tangguh.', 349000.00, 8, 'assets/images/seed/product-fashion-2-sneakers.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Tas Ransel Rolltop Minimalist', 'Tas ransel tahan air berkapasitas besar dengan slot laptop 15.6 inch. Ergonomis dan modern.', 275000.00, 5, 'assets/images/seed/product-fashion-3-tas-ransel.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Kaos Polos Cotton Combed 30s Heavy Black', 'Kaos polos adem menyerap keringat dengan pilihan jahitan rapi standard distro modern.', 59000.00, 50, 'assets/images/seed/product-fashion-4-kaos-polos.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Jaket Bomber Premium Windbreaker', 'Jaket bomber kasual dengan bahan parasut berkualitas tinggi, tahan angin dan cipratan air.', 299000.00, 10, 'assets/images/seed/product-fashion-5-jaket-bomber.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Celana Chino Slim Fit Khaki', 'Celana chino katun strech yang elastis dan pas di kaki. Cocok untuk acara formal maupun santai.', 175000.00, 20, 'assets/images/seed/product-fashion-6-celana-chino.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Topi Baseball Corduroy Retro', 'Topi baseball retro berbahan korduroi premium dengan ukuran yang mudah disesuaikan.', 65000.00, 30, 'assets/images/seed/product-fashion-7-topi-baseball.jpg']);
+    $stmtProd->execute([$cat_ids['fashion'], 'Kacamata Hitam Polarized Classic', 'Kacamata hitam polarized klasik dengan pelindung UV400, nyaman untuk aktivitas luar ruangan.', 125000.00, 15, 'assets/images/seed/product-fashion-8-kacamata.jpg']);
     
-    $stmtProd->execute([$cat_ids['elektronik'], 'Smartwatch Active Pro NFC', 'Smartwatch sport premium dengan ketahanan baterai 14 hari, sensor detak jantung, dan layar AMOLED.', 899000.00, 12, 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['elektronik'], 'TWS Earphones ANC Hi-Res Audio', 'Earphone TWS dengan active noise cancelling canggih dan suara bass yang jernih memukau.', 45000.00, 18, 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['elektronik'], 'Charger Baseus GaN5 Pro 65W', 'Charger GaN adapter berkecepatan tinggi dengan 3 port output untuk laptop, tablet, dan smartphone.', 350000.00, 25, 'https://images.unsplash.com/photo-1622445262465-2481c4574875?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['elektronik'], 'Mouse Wireless Silent Click', 'Mouse nirkabel ergonomis dengan teknologi tombol senyap dan sensitivitas tinggi.', 120000.00, 40, 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['elektronik'], 'Keyboard Mechanical RGB 60%', 'Keyboard mekanikal kompak 60 persen dengan lampu latar RGB dinamis dan switch yang responsif.', 580000.00, 14, 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['elektronik'], 'Powerbank 20000mAh Power Delivery', 'Pengisi daya portabel kapasitas besar 20000mAh yang mendukung pengisian cepat dua arah.', 299000.00, 22, 'https://images.unsplash.com/photo-1609592424089-98642bbec402?w=500&auto=format&fit=crop&q=60']);
+    $stmtProd->execute([$cat_ids['elektronik'], 'Smartwatch Active Pro NFC', 'Smartwatch sport premium dengan ketahanan baterai 14 hari, sensor detak jantung, dan layar AMOLED.', 899000.00, 12, 'assets/images/seed/product-elektronik-1-smartwatch.jpg']);
+    $stmtProd->execute([$cat_ids['elektronik'], 'TWS Earphones ANC Hi-Res Audio', 'Earphone TWS dengan active noise cancelling canggih dan suara bass yang jernih memukau.', 45000.00, 18, 'assets/images/seed/product-elektronik-2-tws-earphones.jpg']);
+    $stmtProd->execute([$cat_ids['elektronik'], 'Charger Baseus GaN5 Pro 65W', 'Charger GaN adapter berkecepatan tinggi dengan 3 port output untuk laptop, tablet, dan smartphone.', 350000.00, 25, 'assets/images/seed/product-elektronik-3-charger.jpg']);
+    $stmtProd->execute([$cat_ids['elektronik'], 'Mouse Wireless Silent Click', 'Mouse nirkabel ergonomis dengan teknologi tombol senyap dan sensitivitas tinggi.', 120000.00, 40, 'assets/images/seed/product-elektronik-4-mouse.jpg']);
+    $stmtProd->execute([$cat_ids['elektronik'], 'Keyboard Mechanical RGB 60%', 'Keyboard mekanikal kompak 60 persen dengan lampu latar RGB dinamis dan switch yang responsif.', 580000.00, 14, 'assets/images/seed/product-elektronik-5-keyboard.jpg']);
+    $stmtProd->execute([$cat_ids['elektronik'], 'Powerbank 20000mAh Power Delivery', 'Pengisi daya portabel kapasitas besar 20000mAh yang mendukung pengisian cepat dua arah.', 299000.00, 22, 'assets/images/seed/product-elektronik-6-powerbank.jpg']);
     
-    $stmtProd->execute([$cat_ids['buku-alat-tulis'], 'Agenda Kerja Leather Executive A5', 'Buku agenda kerja hardcover premium A5 dengan kertas 100gsm ramah mata.', 95000.00, 25, 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['buku-alat-tulis'], 'Pen Pulpen Gel Parker Jotter Classic', 'Pulpen gel mewah Parker dengan goresan tinta hitam pekat yang lancar dan desain elegan.', 150000.00, 10, 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['buku-alat-tulis'], 'Notebook Grid Journal Dotted', 'Buku catatan harian bergaris titik/grid berukuran portabel, ideal untuk membuat jurnal pelacak.', 45000.00, 35, 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=500&auto=format&fit=crop&q=60']);
+    $stmtProd->execute([$cat_ids['buku-alat-tulis'], 'Agenda Kerja Leather Executive A5', 'Buku agenda kerja hardcover premium A5 dengan kertas 100gsm ramah mata.', 95000.00, 25, 'assets/images/seed/product-buku-1-agenda.jpg']);
+    $stmtProd->execute([$cat_ids['buku-alat-tulis'], 'Pen Pulpen Gel Parker Jotter Classic', 'Pulpen gel mewah Parker dengan goresan tinta hitam pekat yang lancar dan desain elegan.', 150000.00, 10, 'assets/images/seed/product-buku-2-pulpen.jpg']);
+    $stmtProd->execute([$cat_ids['buku-alat-tulis'], 'Notebook Grid Journal Dotted', 'Buku catatan harian bergaris titik/grid berukuran portabel, ideal untuk membuat jurnal pelacak.', 45000.00, 35, 'assets/images/seed/product-buku-3-notebook.jpg']);
     
-    $stmtProd->execute([$cat_ids['makanan-minuman'], 'Kopi Arabika Gayo Single Origin 250g', 'Biji kopi arabika Gayo pilihan yang disangrai dengan profil medium, memberikan rasa asam buah yang seimbang.', 85000.00, 15, 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['makanan-minuman'], 'Cokelat Hitam Premium Dark Chocolate 85%', 'Batangan cokelat hitam premium dengan kandungan kakao 85% dari perkebunan lokal pilihan.', 42000.00, 28, 'https://images.unsplash.com/photo-1548907040-4d42b52145ca?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['makanan-minuman'], 'Teh Hijau Matcha Jepang Organik 100g', 'Bubuk matcha teh hijau organik asli dari Kyoto, Jepang. Sangat cocok untuk minuman hangat maupun kue.', 110000.00, 12, 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=500&auto=format&fit=crop&q=60']);
+    $stmtProd->execute([$cat_ids['makanan-minuman'], 'Kopi Arabika Gayo Single Origin 250g', 'Biji kopi arabika Gayo pilihan yang disangrai dengan profil medium, memberikan rasa asam buah yang seimbang.', 85000.00, 15, 'assets/images/seed/product-makanan-1-kopi.jpg']);
+    $stmtProd->execute([$cat_ids['makanan-minuman'], 'Cokelat Hitam Premium Dark Chocolate 85%', 'Batangan cokelat hitam premium dengan kandungan kakao 85% dari perkebunan lokal pilihan.', 42000.00, 28, 'assets/images/seed/product-makanan-2-cokelat.jpg']);
+    $stmtProd->execute([$cat_ids['makanan-minuman'], 'Teh Hijau Matcha Jepang Organik 100g', 'Bubuk matcha teh hijau organik asli dari Kyoto, Jepang. Sangat cocok untuk minuman hangat maupun kue.', 110000.00, 12, 'assets/images/seed/product-makanan-3-matcha.jpg']);
     
-    $stmtProd->execute([$cat_ids['rumah-tangga'], 'Botol Minum Tumbler Termos Stainless 500ml', 'Termos tumbler minimalis dengan isolasi vakum ganda, menjaga suhu minuman panas atau dingin hingga 12 jam.', 135000.00, 30, 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['rumah-tangga'], 'Lampu Meja LED Minimalis Dimmable', 'Lampu meja baca dengan pengaturan tingkat terang cahaya sentuh, hemat daya dan pelindung mata.', 199000.00, 16, 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&auto=format&fit=crop&q=60']);
+    $stmtProd->execute([$cat_ids['rumah-tangga'], 'Botol Minum Tumbler Termos Stainless 500ml', 'Termos tumbler minimalis dengan isolasi vakum ganda, menjaga suhu minuman panas atau dingin hingga 12 jam.', 135000.00, 30, 'assets/images/seed/product-rumah-1-tumbler.jpg']);
+    $stmtProd->execute([$cat_ids['rumah-tangga'], 'Lampu Meja LED Minimalis Dimmable', 'Lampu meja baca dengan pengaturan tingkat terang cahaya sentuh, hemat daya dan pelindung mata.', 199000.00, 16, 'assets/images/seed/product-rumah-2-lampu-meja.jpg']);
     
-    $stmtProd->execute([$cat_ids['olahraga'], 'Matras Yoga Anti-Slip NBR 10mm', 'Matras yoga tebal 10mm dengan bahan NBR anti-slip, memberikan kenyamanan sendi saat berolahraga.', 125000.00, 25, 'https://images.unsplash.com/photo-1592432678016-e910b452f9a2?w=500&auto=format&fit=crop&q=60']);
-    $stmtProd->execute([$cat_ids['olahraga'], 'Tali Skipping Digital dengan Counter', 'Lompat tali pintar dengan penghitung lompatan digital otomatis dan kalori, pegangan anti-selip.', 75000.00, 50, 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=60']);
+    $stmtProd->execute([$cat_ids['olahraga'], 'Matras Yoga Anti-Slip NBR 10mm', 'Matras yoga tebal 10mm dengan bahan NBR anti-slip, memberikan kenyamanan sendi saat berolahraga.', 125000.00, 25, 'assets/images/seed/product-olahraga-1-matras-yoga.jpg']);
+    $stmtProd->execute([$cat_ids['olahraga'], 'Tali Skipping Digital dengan Counter', 'Lompat tali pintar dengan penghitung lompatan digital otomatis dan kalori, pegangan anti-selip.', 75000.00, 50, 'assets/images/seed/product-olahraga-2-tali-skipping.jpg']);
     
     echo "- Seed products berhasil.<br>";
 
@@ -317,8 +317,8 @@ try {
     // Seed Banners
     $pdo->exec("
         INSERT INTO banners (title, description, image_url, link_url, is_active, sort_order) VALUES
-        ('Diskon Spesial Gajian', 'Gunakan kode promo NUSA10 dan dapatkan diskon belanja ekstra 10%.', 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80', '#products', 1, 1),
-        ('Koleksi Fashion Outfit Baru', 'Outfit kekinian stylish trend 2026 kini telah hadir.', 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&auto=format&fit=crop&q=80', '#products', 1, 2)
+        ('Diskon Spesial Gajian', 'Gunakan kode promo NUSA10 dan dapatkan diskon belanja ekstra 10%.', 'assets/images/seed/banner-promo-1.jpg', '#products', 1, 1),
+        ('Koleksi Fashion Outfit Baru', 'Outfit kekinian stylish trend 2026 kini telah hadir.', 'assets/images/seed/banner-fashion-2.jpg', '#products', 1, 2)
     ");
     echo "- Seed banners berhasil.<br>";
 
