@@ -30,6 +30,8 @@ try {
         phone VARCHAR(50) DEFAULT NULL,
         address TEXT DEFAULT NULL,
         bio TEXT DEFAULT NULL,
+        reset_token VARCHAR(100) DEFAULT NULL,
+        reset_token_expires_at DATETIME DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");

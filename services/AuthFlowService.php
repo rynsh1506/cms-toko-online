@@ -158,4 +158,155 @@ class AuthFlowService
             'redirect_url' => $redirectUrl,
         ] + $extra;
     }
+
+    // ===== FORGOT PASSWORD FLOW =====
+
+    public function forgotPassword(array $data): array
+    {
+        $email = sanitize_input($data['email'] ?? '');
+
+        if ($email === '') {
+            return $this->error('Email harus diisi!', 'index.php?page=forgot_password');
+        }
+
+        $user = $this->authService->getUserByEmail($email);
+        if (!$user) {
+            return $this->error('Email tidak terdaftar di sistem kami.', 'index.php?page=forgot_password');
+        }
+
+        if ($user['email_verified_at'] === null) {
+            return $this->error('Akun belum diverifikasi. Silakan verifikasi email terlebih dahulu.', 'index.php?page=verify&email=' . urlencode($email));
+        }
+
+        $otp = sprintf('%06d', random_int(100000, 999999));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        $this->authService->setResetToken($user['id'], $otp, $expiresAt);
+        $this->sendResetMail($email, $user['name'], $otp);
+
+        return $this->success(
+            'Kode OTP telah dikirim ke email Anda.',
+            'index.php?page=reset_verify',
+            [
+                'flash' => 'Kode reset password telah dikirim ke email Anda. Berlaku 15 menit.',
+                'session' => ['reset_email' => $email],
+            ]
+        );
+    }
+
+    public function resendResetCode(array $data): array
+    {
+        $email = sanitize_input($data['email'] ?? '');
+
+        if ($email === '') {
+            return $this->error('Email harus diisi!', 'index.php?page=reset_verify');
+        }
+
+        $user = $this->authService->getUserByEmail($email);
+        if (!$user) {
+            return $this->error('Email tidak terdaftar!', 'index.php?page=reset_verify');
+        }
+
+        $otp = sprintf('%06d', random_int(100000, 999999));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        $this->authService->setResetToken($user['id'], $otp, $expiresAt);
+        $this->sendResetMail($email, $user['name'], $otp, true);
+
+        return $this->success(
+            'Kode OTP baru berhasil dikirim!',
+            'index.php?page=reset_verify',
+            ['flash' => 'Kode reset password baru telah dikirim.']
+        );
+    }
+
+    public function verifyResetCode(array $data): array
+    {
+        $email = sanitize_input($data['email'] ?? '');
+        $code = sanitize_input($data['code'] ?? '');
+
+        if ($email === '' || $code === '') {
+            return $this->error('Email dan kode OTP harus diisi!', 'index.php?page=reset_verify');
+        }
+
+        $user = $this->authService->getUserByResetToken($email, $code);
+        if (!$user) {
+            return $this->error('Kode OTP salah atau sudah kedaluwarsa!', 'index.php?page=reset_verify');
+        }
+
+        // Generate a temporary session token to authorize the password reset form
+        $resetSession = bin2hex(random_bytes(32));
+
+        return $this->success(
+            'Kode OTP valid! Silakan buat password baru.',
+            'index.php?page=reset_password',
+            [
+                'session' => [
+                    'reset_email' => $email,
+                    'reset_authorized' => $resetSession,
+                ],
+            ]
+        );
+    }
+
+    public function resetPassword(array $data): array
+    {
+        $email = sanitize_input($data['email'] ?? '');
+        $password = $data['password'] ?? '';
+        $passwordConfirm = $data['password_confirm'] ?? '';
+
+        if ($email === '' || $password === '') {
+            return $this->error('Semua field harus diisi!', 'index.php?page=reset_password');
+        }
+
+        if ($password !== $passwordConfirm) {
+            return $this->error('Konfirmasi password tidak cocok!', 'index.php?page=reset_password');
+        }
+
+        // Password complexity check (same as registration)
+        if (
+            strlen($password) < 8 ||
+            !preg_match('/[A-Z]/', $password) ||
+            !preg_match('/[a-z]/', $password) ||
+            !preg_match('/[0-9]/', $password) ||
+            !preg_match('/[^a-zA-Z0-9]/', $password)
+        ) {
+            return $this->error(
+                'Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, serta simbol.',
+                'index.php?page=reset_password'
+            );
+        }
+
+        $user = $this->authService->getUserByEmail($email);
+        if (!$user) {
+            return $this->error('Email tidak ditemukan!', 'index.php?page=forgot_password');
+        }
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $this->authService->updatePassword($user['id'], $hashedPassword);
+        $this->authService->clearResetToken($user['id']);
+
+        // Clear reset session data
+        unset($_SESSION['reset_email'], $_SESSION['reset_authorized']);
+
+        return $this->success(
+            'Password berhasil direset! Silakan login dengan password baru.',
+            'index.php?page=login',
+            ['flash' => 'Password Anda berhasil diubah. Silakan masuk dengan password baru.']
+        );
+    }
+
+    private function sendResetMail(string $email, string $name, string $token, bool $resend = false): void
+    {
+        $subject = $resend
+            ? 'Reset Password NusaBay (Kirim Ulang)'
+            : 'Reset Password Akun NusaBay';
+
+        $body = "Halo {$name},\n\n"
+            . ($resend ? "Berikut adalah Kode Reset Password baru Anda:\n\n" : "Anda telah meminta untuk mereset password akun NusaBay Anda.\nSilakan masukkan kode berikut untuk melanjutkan:\n\n")
+            . "KODE: {$token}\n\n"
+            . "Kode ini berlaku selama 15 menit.\n"
+            . "Jika Anda tidak meminta reset password, abaikan email ini.\n\n"
+            . "Salam,\nNusaBay Team";
+
+        sendMail($email, $subject, $body);
+    }
 }

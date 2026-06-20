@@ -86,6 +86,7 @@ $controllerRoutes = [
     'order_cancel' => ['OrderCancelController'],
     'profile' => ['ProfileViewController'],
     'profile_process' => ['UserProfileController'],
+    'forgot_password_process' => ['ForgotPasswordController'],
     'admin' => ['AdminDashboardController'],
     'admin_product_process' => ['ProductController'],
     'admin_profile_process' => ['ProfileController'],
@@ -108,6 +109,9 @@ $publicPageRoutes = [
     'tos' => 'tos.php',
     'privacy' => 'privacy.php',
     'faq' => 'faq.php',
+    'forgot_password' => 'forgot_password.php',
+    'reset_verify' => 'reset_verify.php',
+    'reset_password' => 'reset_password.php',
 ];
 
 $adminPageRoutes = [
