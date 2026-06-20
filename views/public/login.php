@@ -120,6 +120,10 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
                 </div>
             </div>
 
+            <div class="text-right -mt-1">
+                <a href="index.php?page=forgot_password" class="text-xs text-primary font-bold hover:underline">Lupa Password?</a>
+            </div>
+
             <button type="submit" id="btn-login"
                 class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 active:scale-[0.98] transition shadow-lg shadow-primary/10 text-sm">
                 Masuk

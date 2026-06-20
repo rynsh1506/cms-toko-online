@@ -98,4 +98,37 @@ class AuthService {
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
+
+    /**
+     * Store a password reset OTP token with expiration.
+     */
+    public function setResetToken($userId, $token, $expiresAt) {
+        $stmt = $this->pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expires_at = ? WHERE id = ?");
+        return $stmt->execute([$token, $expiresAt, $userId]);
+    }
+
+    /**
+     * Get user by email and valid (non-expired) reset token.
+     */
+    public function getUserByResetToken($email, $token) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? AND reset_token = ? AND reset_token_expires_at > NOW()");
+        $stmt->execute([$email, $token]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Update user's password.
+     */
+    public function updatePassword($userId, $newHashedPassword) {
+        $stmt = $this->pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+        return $stmt->execute([$newHashedPassword, $userId]);
+    }
+
+    /**
+     * Clear the reset token after successful password change.
+     */
+    public function clearResetToken($userId) {
+        $stmt = $this->pdo->prepare("UPDATE users SET reset_token = NULL, reset_token_expires_at = NULL WHERE id = ?");
+        return $stmt->execute([$userId]);
+    }
 }
