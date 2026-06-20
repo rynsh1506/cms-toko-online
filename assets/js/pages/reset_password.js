@@ -1,53 +1,104 @@
 $(document).ready(function() {
     // Show/Hide Password Toggle
-    $('#toggle-password').on('click', function() {
-        const input = $('#password-input');
-        const show = $('#eye-icon-show');
-        const hide = $('#eye-icon-hide');
+    $('.toggle-password').on('click', function() {
+        const targetId = $(this).data('target');
+        const input = $('#' + targetId);
+        const showIcon = $(this).find('.eye-icon-show');
+        const hideIcon = $(this).find('.eye-icon-hide');
+        
         if (input.attr('type') === 'password') {
             input.attr('type', 'text');
-            show.addClass('hidden');
-            hide.removeClass('hidden');
+            showIcon.addClass('hidden');
+            hideIcon.removeClass('hidden');
         } else {
             input.attr('type', 'password');
-            show.removeClass('hidden');
-            hide.addClass('hidden');
+            showIcon.removeClass('hidden');
+            hideIcon.addClass('hidden');
         }
     });
 
-    $('#toggle-password-confirm').on('click', function() {
-        const input = $('#password-confirm-input');
-        const show = $('#eye-icon-show-confirm');
-        const hide = $('#eye-icon-hide-confirm');
-        if (input.attr('type') === 'password') {
-            input.attr('type', 'text');
-            show.addClass('hidden');
-            hide.removeClass('hidden');
-        } else {
-            input.attr('type', 'password');
-            show.removeClass('hidden');
-            hide.addClass('hidden');
-        }
-    });
+    // Real-time password strength indicator and validation
+    $('#password, #password_confirmation').on('input', function() {
+        const pw = $('#password').val();
+        const pwConf = $('#password_confirmation').val();
+        
+        // update rules
+        const hasLength = pw.length >= 8;
+        const hasUpperAndLower = /[A-Z]/.test(pw) && /[a-z]/.test(pw);
+        const hasNumber = /[0-9]/.test(pw);
+        const hasSpecial = /[^a-zA-Z0-9]/.test(pw);
 
-    // Real-time password strength indicator
-    $('#password-input').on('input', function() {
-        const pw = $(this).val();
-        updateRule('#rule-length', pw.length >= 8);
-        updateRule('#rule-upper', /[A-Z]/.test(pw));
-        updateRule('#rule-lower', /[a-z]/.test(pw));
-        updateRule('#rule-number', /[0-9]/.test(pw));
-        updateRule('#rule-symbol', /[^a-zA-Z0-9]/.test(pw));
+        updateRule('#req-length', hasLength);
+        updateRule('#req-upper', hasUpperAndLower);
+        updateRule('#req-number', hasNumber);
+        updateRule('#req-special', hasSpecial);
+
+        // update strength indicator
+        let strength = 0;
+        if (hasLength) strength++;
+        if (hasUpperAndLower) strength++;
+        if (hasNumber) strength++;
+        if (hasSpecial) strength++;
+
+        if (pw.length > 0) {
+            $('#password-strength-container').show();
+            updateStrengthBars(strength);
+        } else {
+            $('#password-strength-container').hide();
+        }
+
+        // enable/disable submit button
+        if (strength === 4 && pw === pwConf) {
+            $('#btn-save-password').prop('disabled', false);
+        } else {
+            $('#btn-save-password').prop('disabled', true);
+        }
     });
 
     function updateRule(selector, passed) {
-        const dot = $(selector).find('span');
+        const li = $(selector);
+        const svg = li.find('svg');
         if (passed) {
-            dot.removeClass('bg-slate-300 dark:bg-slate-700').addClass('bg-emerald-500');
-            $(selector).removeClass('text-slate-400 dark:text-slate-500').addClass('text-emerald-600 dark:text-emerald-400');
+            li.removeClass('text-slate-600 dark:text-slate-400').addClass('text-emerald-600 dark:text-emerald-400 font-medium');
+            svg.removeClass('text-slate-300 dark:text-slate-600').addClass('text-emerald-500');
         } else {
-            dot.removeClass('bg-emerald-500').addClass('bg-slate-300 dark:bg-slate-700');
-            $(selector).removeClass('text-emerald-600 dark:text-emerald-400').addClass('text-slate-400 dark:text-slate-500');
+            li.removeClass('text-emerald-600 dark:text-emerald-400 font-medium').addClass('text-slate-600 dark:text-slate-400');
+            svg.removeClass('text-emerald-500').addClass('text-slate-300 dark:text-slate-600');
+        }
+    }
+
+    function updateStrengthBars(strength) {
+        const bars = [$('#strength-bar-1'), $('#strength-bar-2'), $('#strength-bar-3'), $('#strength-bar-4')];
+        const text = $('#strength-text');
+
+        // Reset classes
+        bars.forEach(bar => bar.removeClass('bg-rose-500 bg-amber-500 bg-emerald-500 bg-indigo-500'));
+
+        switch(strength) {
+            case 1:
+                bars[0].addClass('bg-rose-500');
+                text.text('Sangat Lemah').removeClass('text-amber-500 text-emerald-500 text-indigo-500').addClass('text-rose-500');
+                break;
+            case 2:
+                bars[0].addClass('bg-amber-500');
+                bars[1].addClass('bg-amber-500');
+                text.text('Lemah').removeClass('text-rose-500 text-emerald-500 text-indigo-500').addClass('text-amber-500');
+                break;
+            case 3:
+                bars[0].addClass('bg-emerald-500');
+                bars[1].addClass('bg-emerald-500');
+                bars[2].addClass('bg-emerald-500');
+                text.text('Cukup Kuat').removeClass('text-rose-500 text-amber-500 text-indigo-500').addClass('text-emerald-500');
+                break;
+            case 4:
+                bars[0].addClass('bg-indigo-500');
+                bars[1].addClass('bg-indigo-500');
+                bars[2].addClass('bg-indigo-500');
+                bars[3].addClass('bg-indigo-500');
+                text.text('Sangat Kuat').removeClass('text-rose-500 text-amber-500 text-emerald-500').addClass('text-indigo-500');
+                break;
+            default:
+                text.text('');
         }
     }
 
@@ -56,29 +107,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         const form = $(this);
-        const btn = $('#btn-reset-password');
-        const password = $('input[name="password"]').val();
-        const passwordConfirm = $('input[name="password_confirm"]').val();
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;
-
-        // Client-side validation
-        if (!passwordRegex.test(password)) {
-            $('#alert-container').html(`
-                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                    Password minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, serta simbol.
-                </div>
-            `);
-            return false;
-        }
-
-        if (password !== passwordConfirm) {
-            $('#alert-container').html(`
-                <div class="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 text-rose-800 dark:text-rose-400 p-3.5 rounded-r-xl mb-4 text-xs font-semibold">
-                    Konfirmasi password tidak cocok!
-                </div>
-            `);
-            return false;
-        }
+        const btn = $('#btn-save-password');
 
         btn.prop('disabled', true).text('Menyimpan...');
         $('#alert-container').empty();
