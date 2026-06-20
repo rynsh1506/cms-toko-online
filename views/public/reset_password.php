@@ -162,7 +162,7 @@ $primary_color = $stmt->fetchColumn() ?: '#6366f1';
                 <div>
                     <label class="block text-slate-700 dark:text-slate-400 text-xs font-bold mb-1.5 mt-4">Konfirmasi Password Baru</label>
                     <div class="relative">
-                        <input type="password" name="password_confirmation" id="password_confirmation" required placeholder="••••••••"
+                        <input type="password" name="password_confirm" id="password_confirmation" required placeholder="••••••••"
                             class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-3.5 py-2.5 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
                         <button type="button" class="toggle-password absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none cursor-pointer" data-target="password_confirmation">
                             <svg class="eye-icon-show h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
