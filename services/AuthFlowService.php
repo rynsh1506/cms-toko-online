@@ -15,10 +15,15 @@ class AuthFlowService
         $name = sanitize_input($data['name'] ?? '');
         $email = sanitize_input($data['email'] ?? '');
         $password = $data['password'] ?? '';
+        $passwordConfirm = $data['password_confirm'] ?? '';
         $agreeTos = isset($data['agree_tos']);
 
         if ($name === '' || $email === '' || $password === '') {
             return $this->error('Semua field harus diisi!', 'index.php?page=register');
+        }
+
+        if ($password !== $passwordConfirm) {
+            return $this->error('Konfirmasi password tidak cocok!', 'index.php?page=register');
         }
 
         // Backend password complexity check
